@@ -28,55 +28,25 @@
   .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
   @media (min-width:860px){.board{grid-template-columns:minmax(300px,520px) 1fr;align-items:start;gap:20px}}
 
-  /* Campo 2/3 (linee visibili) */
   .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
   .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 
-  /* Titolari: cerchio più grande, numero vicino, cognome sotto */
-  .player{
-    position:absolute; transform:translate(-50%,-50%);
-    width:clamp(60px,11.5vw,96px); height:clamp(60px,11.5vw,96px);
-    overflow:visible;
-  }
-  .player .ball{
-    width:100%; height:100%; border-radius:999px; overflow:hidden;
-    border:2px solid rgba(255,255,255,.7);
-    box-shadow:0 6px 16px rgba(0,0,0,.35);
-    background:linear-gradient(90deg,var(--club-red) 0 50%,var(--club-blue) 50% 100%);
-    display:grid; place-items:center; padding:4px;
-  }
+  .player{position:absolute;transform:translate(-50%,-50%);width:clamp(60px,11.5vw,96px);height:clamp(60px,11.5vw,96px);overflow:visible}
+  .player .ball{width:100%;height:100%;border-radius:999px;overflow:hidden;border:2px solid rgba(255,255,255,.7);box-shadow:0 6px 16px rgba(0,0,0,.35);background:linear-gradient(90deg,var(--club-red) 0 50%,var(--club-blue) 50% 100%);display:grid;place-items:center;padding:4px}
   .player .ball img{width:100%;height:100%;object-fit:cover;display:block}
+  .num-badge{position:absolute;left:50%;transform:translate(-50%,-100%);top:0;background:var(--club-blue);color:#fff;border:2px solid rgba(255,255,255,.7);border-radius:999px;padding:2px 7px;font-weight:900;font-size:12px;line-height:1;z-index:2}
+  .name-below{position:absolute;top:calc(100% - 4px);left:50%;transform:translateX(-50%);background:var(--club-blue);color:#fff;border:2px solid rgba(255,255,255,.7);border-radius:999px;padding:3px 8px;font-weight:900;font-size:12px;line-height:1;white-space:nowrap;overflow:visible;max-width:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 
-  .num-badge{
-    position:absolute; left:50%; transform:translate(-50%,-100%);
-    top: 0px; /* attaccato al cerchio */
-    background:var(--club-blue); color:#fff;
-    border:2px solid rgba(255,255,255,.7);
-    border-radius:999px; padding:2px 7px;
-    font-weight:900; font-size:12px; line-height:1; z-index:2;
-  }
-  .name-below{
-    position:absolute; top:calc(100% - 4px); left:50%; transform:translateX(-50%);
-    background:var(--club-blue); color:#fff; border:2px solid rgba(255,255,255,.7);
-    border-radius:999px; padding:3px 8px;
-    font-weight:900; font-size:12px; line-height:1;
-    white-space:nowrap; overflow:visible; max-width:none;
-    box-shadow:0 2px 8px rgba(0,0,0,.25);
-  }
-
-  /* Colonna laterale */
   .side{display:grid;gap:16px}
   .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
   .title{font-weight:800;letter-spacing:.2px;font-size:14px;color:#fff}
 
-  /* Panchina */
   .bench{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(84px,22vw,140px),1fr));gap:14px;justify-content:center;max-width:min(100%,520px);margin:8px auto 0}
   .bench .item{display:grid;grid-template-rows:auto auto auto;justify-items:center;gap:6px;position:relative}
   .bench .num-badge{position:relative;top:0;transform:none;background:var(--club-blue);color:#fff;border:2px solid rgba(255,255,255,.7);border-radius:999px;padding:3px 10px;font-weight:900;font-size:12px;line-height:1}
   .bench .avatar{width:clamp(64px,18vw,110px);height:clamp(64px,18vw,110px);border-radius:999px;overflow:hidden;background:var(--bench);border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center}
   .bench .avatar img{width:100%;height:100%;object-fit:cover}
   .bench .name{font-size:12px;text-align:center;color:#e5e7eb;white-space:normal;word-break:break-word;line-height:1.05}
-
   .notice{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 </style>
 </head>
@@ -109,7 +79,7 @@
 </main>
 
 <script>
-  /* Link "pubhtml" */
+  /* URL "pubhtml" che mi hai dato */
   const PUBLISHED_META_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
   const PUBLISHED_DIST_URL =
@@ -118,83 +88,164 @@
   const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
   const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
 
-  /* Coordinate base (percentuali) — separano 1 e 5; quinti più alti dei CM */
- const coords3412 = [
-  [50,91], // 1 GK
-
-  // Difesa: 2 e 3 più larghi; 5 più avanti
-  [80,70], // 2 RCB (allargato)
-  [50,73], // 5 CB  (più avanti di prima)
-  [20,70], // 3 LCB (allargato)
-
-  // Quinti sulla stessa linea dei mediani (y=54)
-  [88,48], // 7 RWB
-  [62,54], // 6 CM-R
-  [38,54], // 4 CM-L
-  [12,48], // 11 LWB
-
-  // Trequartista e punte invariati
-  [50,36], // 10 AM
-  [62,16], // 9 ST-R
-  [38,16]  // 8 ST-L
-];
+  const coords3412 = [
+    [50,91], [80,70], [50,73], [20,70],
+    [88,54], [62,54], [38,54], [12,54],
+    [50,36], [62,16], [38,16]
+  ];
 
   const el = s => document.querySelector(s);
 
-  /* pubhtml → CSV url */
-  function pubToCsv(u){
+  /* ---------- COSTRUTTORI URL E PARSER ---------- */
+  function extractIDandGid(pubhtmlUrl){
     try{
-      const url = new URL(u);
-      url.pathname = url.pathname.replace(/\/u\/\d+\//,'/').replace(/\/pubhtml(?:\/)?$/,'/pub');
-      url.searchParams.set('output','csv');
-      return url.toString();
-    }catch(e){ return u; }
+      const u = new URL(pubhtmlUrl);
+      const parts = u.pathname.split('/');
+      const idIdx = parts.findIndex(p=>p==='e')+1;      // .../d/e/<ID>/pubhtml
+      const id = parts[idIdx] || '';
+      const gid = u.searchParams.get('gid') || '';
+      return { id, gid, origin: `${u.protocol}//${u.host}`, base: parts.slice(0,idIdx).join('/') };
+    }catch(e){ return {id:'', gid:'', origin:'https://docs.google.com', base:'/spreadsheets/d/e'}; }
   }
-  function parseCSV(text){
-    const rows=[];let cur='',row=[],inQuotes=false;
-    for(let i=0;i<text.length;i++){
-      const c=text[i],n=text[i+1];
-      if(inQuotes){ if(c==='"'&&n==='"'){cur+='"';i++;} else if(c==='"'){inQuotes=false;} else{cur+=c;} }
-      else{ if(c==='"'){inQuotes=true;} else if(c===','){row.push(cur);cur='';}
-        else if(c=='\n'){row.push(cur);rows.push(row);row=[];cur='';} else{cur+=c;} }
-    }
-    if(cur!==''||row.length){row.push(cur);rows.push(row);}
-    const header=rows.shift().map(h=>h.trim());
-    return rows.filter(r=>r.length).map(r=>Object.fromEntries(header.map((h,i)=>[h,r[i]!==undefined?r[i]:'' ])));
-  }
-  async function fetchPublishedCSV(u){
-    const url=pubToCsv(u);
-    const res=await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status+' per '+url);
-    let txt=await res.text();
-    txt=txt.replace(/\r\n?/g,'\n');
-    return parseCSV(txt);
+  function buildCandidates(pubhtmlUrl){
+    const {id,gid,origin,base} = extractIDandGid(pubhtmlUrl);
+    const root = `${origin}${base}/${id}`;
+    return [
+      `${root}/pub?gid=${encodeURIComponent(gid)}&single=true&output=csv`,     // CSV standard
+      `${root}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`, // CSV via gviz
+      pubhtmlUrl                                                               // HTML table
+    ];
   }
 
+  function parseCSV(text){
+    let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    while (t.startsWith('\n')) t = t.slice(1);
+    const lines = t.split('\n').filter((ln,i)=> i===0 || ln.trim().length>0);
+    if (!lines.length) return [];
+    const rows=[]; let row=[], cur='', inQ=false;
+    const pushCell=()=>{ row.push(cur); cur=''; };
+    const pushRow =()=>{ rows.push(row); row=[]; };
+    const s = lines.join('\n');
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (inQ){
+        if (c === '"' && n === '"'){ cur+='"'; i++; }
+        else if (c === '"'){ inQ=false; }
+        else { cur += c; }
+      }else{
+        if (c === '"'){ inQ=true; }
+        else if (c === ','){ pushCell(); }
+        else if (c === '\n'){ pushCell(); pushRow(); }
+        else { cur += c; }
+      }
+    }
+    if (cur!=='' || row.length) { pushCell(); pushRow(); }
+    if (!rows.length) return [];
+    let header = rows.shift();
+    while (header && header.every(h=> String(h||'').trim()==='') && rows.length){ header = rows.shift(); }
+    if (!header) return [];
+    header = header.map(h=>String(h||'').trim());
+    return rows
+      .filter(r => r.some(v => String(v||'').trim()!==''))
+      .map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
+  }
+
+  async function fetchViaCSV(url){
+    const res = await fetch(url, {cache:'no-store'});
+    if (!res.ok) throw new Error('CSV '+res.status);
+    const txt = await res.text();
+    const rows = parseCSV(txt);
+    if (!rows.length) throw new Error('CSV vuoto');
+    console.log('OK:', url);
+    return rows;
+  }
+  async function fetchViaHTML(url){
+    const res = await fetch(url, {cache:'no-store'});
+    if (!res.ok) throw new Error('HTML '+res.status);
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const table = doc.querySelector('table');
+    if (!table) throw new Error('Tabella non trovata');
+    const ths = Array.from(table.querySelectorAll('thead tr th, thead tr td'));
+    let header = ths.map(th => th.textContent.trim());
+    if (!header.length){
+      const firstRowTds = Array.from(table.querySelectorAll('tbody tr:first-child td'));
+      header = firstRowTds.map((_,i)=> 'col'+(i+1));
+    }
+    const out = [];
+    const trs = Array.from(table.querySelectorAll('tbody tr'));
+    trs.forEach(tr=>{
+      const cells = Array.from(tr.children);
+      if (!cells.length) return;
+      const obj = {};
+      cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
+      if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
+    });
+    console.log('OK (HTML):', url);
+    return out;
+  }
+  async function fetchPublishedRows(pubhtmlUrl){
+    const [csv1, csv2, html1] = buildCandidates(pubhtmlUrl);
+    try { return await fetchViaCSV(csv1); } catch(e){ console.warn('Fallback a CSV gviz:', e.message); }
+    try { return await fetchViaCSV(csv2); } catch(e){ console.warn('Fallback a HTML:', e.message); }
+    return await fetchViaHTML(html1);
+  }
+
+  /* ---------- NORMALIZZAZIONE ---------- */
   function normalizeMeta(rows){
     const out={};
+    if (!rows || !rows.length) return out;
+    const headerKeys = Object.keys(rows[0]);
+    const norm = k => k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
+    const idxKey = headerKeys.findIndex(k => ['key','chiave','campo','colonna'].includes(norm(k)));
+    const idxVal = headerKeys.findIndex(k => ['value','valore','dato','val'].includes(norm(k)));
     rows.forEach(r=>{
-      const raw = String(r.Key || r.Chiave || '').trim();
-      const val = String(r.Value || r.Valore || '').trim();
-      if(!raw) return;
-      const key = raw.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
-      out[key]=val;
+      const cols = Object.values(r);
+      let raw = '', val = '';
+      if (idxKey >= 0 && idxVal >= 0){ raw = String(cols[idxKey]||'').trim(); val = String(cols[idxVal]||'').trim(); }
+      else { raw = String(cols[0]||'').trim(); val = String(cols[1]||'').trim(); }
+      if (!raw) return;
+      const key = raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      out[key] = val;
     });
     return out;
   }
   function normalizeDistinta(rows){
-    const mapped=rows.map(r=>{
-      const keys=Object.fromEntries(Object.entries(r).map(([k,v])=>[k.toLowerCase().replace(/\s+/g,'').replace(/é/g,'e'),v]));
-      const num=Number(keys.num||keys.numero||0)||0;
-      const name=(keys.nome||keys.giocatore||'').toString();
-      const photo=(keys.foto||keys.photo||'').toString();
-      return {num,name,photo};
-    }).filter(x=>x.num>0);
-    const byNum=new Map(); mapped.forEach(x=>byNum.set(x.num,x)); return byNum;
+    if (!rows || !rows.length) return new Map();
+    const keys = Object.keys(rows[0]);
+    const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    let numKey   = keys.find(k=>['num','numero','n','maglia','shirt','#'].includes(norm(k)));
+    let nameKey  = keys.find(k=>['giocatore','nome','cognome','nomecognome','player'].includes(norm(k)));
+    let photoKey = keys.find(k=>['foto','photo','immagine','img','picture'].includes(norm(k)));
+    const score = Object.fromEntries(keys.map(k=>[k,{num:0,url:0,text:0}]));
+    rows.forEach(r=>{
+      keys.forEach(k=>{
+        const v = String(r[k] ?? '').trim();
+        if (!v) return;
+        if (/^https?:\/\//i.test(v) || v.includes('/')) score[k].url++;
+        if (/^\d{1,2}$/.test(v)) score[k].num++;
+        if (/[A-Za-zÀ-ÿ]/.test(v)) score[k].text++;
+      });
+    });
+    if (!numKey)   numKey   = keys.reduce((a,b)=> score[a].num >= score[b].num ? a:b);
+    if (!photoKey) photoKey = keys.reduce((a,b)=> score[a].url >= score[b].url ? a:b);
+    if (!nameKey){
+      const rem = keys.filter(k=>k!==numKey && k!==photoKey);
+      nameKey = rem.reduce((a,b)=> (score[a]?.text||0) >= (score[b]?.text||0) ? a:b);
+    }
+    const map = new Map();
+    rows.forEach(r=>{
+      const num = Number(String(r[numKey]||'').trim());
+      if (!(num>0)) return;
+      const name = String(r[nameKey]||'').trim();
+      const photo= String(r[photoKey]||'').trim();
+      map.set(num, {num, name, photo});
+    });
+    return map;
   }
   const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
 
-  /* Anti-sovrapposizione: spinge i pallini se si toccano (soprattutto in verticale) */
+  /* ---------- ANTI-OVERLAP ---------- */
   function distributeNoOverlap(){
     const pitch = el('#pitch');
     const rect = pitch.getBoundingClientRect();
@@ -203,7 +254,7 @@
       const r=node.offsetWidth/2 + 2;
       return {node,xPerc,yPerc,r};
     });
-    for(let step=0; step<32; step++){
+    for(let step=0; step<36; step++){
       let moved=false;
       for(let i=0;i<items.length;i++){
         for(let j=i+1;j<items.length;j++){
@@ -215,7 +266,7 @@
           if(dist<minDist){
             const overlap=minDist-dist || 1;
             const nx=dx/(dist||1), ny=dy/(dist||1);
-            const kx=0.25, ky=0.75; // privilegia separazione verticale
+            const kx=0.25, ky=0.75;
             a.xPerc -= (nx*kx*overlap)/rect.width*100;
             a.yPerc -= (ny*ky*overlap)/rect.height*100;
             b.xPerc += (nx*kx*overlap)/rect.width*100;
@@ -236,42 +287,35 @@
     });
   }
 
+  /* ---------- RENDER ---------- */
   function renderAll(meta, byNum){
-    // Header (avversario da META)
     const opp = meta['avversario'] || 'AVVERSARIO';
-    const when= meta['when'] || '';
+    const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'CLAUDIO LOGO.jpg';
     el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
 
-    // Campo: XI
     const pitch=el('#pitch'); pitch.querySelectorAll('.player').forEach(n=>n.remove());
     XI_NUMBERS.forEach((num,i)=>{
       const p=byNum.get(num)||{num,name:'',photo:''};
       const [x,y]=coords3412[i]||[50,50];
 
-      const node=document.createElement('div');
-      node.className='player'; node.style.left=x+'%'; node.style.top=y+'%';
-
+      const node=document.createElement('div'); node.className='player'; node.style.left=x+'%'; node.style.top=y+'%';
       const ball=document.createElement('div'); ball.className='ball';
       if(p.photo){ const img=document.createElement('img'); img.src=p.photo; img.alt=p.name; img.onerror=()=>img.remove(); ball.appendChild(img); }
       node.appendChild(ball);
 
       const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=num; node.appendChild(nb);
-
       const label=document.createElement('div'); label.className='name-below'; label.textContent=surname(p.name)||''; node.appendChild(label);
 
       pitch.appendChild(node);
     });
 
-    // Panchina (+ ALL)
     const benchEl=el('#bench'); benchEl.innerHTML='';
-    const benchItems=[
-      ...BENCH_NUMBERS.map(n=>{ const bp=byNum.get(n)||{num:n,name:'',photo:''}; return {code:String(n), name:bp.name, photo:bp.photo}; }),
-      {code:'ALL', name:'Castellani', photo:''}
-    ];
+    const benchItems=[ ...BENCH_NUMBERS.map(n=>{ const bp=byNum.get(n)||{num:n,name:'',photo:''}; return {code:String(n), name:bp.name, photo:bp.photo}; }),
+      {code:'ALL', name:'Castellani', photo:''} ];
     benchItems.forEach(item=>{
       const card=document.createElement('div'); card.className='item';
       const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=item.code; card.appendChild(nb);
@@ -282,25 +326,30 @@
       benchEl.appendChild(card);
     });
 
-    el('#notice').textContent='Dati caricati dai link pubblicati (CSV)';
-
-    // Dopo il render, risolvi eventuali contatti
+    el('#notice').textContent='Dati caricati (CSV/gviz/pubhtml)';
     requestAnimationFrame(distributeNoOverlap);
   }
 
+  /* ---------- INIT ---------- */
   (async function init(){
     try{
       const [metaRows,distRows]=await Promise.all([
-        fetchPublishedCSV(PUBLISHED_META_URL),
-        fetchPublishedCSV(PUBLISHED_DIST_URL)
+        fetchPublishedRows(PUBLISHED_META_URL),
+        fetchPublishedRows(PUBLISHED_DIST_URL)
       ]);
+      console.log('META rows:', metaRows?.length, metaRows?.[0]);
+      console.log('DIST rows:', distRows?.length, distRows?.[0]);
+
       const meta=normalizeMeta(metaRows);
       const byNum=normalizeDistinta(distRows);
+      console.log('META parsed:', meta);
+      console.log('DIST map size:', byNum.size);
+
       renderAll(meta,byNum);
       window.addEventListener('resize', ()=>requestAnimationFrame(distributeNoOverlap));
     }catch(e){
       console.error(e);
-      el('#notice').textContent='Errore nel leggere i CSV pubblicati: '+e.message;
+      el('#notice').textContent='Errore nel leggere i dati: '+e.message;
       renderAll({}, new Map());
     }
   })();
