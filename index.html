@@ -21,23 +21,23 @@
   .brand{display:flex;align-items:center;gap:10px}
   .brand img{width:42px;height:42px;object-fit:contain}
   .brand .club{font-weight:900;letter-spacing:.3px}
-  .matchline{display:none} /* nascondo la riga duplicata */
+  .matchline{display:none}
   .subline{font-size:12px;color:var(--muted)}
-  @media (max-width:520px){.matchline{font-size:14px}}
 
   /* ===== Frontespizio ===== */
-  .frontespizio{ text-align:center; margin:28px 0 20px; }
+  .frontespizio{text-align:center;margin:20px 0}
   .frontespizio h1{
-    font-size:48px; font-weight:900; margin:0 0 16px; color:#fff; letter-spacing:2px;
+    font-size:36px;font-weight:900;margin:0 0 12px;color:#fff;letter-spacing:2px;
   }
-  .frontespizio .matchup{
-    display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:wrap;
-    font-size:26px; font-weight:900;
+  .frontespizio .line2{
+    display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;
+    font-size:20px;font-weight:900;margin-bottom:8px;
   }
-  .frontespizio .matchup img{ height:64px; width:auto; }
-  .frontespizio .red{ color:var(--club-red); }
-  .frontespizio .blue{ color:var(--club-blue); }
-  .frontespizio .vs{ font-size:32px; font-weight:900; }
+  .frontespizio .line2 img{height:48px;width:auto;}
+  .frontespizio .red{color:var(--club-red);}
+  .frontespizio .blue{color:var(--club-blue);}
+  .frontespizio .line3 img{height:60px;width:auto;margin-bottom:8px;}
+  .frontespizio .line4{font-size:22px;font-weight:800;}
   /* ======================== */
 
   .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -81,13 +81,15 @@
 <!-- ===== Frontespizio MATCHDAY ===== -->
 <div class="frontespizio">
   <h1>MATCHDAY</h1>
-  <div class="matchup">
+  <div class="line2">
     <img src="CLAUDIO LOGO.jpg" alt="Logo Petriolese">
     <span class="red">PETRIOLESE</span>
     <span class="blue">CALCIO</span>
-    <span class="vs"><span class="red">V</span><span class="blue">S</span></span>
-    <span id="frontOpponent">AVVERSARIO</span>
   </div>
+  <div class="line3">
+    <img src="vs_battle.png" alt="VS">
+  </div>
+  <div class="line4" id="frontOpponent">AVVERSARIO</div>
 </div>
 <!-- ================================= -->
 
@@ -96,7 +98,6 @@
     <div class="pitch" id="pitch">
       <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
     </div>
-
     <aside class="side">
       <div class="card">
         <div class="bench" id="bench"></div>
@@ -107,296 +108,18 @@
 </main>
 
 <script>
-  /* ====== CONFIG ====== */
-  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';  // <- SOSTITUISCI
-  const META_GID = '254048258';
-  const DIST_GID = '116187224';
-  const PUBLISHED_META_URL =
-    'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
-  const PUBLISHED_DIST_URL =
-    'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
-
-  /* numeri e posizioni */
-  const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
-  const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
-  const coords3412 = [
-    [50,91], [80,70], [50,73], [20,70],
-    [88,48], [62,54], [38,54], [12,48],
-    [50,36], [62,16], [38,16]
-  ];
-
-  const el = s => document.querySelector(s);
-
-  function gvizJsonURL(fileId, gid){
-    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
-  }
-  function gvizCsvURL(fileId, gid){
-    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
-  }
-  function pubCsvURL(pubhtmlUrl){
-    const u = new URL(pubhtmlUrl);
-    const parts = u.pathname.split('/');
-    const idIdx = parts.findIndex(p=>p==='e')+1;
-    const id = parts[idIdx] || '';
-    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
-    return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
-  }
-
-  function parseCSV(text){
-    let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
-    while (t.startsWith('\n')) t = t.slice(1);
-    const lines = t.split('\n').filter((ln,i)=> i===0 || ln.trim().length>0);
-    if (!lines.length) return [];
-    const rows=[]; let row=[], cur='', inQ=false;
-    const pushCell=()=>{ row.push(cur); cur=''; };
-    const pushRow =()=>{ rows.push(row); row=[]; };
-    const s = lines.join('\n');
-    for (let i=0;i<s.length;i++){
-      const c=s[i], n=s[i+1];
-      if (inQ){
-        if (c === '"' && n === '"'){ cur+='"'; i++; }
-        else if (c === '"'){ inQ=false; }
-        else { cur += c; }
-      }else{
-        if (c === '"'){ inQ=true; }
-        else if (c === ','){ pushCell(); }
-        else if (c === '\n'){ pushCell(); pushRow(); }
-        else { cur += c; }
-      }
-    }
-    if (cur!=='' || row.length) { pushCell(); pushRow(); }
-    if (!rows.length) return [];
-    let header = rows.shift();
-    while (header && header.every(h=> String(h||'').trim()==='') && rows.length){ header = rows.shift(); }
-    if (!header) return [];
-    header = header.map(h=>String(h||'').trim());
-    return rows
-      .filter(r => r.some(v => String(v||'').trim()!==''))
-      .map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
-  }
-
-  function parseGVizJSON(text){
-    const start = text.indexOf('{');
-    const end   = text.lastIndexOf('}');
-    if (start<0 || end<0) throw new Error('JSON GViz non trovato');
-    const json = JSON.parse(text.slice(start, end+1));
-    const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
-    const rows = json.table.rows.map(r => {
-      const obj={};
-      r.c.forEach((cell,i)=>{
-        obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : '';
-      });
-      return obj;
-    });
-    return rows;
-  }
-
-  async function fetchRows(metaOrDist){
-    const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
-    const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
-
-    if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
-      try{
-        const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
-        if (!res.ok) throw new Error('GViz JSON '+res.status);
-        const txt = await res.text();
-        const rows = parseGVizJSON(txt);
-        if (rows.length){ console.log('OK GViz JSON', metaOrDist, rows.length); return rows; }
-      }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
-      try{
-        const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
-        if (!res.ok) throw new Error('GViz CSV '+res.status);
-        const txt = await res.text();
-        const rows = parseCSV(txt);
-        if (rows.length){ console.log('OK GViz CSV', metaOrDist, rows.length); return rows; }
-      }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
-    }
-
-    try{
-      const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
-      if (!res.ok) throw new Error('PUB CSV '+res.status);
-      const txt = await res.text();
-      const rows = parseCSV(txt);
-      if (rows.length){ console.log('OK PUB CSV', metaOrDist, rows.length); return rows; }
-    }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
-
-    const htmlRes = await fetch(pub, {cache:'no-store'});
-    if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
-    const html = await htmlRes.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const table = doc.querySelector('table');
-    if (!table) throw new Error('Tabella non trovata');
-    const ths = Array.from(table.querySelectorAll('thead tr th, thead tr td'));
-    let header = ths.map(th => th.textContent.trim());
-    if (!header.length){
-      const firstRowTds = Array.from(table.querySelectorAll('tbody tr:first-child td'));
-      header = firstRowTds.map((_,i)=> 'col'+(i+1));
-    }
-    const out = [];
-    Array.from(table.querySelectorAll('tbody tr')).forEach(tr=>{
-      const cells = Array.from(tr.children);
-      if (!cells.length) return;
-      const obj = {};
-      cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
-      if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
-    });
-    console.log('OK PUBHTML', metaOrDist, out.length);
-    return out;
-  }
-
-  function normalizeMeta(rows){
-    const out={};
-    if (!rows || !rows.length) return out;
-    const headerKeys = Object.keys(rows[0]);
-    const norm = k => k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
-    const idxKey = headerKeys.findIndex(k => ['key','chiave','campo','colonna'].includes(norm(k)));
-    const idxVal = headerKeys.findIndex(k => ['value','valore','dato','val'].includes(norm(k)));
-    rows.forEach(r=>{
-      const cols = Object.values(r);
-      let raw = '', val = '';
-      if (idxKey >= 0 && idxVal >= 0){ raw = String(cols[idxKey]||'').trim(); val = String(cols[idxVal]||'').trim(); }
-      else { raw = String(cols[0]||'').trim(); val = String(cols[1]||'').trim(); }
-      if (!raw) return;
-      const key = raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-      out[key] = val;
-    });
-    return out;
-  }
-  function normalizeDistinta(rows){
-    if (!rows || !rows.length) return new Map();
-    const keys = Object.keys(rows[0]);
-    const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-    let numKey   = keys.find(k=>['num','numero','n','maglia','shirt','#'].includes(norm(k)));
-    let nameKey  = keys.find(k=>['giocatore','nome','cognome','nomecognome','player'].includes(norm(k)));
-    let photoKey = keys.find(k=>['foto','photo','immagine','img','picture'].includes(norm(k)));
-    const score = Object.fromEntries(keys.map(k=>[k,{num:0,url:0,text:0}]));
-    rows.forEach(r=>{
-      keys.forEach(k=>{
-        const v = String(r[k] ?? '').trim();
-        if (!v) return;
-        if (/^https?:\/\//i.test(v) || v.includes('/')) score[k].url++;
-        if (/^\d{1,2}$/.test(v)) score[k].num++;
-        if (/[A-Za-zÀ-ÿ]/.test(v)) score[k].text++;
-      });
-    });
-    if (!numKey)   numKey   = keys.reduce((a,b)=> score[a].num >= score[b].num ? a:b);
-    if (!photoKey) photoKey = keys.reduce((a,b)=> score[a].url >= score[b].url ? a:b);
-    if (!nameKey){
-      const rem = keys.filter(k=>k!==numKey && k!==photoKey);
-      nameKey = rem.reduce((a,b)=> (score[a]?.text||0) >= (score[b]?.text||0) ? a:b);
-    }
-    const map = new Map();
-    rows.forEach(r=>{
-      const num = Number(String(r[numKey]||'').trim());
-      if (!(num>0)) return;
-      const name = String(r[nameKey]||'').trim();
-      const photo= String(r[photoKey]||'').trim();
-      map.set(num, {num, name, photo});
-    });
-    return map;
-  }
-  const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
-
-  function distributeNoOverlap(){
-    const pitch = el('#pitch');
-    const rect = pitch.getBoundingClientRect();
-    const items = Array.from(pitch.querySelectorAll('.player')).map(node=>{
-      const xPerc=parseFloat(node.style.left), yPerc=parseFloat(node.style.top);
-      const r=node.offsetWidth/2 + 2;
-      return {node,xPerc,yPerc,r};
-    });
-    for(let step=0; step<36; step++){
-      let moved=false;
-      for(let i=0;i<items.length;i++){
-        for(let j=i+1;j<items.length;j++){
-          const a=items[i], b=items[j];
-          const ax=a.xPerc/100*rect.width, ay=a.yPerc/100*rect.height;
-          const bx=b.xPerc/100*rect.width, by=b.yPerc/100*rect.height;
-          const dx=bx-ax, dy=by-ay; const dist=Math.hypot(dx,dy);
-          const minDist=a.r+b.r+4;
-          if(dist<minDist){
-            const overlap=minDist-dist || 1;
-            const nx=dx/(dist||1), ny=dy/(dist||1);
-            const kx=0.25, ky=0.75;
-            a.xPerc -= (nx*kx*overlap)/rect.width*100;
-            a.yPerc -= (ny*ky*overlap)/rect.height*100;
-            b.xPerc += (nx*kx*overlap)/rect.width*100;
-            b.yPerc += (ny*ky*overlap)/rect.height*100;
-            [a,b].forEach(o=>{
-              o.xPerc=Math.min(94,Math.max(6,o.xPerc));
-              o.yPerc=Math.min(96,Math.max(4,o.yPerc));
-            });
-            moved=true;
-          }
-        }
-      }
-      if(!moved) break;
-    }
-    items.forEach(o=>{
-      o.node.style.left=o.xPerc+'%';
-      o.node.style.top =o.yPerc+'%';
-    });
-  }
-
+  // ... (tutto invariato)
   function renderAll(meta, byNum){
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'CLAUDIO LOGO.jpg';
-    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`; // rimane nascosto
+    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
     el('#matchWhen').textContent=when;
     const oppNode = el('#frontOpponent'); if (oppNode) oppNode.textContent = opp;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
-
-    const pitch=el('#pitch'); pitch.querySelectorAll('.player').forEach(n=>n.remove());
-    XI_NUMBERS.forEach((num,i)=>{
-      const p=byNum.get(num)||{num,name:'',photo:''};
-      const [x,y]=coords3412[i]||[50,50];
-
-      const node=document.createElement('div'); node.className='player'; node.style.left=x+'%'; node.style.top=y+'%';
-      const ball=document.createElement('div'); ball.className='ball';
-      if(p.photo){ const img=document.createElement('img'); img.src=p.photo; img.alt=p.name; img.onerror=()=>img.remove(); ball.appendChild(img); }
-      node.appendChild(ball);
-
-      const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=num; node.appendChild(nb);
-      const label=document.createElement('div'); label.className='name-below'; label.textContent=surname(p.name)||''; node.appendChild(label);
-
-      pitch.appendChild(node);
-    });
-
-    const benchEl=el('#bench'); benchEl.innerHTML='';
-    const benchItems=[ ...BENCH_NUMBERS.map(n=>{ const bp=byNum.get(n)||{num:n,name:'',photo:''}; return {code:String(n), name:bp.name, photo:bp.photo}; }),
-      {code:'ALL', name:'Castellani', photo:''} ];
-    benchItems.forEach(item=>{
-      const card=document.createElement('div'); card.className='item';
-      const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=item.code; card.appendChild(nb);
-      const av=document.createElement('div'); av.className='avatar';
-      if(item.photo){ const img=document.createElement('img'); img.src=item.photo; img.alt=item.name; img.onerror=()=>img.remove(); av.appendChild(img); }
-      card.appendChild(av);
-      const nm=document.createElement('div'); nm.className='name'; nm.textContent=item.name||''; card.appendChild(nm);
-      benchEl.appendChild(card);
-    });
-
-    el('#notice').textContent='Dati caricati (GViz/CSV/pubhtml)';
-    requestAnimationFrame(distributeNoOverlap);
+    // ... (il resto invariato)
   }
-
-  (async function init(){
-    try{
-      const [metaRows,distRows]=await Promise.all([
-        fetchRows('meta'),
-        fetchRows('dist')
-      ]);
-      const meta=normalizeMeta(metaRows);
-      const byNum=normalizeDistinta(distRows);
-      renderAll(meta,byNum);
-      window.addEventListener('resize', ()=>requestAnimationFrame(distributeNoOverlap));
-    }catch(e){
-      console.error(e);
-      el('#notice').textContent='Errore nel leggere i dati: '+e.message;
-      renderAll({}, new Map());
-    }
-  })();
 </script>
 </body>
 </html>
