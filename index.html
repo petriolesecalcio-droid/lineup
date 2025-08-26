@@ -79,15 +79,23 @@
 </main>
 
 <script>
-  /* URL "pubhtml" che mi hai dato */
+  /* ====== CONFIG ====== */
+  // 1) metti qui il FILE_ID reale dello Spreadsheet (URL in modifica: /spreadsheets/d/FILE_ID/edit)
+  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';  // <- SOSTITUISCI
+
+  // 2) i gid sono quelli che già usi
+  const META_GID = '254048258';
+  const DIST_GID = '116187224';
+
+  // 3) tieni anche le URL "pubhtml" come backup (le tue)
   const PUBLISHED_META_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
   const PUBLISHED_DIST_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
+  /* numeri e posizioni */
   const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
   const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
-
   const coords3412 = [
     [50,91], [80,70], [50,73], [20,70],
     [88,54], [62,54], [38,54], [12,54],
@@ -96,27 +104,23 @@
 
   const el = s => document.querySelector(s);
 
-  /* ---------- COSTRUTTORI URL E PARSER ---------- */
-  function extractIDandGid(pubhtmlUrl){
-    try{
-      const u = new URL(pubhtmlUrl);
-      const parts = u.pathname.split('/');
-      const idIdx = parts.findIndex(p=>p==='e')+1;      // .../d/e/<ID>/pubhtml
-      const id = parts[idIdx] || '';
-      const gid = u.searchParams.get('gid') || '';
-      return { id, gid, origin: `${u.protocol}//${u.host}`, base: parts.slice(0,idIdx).join('/') };
-    }catch(e){ return {id:'', gid:'', origin:'https://docs.google.com', base:'/spreadsheets/d/e'}; }
+  /* ====== COSTRUTTORI URL ====== */
+  function gvizJsonURL(fileId, gid){
+    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
   }
-  function buildCandidates(pubhtmlUrl){
-    const {id,gid,origin,base} = extractIDandGid(pubhtmlUrl);
-    const root = `${origin}${base}/${id}`;
-    return [
-      `${root}/pub?gid=${encodeURIComponent(gid)}&single=true&output=csv`,     // CSV standard
-      `${root}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`, // CSV via gviz
-      pubhtmlUrl                                                               // HTML table
-    ];
+  function gvizCsvURL(fileId, gid){
+    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+  }
+  function pubCsvURL(pubhtmlUrl){
+    const u = new URL(pubhtmlUrl);
+    const parts = u.pathname.split('/');
+    const idIdx = parts.findIndex(p=>p==='e')+1;
+    const id = parts[idIdx] || '';
+    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+    return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
   }
 
+  /* ====== PARSER ====== */
   function parseCSV(text){
     let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
     while (t.startsWith('\n')) t = t.slice(1);
@@ -150,19 +154,60 @@
       .map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
   }
 
-  async function fetchViaCSV(url){
-    const res = await fetch(url, {cache:'no-store'});
-    if (!res.ok) throw new Error('CSV '+res.status);
-    const txt = await res.text();
-    const rows = parseCSV(txt);
-    if (!rows.length) throw new Error('CSV vuoto');
-    console.log('OK:', url);
+  function parseGVizJSON(text){
+    // risposta tipo: google.visualization.Query.setResponse({...});
+    const start = text.indexOf('{');
+    const end   = text.lastIndexOf('}');
+    if (start<0 || end<0) throw new Error('JSON GViz non trovato');
+    const json = JSON.parse(text.slice(start, end+1));
+    const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
+    const rows = json.table.rows.map(r => {
+      const obj={};
+      r.c.forEach((cell,i)=>{
+        obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : '';
+      });
+      return obj;
+    });
     return rows;
   }
-  async function fetchViaHTML(url){
-    const res = await fetch(url, {cache:'no-store'});
-    if (!res.ok) throw new Error('HTML '+res.status);
-    const html = await res.text();
+
+  /* ====== FETCH con 4 tentativi ====== */
+  async function fetchRows(metaOrDist){
+    const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
+    const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
+
+    // 1) GViz JSON (richiede FILE_ID)
+    if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
+      try{
+        const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
+        if (!res.ok) throw new Error('GViz JSON '+res.status);
+        const txt = await res.text();
+        const rows = parseGVizJSON(txt);
+        if (rows.length){ console.log('OK GViz JSON', metaOrDist, rows.length); return rows; }
+      }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
+      // 2) GViz CSV
+      try{
+        const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
+        if (!res.ok) throw new Error('GViz CSV '+res.status);
+        const txt = await res.text();
+        const rows = parseCSV(txt);
+        if (rows.length){ console.log('OK GViz CSV', metaOrDist, rows.length); return rows; }
+      }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
+    }
+
+    // 3) CSV “pub”
+    try{
+      const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
+      if (!res.ok) throw new Error('PUB CSV '+res.status);
+      const txt = await res.text();
+      const rows = parseCSV(txt);
+      if (rows.length){ console.log('OK PUB CSV', metaOrDist, rows.length); return rows; }
+    }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
+
+    // 4) pubhtml → parse tabella
+    const htmlRes = await fetch(pub, {cache:'no-store'});
+    if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
+    const html = await htmlRes.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const table = doc.querySelector('table');
     if (!table) throw new Error('Tabella non trovata');
@@ -173,25 +218,18 @@
       header = firstRowTds.map((_,i)=> 'col'+(i+1));
     }
     const out = [];
-    const trs = Array.from(table.querySelectorAll('tbody tr'));
-    trs.forEach(tr=>{
+    Array.from(table.querySelectorAll('tbody tr')).forEach(tr=>{
       const cells = Array.from(tr.children);
       if (!cells.length) return;
       const obj = {};
       cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
       if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
     });
-    console.log('OK (HTML):', url);
+    console.log('OK PUBHTML', metaOrDist, out.length);
     return out;
   }
-  async function fetchPublishedRows(pubhtmlUrl){
-    const [csv1, csv2, html1] = buildCandidates(pubhtmlUrl);
-    try { return await fetchViaCSV(csv1); } catch(e){ console.warn('Fallback a CSV gviz:', e.message); }
-    try { return await fetchViaCSV(csv2); } catch(e){ console.warn('Fallback a HTML:', e.message); }
-    return await fetchViaHTML(html1);
-  }
 
-  /* ---------- NORMALIZZAZIONE ---------- */
+  /* ====== NORMALIZZAZIONE ====== */
   function normalizeMeta(rows){
     const out={};
     if (!rows || !rows.length) return out;
@@ -245,7 +283,7 @@
   }
   const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
 
-  /* ---------- ANTI-OVERLAP ---------- */
+  /* ====== ANTI-OVERLAP ====== */
   function distributeNoOverlap(){
     const pitch = el('#pitch');
     const rect = pitch.getBoundingClientRect();
@@ -287,7 +325,7 @@
     });
   }
 
-  /* ---------- RENDER ---------- */
+  /* ====== RENDER ====== */
   function renderAll(meta, byNum){
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
@@ -326,16 +364,16 @@
       benchEl.appendChild(card);
     });
 
-    el('#notice').textContent='Dati caricati (CSV/gviz/pubhtml)';
+    el('#notice').textContent='Dati caricati (GViz/CSV/pubhtml)';
     requestAnimationFrame(distributeNoOverlap);
   }
 
-  /* ---------- INIT ---------- */
+  /* ====== INIT ====== */
   (async function init(){
     try{
       const [metaRows,distRows]=await Promise.all([
-        fetchPublishedRows(PUBLISHED_META_URL),
-        fetchPublishedRows(PUBLISHED_DIST_URL)
+        fetchRows('meta'),
+        fetchRows('dist')
       ]);
       console.log('META rows:', metaRows?.length, metaRows?.[0]);
       console.log('DIST rows:', distRows?.length, distRows?.[0]);
