@@ -330,7 +330,7 @@
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
-    el('#clubLogo').src=logoURL||'CLAUDIO LOGO.jpg';
+    el('#clubLogo').src=logoURL||'logo.png';
     el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
