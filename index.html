@@ -17,13 +17,31 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-  .topbar{width:100%;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px 16px;border-bottom:2px solid rgba(29,78,216,.35)}
+  /* ===== TOPBAR (tutto su una riga, centrato) ===== */
+  .topbar{
+    width:100%;
+    display:flex;                 /* <— prima era grid */
+    justify-content:center;       /* centrato orizzontale */
+    align-items:center;
+    gap:12px;
+    padding:12px 16px;
+    border-bottom:2px solid rgba(29,78,216,.35)
+  }
   .brand{display:flex;align-items:center;gap:10px}
   .brand img{width:42px;height:42px;object-fit:contain}
   .brand .club{font-weight:900;letter-spacing:.3px}
-  .matchline{font-weight:800;text-transform:uppercase;text-align:right}
-  .subline{font-size:12px;color:var(--muted)}
-  @media (max-width:520px){.matchline{font-size:14px}}
+
+  .vs-img{height:28px;width:auto;display:block}
+  .opponent{font-weight:900;text-transform:uppercase}
+
+  .matchline{display:none}  /* la teniamo ma nascosta per compatibilità */
+  .subline{display:none}    /* nascondo la data per avere una sola riga */
+  @media (max-width:520px){
+    .brand .club{font-size:14px}
+    .vs-img{height:22px}
+    .opponent{font-size:14px}
+  }
+  /* ================================================ */
 
   .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
   .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
@@ -53,10 +71,19 @@
 </head>
 <body>
 <header class="topbar">
+  <!-- brand (logo + Petriolese Calcio) -->
   <div class="brand">
     <img id="clubLogo" src="logo.png" alt="Logo Petriolese" onerror="this.style.display='none'"/>
     <div class="club">Petriolese Calcio</div>
   </div>
+
+  <!-- VS immagine -->
+  <img class="vs-img" src="vs_battle.png" alt="VS" />
+
+  <!-- Avversario dal Google Sheet -->
+  <div id="opponentInline" class="opponent">AVVERSARIO</div>
+
+  <!-- blocco originale (lo tengo, ma nascosto per compatibilità con lo script) -->
   <div>
     <div class="matchline" id="matchLine">PETRIOLESE vs AVVERSARIO</div>
     <div class="subline" id="matchWhen"></div>
@@ -80,14 +107,9 @@
 
 <script>
   /* ====== CONFIG ====== */
-  // 1) metti qui il FILE_ID reale dello Spreadsheet (URL in modifica: /spreadsheets/d/FILE_ID/edit)
-  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';  // <- SOSTITUISCI
-
-  // 2) i gid sono quelli che già usi
+  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
   const META_GID = '254048258';
   const DIST_GID = '116187224';
-
-  // 3) tieni anche le URL "pubhtml" come backup (le tue)
   const PUBLISHED_META_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
   const PUBLISHED_DIST_URL =
@@ -104,7 +126,6 @@
 
   const el = s => document.querySelector(s);
 
-  /* ====== COSTRUTTORI URL ====== */
   function gvizJsonURL(fileId, gid){
     return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
   }
@@ -116,11 +137,10 @@
     const parts = u.pathname.split('/');
     const idIdx = parts.findIndex(p=>p==='e')+1;
     const id = parts[idIdx] || '';
-    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+       const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
     return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
   }
 
-  /* ====== PARSER ====== */
   function parseCSV(text){
     let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
     while (t.startsWith('\n')) t = t.slice(1);
@@ -155,7 +175,6 @@
   }
 
   function parseGVizJSON(text){
-    // risposta tipo: google.visualization.Query.setResponse({...});
     const start = text.indexOf('{');
     const end   = text.lastIndexOf('}');
     if (start<0 || end<0) throw new Error('JSON GViz non trovato');
@@ -171,12 +190,10 @@
     return rows;
   }
 
-  /* ====== FETCH con 4 tentativi ====== */
   async function fetchRows(metaOrDist){
     const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
     const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
 
-    // 1) GViz JSON (richiede FILE_ID)
     if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
       try{
         const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
@@ -185,7 +202,6 @@
         const rows = parseGVizJSON(txt);
         if (rows.length){ console.log('OK GViz JSON', metaOrDist, rows.length); return rows; }
       }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
-      // 2) GViz CSV
       try{
         const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz CSV '+res.status);
@@ -195,7 +211,6 @@
       }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
     }
 
-    // 3) CSV “pub”
     try{
       const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
       if (!res.ok) throw new Error('PUB CSV '+res.status);
@@ -204,7 +219,6 @@
       if (rows.length){ console.log('OK PUB CSV', metaOrDist, rows.length); return rows; }
     }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
 
-    // 4) pubhtml → parse tabella
     const htmlRes = await fetch(pub, {cache:'no-store'});
     if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
     const html = await htmlRes.text();
@@ -229,7 +243,6 @@
     return out;
   }
 
-  /* ====== NORMALIZZAZIONE ====== */
   function normalizeMeta(rows){
     const out={};
     if (!rows || !rows.length) return out;
@@ -283,7 +296,6 @@
   }
   const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
 
-  /* ====== ANTI-OVERLAP ====== */
   function distributeNoOverlap(){
     const pitch = el('#pitch');
     const rect = pitch.getBoundingClientRect();
@@ -325,13 +337,13 @@
     });
   }
 
-  /* ====== RENDER ====== */
   function renderAll(meta, byNum){
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'logo.png';
-    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
+    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`; // resta nascosto
+    const oppInline = el('#opponentInline'); if (oppInline) oppInline.textContent = opp;  /* <— nuova riga */
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
 
@@ -368,21 +380,14 @@
     requestAnimationFrame(distributeNoOverlap);
   }
 
-  /* ====== INIT ====== */
   (async function init(){
     try{
       const [metaRows,distRows]=await Promise.all([
         fetchRows('meta'),
         fetchRows('dist')
       ]);
-      console.log('META rows:', metaRows?.length, metaRows?.[0]);
-      console.log('DIST rows:', distRows?.length, distRows?.[0]);
-
       const meta=normalizeMeta(metaRows);
       const byNum=normalizeDistinta(distRows);
-      console.log('META parsed:', meta);
-      console.log('DIST map size:', byNum.size);
-
       renderAll(meta,byNum);
       window.addEventListener('resize', ()=>requestAnimationFrame(distributeNoOverlap));
     }catch(e){
