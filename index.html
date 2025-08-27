@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#0b0f0c">
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="dns-prefetch" href="https://docs.google.com">
+
+<!-- html2canvas per la condivisione/PNG -->
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
   :root{
     --club-red:#e11d48; --club-blue:#1d4ed8;
@@ -20,8 +24,8 @@
   /* ===== TOPBAR (tutto su una riga, centrato) ===== */
   .topbar{
     width:100%;
-    display:flex;                 /* <— prima era grid */
-    justify-content:center;       /* centrato orizzontale */
+    display:flex;
+    justify-content:center;
     align-items:center;
     gap:12px;
     padding:12px 16px;
@@ -30,18 +34,34 @@
   .brand{display:flex;align-items:center;gap:10px}
   .brand img{width:42px;height:42px;object-fit:contain}
   .brand .club{font-weight:900;letter-spacing:.3px}
-
   .vs-img{height:28px;width:auto;display:block}
   .opponent{font-weight:900;text-transform:uppercase}
+  .matchline{display:none}  /* tenuta per compat, ma nascosta */
+  .subline{display:none}
 
-  .matchline{display:none}  /* la teniamo ma nascosta per compatibilità */
-  .subline{display:none}    /* nascondo la data per avere una sola riga */
   @media (max-width:520px){
     .brand .club{font-size:14px}
     .vs-img{height:22px}
     .opponent{font-size:14px}
   }
   /* ================================================ */
+
+  /* ===== Sharebar ===== */
+  .sharebar{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .sharebar button{
+    background:linear-gradient(90deg,var(--club-red),var(--club-blue));
+    color:#fff;border:0;border-radius:10px;
+    padding:8px 14px;font-weight:800;cursor:pointer;
+  }
+  .sharebar button:hover{filter:brightness(1.05);}
+  /* ==================== */
 
   .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
   .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
@@ -71,31 +91,35 @@
 </head>
 <body>
 <header class="topbar">
-  <!-- brand (logo + Petriolese Calcio) -->
+  <!-- brand -->
   <div class="brand">
     <img id="clubLogo" src="logo.png" alt="Logo Petriolese" onerror="this.style.display='none'"/>
     <div class="club">Petriolese Calcio</div>
   </div>
-
   <!-- VS immagine -->
   <img class="vs-img" src="vs_battle.png" alt="VS" />
-
   <!-- Avversario dal Google Sheet -->
   <div id="opponentInline" class="opponent">AVVERSARIO</div>
 
-  <!-- blocco originale (lo tengo, ma nascosto per compatibilità con lo script) -->
+  <!-- blocco originale (tenuto nascosto per compatibilità) -->
   <div>
     <div class="matchline" id="matchLine">PETRIOLESE vs AVVERSARIO</div>
     <div class="subline" id="matchWhen"></div>
   </div>
 </header>
 
+<!-- Pulsanti condivisione -->
+<div class="sharebar">
+  <button id="btnShare">Condividi 11 (mobile)</button>
+  <button id="btnDownload">Scarica immagine</button>
+  <button id="btnShareFB">Condividi link su Facebook</button>
+</div>
+
 <main class="wrap">
   <section class="board">
     <div class="pitch" id="pitch">
       <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
     </div>
-
     <aside class="side">
       <div class="card">
         <div class="bench" id="bench"></div>
@@ -107,9 +131,10 @@
 
 <script>
   /* ====== CONFIG ====== */
-  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';  // tuo ID file
   const META_GID = '254048258';
   const DIST_GID = '116187224';
+
   const PUBLISHED_META_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
   const PUBLISHED_DIST_URL =
@@ -126,6 +151,7 @@
 
   const el = s => document.querySelector(s);
 
+  /* ====== COSTRUTTORI URL ====== */
   function gvizJsonURL(fileId, gid){
     return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
   }
@@ -137,10 +163,11 @@
     const parts = u.pathname.split('/');
     const idIdx = parts.findIndex(p=>p==='e')+1;
     const id = parts[idIdx] || '';
-       const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
     return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
   }
 
+  /* ====== PARSER ====== */
   function parseCSV(text){
     let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
     while (t.startsWith('\n')) t = t.slice(1);
@@ -190,35 +217,40 @@
     return rows;
   }
 
+  /* ====== FETCH con 4 tentativi ====== */
   async function fetchRows(metaOrDist){
     const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
     const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
 
+    // 1) GViz JSON
     if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
       try{
         const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz JSON '+res.status);
         const txt = await res.text();
         const rows = parseGVizJSON(txt);
-        if (rows.length){ console.log('OK GViz JSON', metaOrDist, rows.length); return rows; }
+        if (rows.length){ return rows; }
       }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
+      // 2) GViz CSV
       try{
         const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz CSV '+res.status);
         const txt = await res.text();
         const rows = parseCSV(txt);
-        if (rows.length){ console.log('OK GViz CSV', metaOrDist, rows.length); return rows; }
+        if (rows.length){ return rows; }
       }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
     }
 
+    // 3) CSV “pub”
     try{
       const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
       if (!res.ok) throw new Error('PUB CSV '+res.status);
       const txt = await res.text();
       const rows = parseCSV(txt);
-      if (rows.length){ console.log('OK PUB CSV', metaOrDist, rows.length); return rows; }
+      if (rows.length){ return rows; }
     }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
 
+    // 4) pubhtml → parse tabella
     const htmlRes = await fetch(pub, {cache:'no-store'});
     if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
     const html = await htmlRes.text();
@@ -239,10 +271,10 @@
       cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
       if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
     });
-    console.log('OK PUBHTML', metaOrDist, out.length);
     return out;
   }
 
+  /* ====== NORMALIZZAZIONE ====== */
   function normalizeMeta(rows){
     const out={};
     if (!rows || !rows.length) return out;
@@ -296,6 +328,7 @@
   }
   const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
 
+  /* ====== ANTI-OVERLAP ====== */
   function distributeNoOverlap(){
     const pitch = el('#pitch');
     const rect = pitch.getBoundingClientRect();
@@ -337,13 +370,14 @@
     });
   }
 
+  /* ====== RENDER ====== */
   function renderAll(meta, byNum){
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'logo.png';
     el('#matchLine').textContent=`PETRIOLESE vs ${opp}`; // resta nascosto
-    const oppInline = el('#opponentInline'); if (oppInline) oppInline.textContent = opp;  /* <— nuova riga */
+    const oppInline = el('#opponentInline'); if (oppInline) oppInline.textContent = opp;  // <-- scrive l'avversario in topbar
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
 
@@ -380,6 +414,7 @@
     requestAnimationFrame(distributeNoOverlap);
   }
 
+  /* ====== INIT ====== */
   (async function init(){
     try{
       const [metaRows,distRows]=await Promise.all([
@@ -396,6 +431,77 @@
       renderAll({}, new Map());
     }
   })();
+</script>
+
+<!-- ===== Script condivisione/PNG & Facebook link ===== -->
+<script>
+(function(){
+  async function makeLineupImage(){
+    const target = document.querySelector('.board'); // oppure '.pitch' per solo campo
+    if(!target) throw new Error('Area da catturare non trovata');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#0b0f0c',
+      scale: window.devicePixelRatio > 1 ? 2 : 1,
+      useCORS: true,
+      logging: false
+    });
+    return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+  }
+
+  function downloadPng(blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const opp = (document.getElementById('opponentInline')?.textContent
+                 || document.getElementById('matchLine')?.textContent?.replace(/^.*vs\s*/i,'')
+                 || 'avversario').trim();
+    a.href = url;
+    a.download = `petriolese_vs_${opp.replace(/\s+/g,'_').toLowerCase()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function shareOnMobile(){
+    try{
+      const blob = await makeLineupImage();
+      const file = new File([blob], 'petriolese_lineup.png', {type:'image/png'});
+      if (navigator.canShare && navigator.canShare({files:[file]})) {
+        await navigator.share({
+          files: [file],
+          title: '11 titolare Petriolese',
+          text: 'Forza Petriolese! 💙❤️'
+        });
+      } else {
+        downloadPng(blob);
+        alert('Condivisione nativa non supportata. Ho scaricato l’immagine: caricala su Instagram/Facebook.');
+      }
+    }catch(e){
+      console.error(e);
+      alert('Impossibile generare l’immagine. Riprova.');
+    }
+  }
+
+  async function handleDownload(){
+    try{
+      const blob = await makeLineupImage();
+      downloadPng(blob);
+    }catch(e){
+      console.error(e);
+      alert('Errore nel download dell’immagine.');
+    }
+  }
+
+  function shareFacebookLink(){
+    const liveUrl = new URL('live.html', location.href).href;
+    const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(liveUrl);
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
+  }
+
+  document.getElementById('btnShare')?.addEventListener('click', shareOnMobile);
+  document.getElementById('btnDownload')?.addEventListener('click', handleDownload);
+  document.getElementById('btnShareFB')?.addEventListener('click', shareFacebookLink);
+})();
 </script>
 </body>
 </html>
