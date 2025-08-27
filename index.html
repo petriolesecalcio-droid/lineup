@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#0b0f0c">
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="dns-prefetch" href="https://docs.google.com">
+
+<!-- html2canvas per la cattura PNG -->
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
   :root{
     --club-red:#e11d48; --club-blue:#1d4ed8;
@@ -16,36 +20,64 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  img{max-width:100%;height:auto}
 
-  /* ===== TOPBAR (tutto su una riga, centrato) ===== */
+  /* ===== TOPBAR (tutto su una riga centrata) ===== */
   .topbar{
     width:100%;
-    display:flex;                 /* <— prima era grid */
-    justify-content:center;       /* centrato orizzontale */
+    display:flex;
+    justify-content:center;
     align-items:center;
     gap:12px;
-    padding:12px 16px;
+    padding:10px 12px;
     border-bottom:2px solid rgba(29,78,216,.35)
   }
   .brand{display:flex;align-items:center;gap:10px}
   .brand img{width:42px;height:42px;object-fit:contain}
-  .brand .club{font-weight:900;letter-spacing:.3px}
-
-  .vs-img{height:28px;width:auto;display:block}
-  .opponent{font-weight:900;text-transform:uppercase}
-
-  .matchline{display:none}  /* la teniamo ma nascosta per compatibilità */
-  .subline{display:none}    /* nascondo la data per avere una sola riga */
+  .brand .club{font-weight:900;letter-spacing:.3px;white-space:nowrap}
+  .vs-img{height:26px;width:auto;display:block}
+  .opponent{font-weight:900;text-transform:uppercase;white-space:nowrap}
+  .matchline{display:none}
+  .subline{display:none}
   @media (max-width:520px){
     .brand .club{font-size:14px}
     .vs-img{height:22px}
     .opponent{font-size:14px}
   }
-  /* ================================================ */
+
+  /* ===== Barra icone condividi ===== */
+  .sharebar{
+    display:flex;gap:14px;justify-content:center;align-items:center;
+    padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .iconbtn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.06);cursor:pointer;padding:8px;
+  }
+  .iconbtn:hover{filter:brightness(1.08)}
+  .iconbtn img{width:24px;height:24px;display:block}
+
+  /* ===== Intestazione "match strap" (per immagini Instagram) ===== */
+  .matchstrap{
+    display:flex;justify-content:center;align-items:center;gap:10px;
+    margin:8px auto 12px auto; text-align:center;
+    font-weight:900;
+  }
+  .matchstrap img.logo{height:38px;width:auto}
+  .matchstrap .club{white-space:nowrap}
+  .matchstrap .club .red{color:var(--club-red)}
+  .matchstrap .club .blue{color:var(--club-blue)}
+  .matchstrap img.vs{height:24px;width:auto}
+  .matchstrap .opp{white-space:nowrap;text-transform:uppercase}
 
   .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
   .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
   @media (min-width:860px){.board{grid-template-columns:minmax(300px,520px) 1fr;align-items:start;gap:20px}}
+
+  /* Blocchi catturabili per Instagram */
+  .capture{background:linear-gradient(180deg, #0b0f0c, #0b0f0c);padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.06)}
+  .capture .title{display:none}
 
   .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
   .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -60,56 +92,124 @@
   .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
   .title{font-weight:800;letter-spacing:.2px;font-size:14px;color:#fff}
 
+  /* Panchina */
   .bench{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(84px,22vw,140px),1fr));gap:14px;justify-content:center;max-width:min(100%,520px);margin:8px auto 0}
   .bench .item{display:grid;grid-template-rows:auto auto auto;justify-items:center;gap:6px;position:relative}
-  .bench .num-badge{position:relative;top:0;transform:none;background:var(--club-blue);color:#fff;border:2px solid rgba(255,255,255,.7);border-radius:999px;padding:3px 10px;font-weight:900;font-size:12px;line-height:1}
-  .bench .avatar{width:clamp(64px,18vw,110px);height:clamp(64px,18vw,110px);border-radius:999px;overflow:hidden;background:var(--bench);border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center}
+  /* avatar circolare con badge dentro in alto a destra */
+  .bench .avatar{position:relative;width:clamp(64px,18vw,110px);height:clamp(64px,18vw,110px);border-radius:999px;overflow:hidden;background:var(--bench);border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center}
   .bench .avatar img{width:100%;height:100%;object-fit:cover}
+  .bench .num-badge{
+    position:absolute; top:6px; right:6px; transform:none;
+    background:var(--club-blue); color:#fff; border:2px solid rgba(255,255,255,.7);
+    border-radius:999px; padding:3px 8px; font-weight:900; font-size:12px; line-height:1; z-index:3;
+    max-width:80%; white-space:nowrap;
+  }
   .bench .name{font-size:12px;text-align:center;color:#e5e7eb;white-space:normal;word-break:break-word;line-height:1.05}
+
   .notice{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+
+  /* Modal Instagram */
+  .modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
+    align-items:center;justify-content:center;padding:16px;z-index:1000;
+  }
+  .modal.open{display:flex}
+  .modal .box{
+    background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;max-width:360px;width:100%;
+    display:grid;gap:10px; text-align:center;
+  }
+  .modal .box h3{margin:0 0 6px;font-size:16px}
+  .modal .box .row{display:flex;gap:10px;justify-content:center}
+  .modal .box button{
+    background:linear-gradient(90deg,var(--club-red),var(--club-blue)); color:#fff; border:0; border-radius:10px;
+    padding:8px 12px; font-weight:800; cursor:pointer;
+  }
 </style>
 </head>
 <body>
 <header class="topbar">
-  <!-- brand (logo + Petriolese Calcio) -->
   <div class="brand">
     <img id="clubLogo" src="logo.png" alt="Logo Petriolese" onerror="this.style.display='none'"/>
     <div class="club">Petriolese Calcio</div>
   </div>
-
-  <!-- VS immagine -->
   <img class="vs-img" src="vs_battle.png" alt="VS" />
-
-  <!-- Avversario dal Google Sheet -->
   <div id="opponentInline" class="opponent">AVVERSARIO</div>
 
-  <!-- blocco originale (lo tengo, ma nascosto per compatibilità con lo script) -->
+  <!-- blocco originale (nascosto per compatibilità) -->
   <div>
     <div class="matchline" id="matchLine">PETRIOLESE vs AVVERSARIO</div>
     <div class="subline" id="matchWhen"></div>
   </div>
 </header>
 
+<!-- ICONCINE CONDIVISIONE -->
+<div class="sharebar">
+  <button class="iconbtn" id="btnIG" title="Instagram">
+    <img src="Instagram_logo_2022.svg" alt="Instagram">
+  </button>
+  <button class="iconbtn" id="btnFB" title="Facebook">
+    <img src="2023_Facebook_icon.svg" alt="Facebook">
+  </button>
+  <button class="iconbtn" id="btnShare" title="Condividi">
+    <img src="share.png" alt="Condividi">
+  </button>
+</div>
+
 <main class="wrap">
   <section class="board">
-    <div class="pitch" id="pitch">
-      <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
+    <div>
+      <!-- Sezione catturabile per Instagram: XI TITOLARI -->
+      <section class="capture" id="capture-xi">
+        <div class="matchstrap">
+          <img class="logo" src="logo.png" alt="Logo">
+          <div class="club"><span class="red">PETRIOLESE</span> <span class="blue">CALCIO</span></div>
+          <img class="vs" src="vs_battle.png" alt="VS">
+          <div class="opp" id="strapOppXI">AVVERSARIO</div>
+        </div>
+        <div class="pitch" id="pitch">
+          <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
+        </div>
+      </section>
     </div>
 
     <aside class="side">
       <div class="card">
-        <div class="bench" id="bench"></div>
+        <!-- Sezione catturabile per Instagram: PANCHINA -->
+        <section class="capture" id="capture-bench">
+          <div class="matchstrap">
+            <img class="logo" src="logo.png" alt="Logo">
+            <div class="club"><span class="red">PETRIOLESE</span> <span class="blue">CALCIO</span></div>
+            <img class="vs" src="vs_battle.png" alt="VS">
+            <div class="opp" id="strapOppBENCH">AVVERSARIO</div>
+          </div>
+          <div class="bench" id="bench"></div>
+        </section>
+
         <div class="notice" id="notice">Carico i dati…</div>
       </div>
     </aside>
   </section>
 </main>
 
+<!-- Modal Instagram: scelta formato -->
+<div class="modal" id="igModal" aria-hidden="true">
+  <div class="box">
+    <h3>Condividi su Instagram</h3>
+    <div>Seleziona il formato:</div>
+    <div class="row">
+      <button id="igStoryBtn">Storia (1080×1920)</button>
+      <button id="igFeedBtn">Feed/Reel (1080×1350)</button>
+    </div>
+    <small style="color:var(--muted)">L’app di Instagram deciderà dove pubblicare; da web non possiamo forzare Storia/Reel. Qui prepariamo i PNG nel formato corretto.</small>
+  </div>
+</div>
+
 <script>
   /* ====== CONFIG ====== */
   const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
   const META_GID = '254048258';
   const DIST_GID = '116187224';
+
   const PUBLISHED_META_URL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
   const PUBLISHED_DIST_URL =
@@ -126,6 +226,7 @@
 
   const el = s => document.querySelector(s);
 
+  /* ====== COSTRUTTORI URL ====== */
   function gvizJsonURL(fileId, gid){
     return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
   }
@@ -137,10 +238,11 @@
     const parts = u.pathname.split('/');
     const idIdx = parts.findIndex(p=>p==='e')+1;
     const id = parts[idIdx] || '';
-       const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
     return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
   }
 
+  /* ====== PARSER ====== */
   function parseCSV(text){
     let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
     while (t.startsWith('\n')) t = t.slice(1);
@@ -182,43 +284,47 @@
     const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
     const rows = json.table.rows.map(r => {
       const obj={};
-      r.c.forEach((cell,i)=>{
-        obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : '';
+      r.c.forEach((cell,i)=>{ obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : '';
       });
       return obj;
     });
     return rows;
   }
 
+  /* ====== FETCH con fallback ====== */
   async function fetchRows(metaOrDist){
     const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
     const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
 
+    // 1) GViz JSON
     if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
       try{
         const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz JSON '+res.status);
         const txt = await res.text();
         const rows = parseGVizJSON(txt);
-        if (rows.length){ console.log('OK GViz JSON', metaOrDist, rows.length); return rows; }
+        if (rows.length){ return rows; }
       }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
+      // 2) GViz CSV
       try{
         const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz CSV '+res.status);
         const txt = await res.text();
         const rows = parseCSV(txt);
-        if (rows.length){ console.log('OK GViz CSV', metaOrDist, rows.length); return rows; }
+        if (rows.length){ return rows; }
       }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
     }
 
+    // 3) CSV pubblicato
     try{
       const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
       if (!res.ok) throw new Error('PUB CSV '+res.status);
       const txt = await res.text();
       const rows = parseCSV(txt);
-      if (rows.length){ console.log('OK PUB CSV', metaOrDist, rows.length); return rows; }
+      if (rows.length){ return rows; }
     }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
 
+    // 4) Pubhtml: parse della tabella
     const htmlRes = await fetch(pub, {cache:'no-store'});
     if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
     const html = await htmlRes.text();
@@ -239,10 +345,10 @@
       cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
       if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
     });
-    console.log('OK PUBHTML', metaOrDist, out.length);
     return out;
   }
 
+  /* ====== NORMALIZE ====== */
   function normalizeMeta(rows){
     const out={};
     if (!rows || !rows.length) return out;
@@ -296,6 +402,7 @@
   }
   const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
 
+  /* ====== ANTI-OVERLAP ====== */
   function distributeNoOverlap(){
     const pitch = el('#pitch');
     const rect = pitch.getBoundingClientRect();
@@ -337,13 +444,16 @@
     });
   }
 
+  /* ====== RENDER ====== */
   function renderAll(meta, byNum){
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'logo.png';
-    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`; // resta nascosto
-    const oppInline = el('#opponentInline'); if (oppInline) oppInline.textContent = opp;  /* <— nuova riga */
+    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
+    el('#opponentInline').textContent = opp;
+    el('#strapOppXI').textContent = opp;
+    el('#strapOppBENCH').textContent = opp;
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
 
@@ -368,10 +478,14 @@
       {code:'ALL', name:'Castellani', photo:''} ];
     benchItems.forEach(item=>{
       const card=document.createElement('div'); card.className='item';
-      const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=item.code; card.appendChild(nb);
+
       const av=document.createElement('div'); av.className='avatar';
       if(item.photo){ const img=document.createElement('img'); img.src=item.photo; img.alt=item.name; img.onerror=()=>img.remove(); av.appendChild(img); }
+      // numero dentro al cerchio, in alto a destra
+      const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=item.code; av.appendChild(nb);
+
       card.appendChild(av);
+
       const nm=document.createElement('div'); nm.className='name'; nm.textContent=item.name||''; card.appendChild(nm);
       benchEl.appendChild(card);
     });
@@ -380,6 +494,7 @@
     requestAnimationFrame(distributeNoOverlap);
   }
 
+  /* ====== INIT ====== */
   (async function init(){
     try{
       const [metaRows,distRows]=await Promise.all([
@@ -396,6 +511,143 @@
       renderAll({}, new Map());
     }
   })();
+</script>
+
+<!-- ===== Condivisione ===== -->
+<script>
+(function(){
+  // Modal Instagram
+  const igModal = document.getElementById('igModal');
+  const openIG  = ()=>igModal.classList.add('open');
+  const closeIG = e => { if(e && e.target===igModal) igModal.classList.remove('open'); };
+  igModal.addEventListener('click', closeIG);
+
+  document.getElementById('btnIG')?.addEventListener('click', openIG);
+
+  // Utility
+  async function captureNode(node, scale=2){
+    const canvas = await html2canvas(node, {
+      backgroundColor: '#0b0f0c',
+      scale: scale,
+      useCORS: true,
+      logging: false
+    });
+    return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+  }
+  async function makeImages(){
+    const nodeXI    = document.getElementById('capture-xi');
+    const nodeBench = document.getElementById('capture-bench');
+    if(!nodeXI || !nodeBench) throw new Error('Sezioni da catturare non trovate');
+    const [blobXI, blobBench] = await Promise.all([ captureNode(nodeXI, 2), captureNode(nodeBench, 2) ]);
+    return { blobXI, blobBench };
+  }
+  function blobToImage(blob){
+    return new Promise((resolve,reject)=>{
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = e=>{ URL.revokeObjectURL(url); reject(e); };
+      img.src = url;
+    });
+  }
+  function downloadBlob(blob, name){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Ridimensiona un blob immagine dentro una cornice target (W x H), centrata
+  async function fitInto(blob, W, H, filename){
+    const img = await blobToImage(blob);
+    const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0b0f0c'; ctx.fillRect(0,0,W,H);
+    const s = Math.min(W/img.width, H/img.height);
+    const w = img.width*s, h = img.height*s;
+    const x = (W-w)/2, y=(H-h)/2;
+    ctx.drawImage(img, x, y, w, h);
+    const out = await new Promise(r=>canvas.toBlob(r,'image/png'));
+    return new File([out], filename, {type:'image/png'});
+  }
+
+  // IG: Storia 1080×1920
+  document.getElementById('igStoryBtn')?.addEventListener('click', async ()=>{
+    try{
+      const { blobXI, blobBench } = await makeImages();
+      const fileXI    = await fitInto(blobXI,    1080, 1920, 'petriolese_xi_story.png');
+      const fileBench = await fitInto(blobBench, 1080, 1920, 'petriolese_panchina_story.png');
+      const files=[fileXI,fileBench];
+      if (navigator.canShare && navigator.canShare({files})) {
+        await navigator.share({ files, title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      } else {
+        downloadBlob(fileXI,    fileXI.name);
+        downloadBlob(fileBench, fileBench.name);
+        alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Storia.');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la generazione immagini Storia.'); }
+    igModal.classList.remove('open');
+  });
+
+  // IG: Feed/Reel 1080×1350 (portrait)
+  document.getElementById('igFeedBtn')?.addEventListener('click', async ()=>{
+    try{
+      const { blobXI, blobBench } = await makeImages();
+      const fileXI    = await fitInto(blobXI,    1080, 1350, 'petriolese_xi_feed.png');
+      const fileBench = await fitInto(blobBench, 1080, 1350, 'petriolese_panchina_feed.png');
+      const files=[fileXI,fileBench];
+      if (navigator.canShare && navigator.canShare({files})) {
+        await navigator.share({ files, title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      } else {
+        downloadBlob(fileXI,    fileXI.name);
+        downloadBlob(fileBench, fileBench.name);
+        alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Feed.');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la generazione immagini Feed.'); }
+    igModal.classList.remove('open');
+  });
+
+  // Facebook (link a live.html)
+  document.getElementById('btnFB')?.addEventListener('click', ()=>{
+    const liveUrl = new URL('live.html', location.href).href;
+    const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(liveUrl);
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
+  });
+
+  // Condividi generico: collage 1080x1920 (story)
+  document.getElementById('btnShare')?.addEventListener('click', async ()=>{
+    try{
+      const { blobXI, blobBench } = await makeImages();
+      const imgXI = await blobToImage(blobXI);
+      const imgB  = await blobToImage(blobBench);
+      const W=1080, H=1920, pad=40, halfH=(H-pad*3)/2;
+
+      const canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+      const ctx=canvas.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
+
+      const sXI = Math.min((W - pad*2)/imgXI.width, halfH/imgXI.height);
+      const wXI = imgXI.width * sXI, hXI = imgXI.height* sXI;
+      const xXI = (W - wXI)/2, yXI = pad;
+
+      const sB = Math.min((W - pad*2)/imgB.width, halfH/imgB.height);
+      const wB = imgB.width * sB, hB = imgB.height* sB;
+      const xB = (W - wB)/2, yB = yXI + hXI + pad;
+
+      ctx.drawImage(imgXI, xXI, yXI, wXI, hXI);
+      ctx.drawImage(imgB , xB , yB , wB , hB );
+
+      const blobCollage = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      const fileCollage = new File([blobCollage], 'petriolese_matchday_story.png', {type:'image/png'});
+      if (navigator.canShare && navigator.canShare({files:[fileCollage]})) {
+        await navigator.share({ files:[fileCollage], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      } else {
+        downloadBlob(blobCollage, 'petriolese_matchday_story.png');
+        alert('Condivisione nativa non supportata. Ho scaricato il collage (Story).');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la creazione del collage.'); }
+  });
+})();
 </script>
 </body>
 </html>
