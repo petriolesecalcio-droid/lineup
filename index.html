@@ -45,39 +45,34 @@
     .opponent{font-size:14px}
   }
 
-  /* ===== Barra icone condividi ===== */
-  .sharebar{
-    display:flex;gap:14px;justify-content:center;align-items:center;
-    padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);
+  /* ===== Toolbar condivisione: sinistra icone, destra link IG ===== */
+  .toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)
   }
+  .tools-left{display:flex;gap:12px;align-items:center}
+  .tools-right{display:flex;gap:8px;align-items:center}
   .iconbtn{
     display:inline-flex;align-items:center;justify-content:center;
     width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
     background:rgba(255,255,255,.06);cursor:pointer;padding:8px;
   }
   .iconbtn:hover{filter:brightness(1.08)}
-  .iconbtn img{width:24px;height:24px;display:block}
-
-  /* ===== Intestazione "match strap" (per immagini Instagram) ===== */
-  .matchstrap{
-    display:flex;justify-content:center;align-items:center;gap:10px;
-    margin:8px auto 12px auto; text-align:center;
-    font-weight:900;
+  .iconbtn svg{width:24px;height:24px;display:block}
+  .ig-link{
+    display:inline-flex;align-items:center;gap:8px;
+    background:transparent;border:1px solid rgba(255,255,255,.18);
+    color:#fff;border-radius:12px;padding:8px 12px;text-decoration:none;font-weight:800;
   }
-  .matchstrap img.logo{height:38px;width:auto}
-  .matchstrap .club{white-space:nowrap}
-  .matchstrap .club .red{color:var(--club-red)}
-  .matchstrap .club .blue{color:var(--club-blue)}
-  .matchstrap img.vs{height:24px;width:auto}
-  .matchstrap .opp{white-space:nowrap;text-transform:uppercase}
+  .ig-link:hover{filter:brightness(1.08)}
+  .ig-link svg{width:18px;height:18px}
 
   .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
   .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
   @media (min-width:860px){.board{grid-template-columns:minmax(300px,520px) 1fr;align-items:start;gap:20px}}
 
-  /* Blocchi catturabili per Instagram */
-  .capture{background:linear-gradient(180deg, #0b0f0c, #0b0f0c);padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.06)}
-  .capture .title{display:none}
+  /* Blocchi catturabili (senza header: lo disegniamo in overlay in fase di share) */
+  .capture{background:#0b0f0c;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.06)}
 
   .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
   .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -94,36 +89,20 @@
 
   /* Panchina */
   .bench{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(84px,22vw,140px),1fr));gap:14px;justify-content:center;max-width:min(100%,520px);margin:8px auto 0}
-  .bench .item{display:grid;grid-template-rows:auto auto auto;justify-items:center;gap:6px;position:relative}
-  /* avatar circolare con badge dentro in alto a destra */
-  .bench .avatar{position:relative;width:clamp(64px,18vw,110px);height:clamp(64px,18vw,110px);border-radius:999px;overflow:hidden;background:var(--bench);border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center}
+  .bench .item{display:grid;grid-template-rows:auto auto;justify-items:center;gap:6px;position:relative;overflow:visible}
+  .bench .avatar-wrap{position:relative;overflow:visible;display:grid;place-items:center}
+  .bench .avatar{width:clamp(64px,18vw,110px);height:clamp(64px,18vw,110px);border-radius:999px;overflow:hidden;background:var(--bench);border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center}
   .bench .avatar img{width:100%;height:100%;object-fit:cover}
-  .bench .num-badge{
-    position:absolute; top:6px; right:6px; transform:none;
+  /* Numero FUORI dal cerchio, in alto a destra, ma sempre visibile */
+  .bench .num-out{
+    position:absolute; top:-6px; right:-6px;
     background:var(--club-blue); color:#fff; border:2px solid rgba(255,255,255,.7);
     border-radius:999px; padding:3px 8px; font-weight:900; font-size:12px; line-height:1; z-index:3;
-    max-width:80%; white-space:nowrap;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));
   }
   .bench .name{font-size:12px;text-align:center;color:#e5e7eb;white-space:normal;word-break:break-word;line-height:1.05}
 
   .notice{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
-
-  /* Modal Instagram */
-  .modal{
-    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
-    align-items:center;justify-content:center;padding:16px;z-index:1000;
-  }
-  .modal.open{display:flex}
-  .modal .box{
-    background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;max-width:360px;width:100%;
-    display:grid;gap:10px; text-align:center;
-  }
-  .modal .box h3{margin:0 0 6px;font-size:16px}
-  .modal .box .row{display:flex;gap:10px;justify-content:center}
-  .modal .box button{
-    background:linear-gradient(90deg,var(--club-red),var(--club-blue)); color:#fff; border:0; border-radius:10px;
-    padding:8px 12px; font-weight:800; cursor:pointer;
-  }
 </style>
 </head>
 <body>
@@ -142,30 +121,55 @@
   </div>
 </header>
 
-<!-- ICONCINE CONDIVISIONE -->
-<div class="sharebar">
-  <button class="iconbtn" id="btnIG" title="Instagram">
-    <img src="Instagram_logo_2022.svg" alt="Instagram">
-  </button>
-  <button class="iconbtn" id="btnFB" title="Facebook">
-    <img src="2023_Facebook_icon.svg" alt="Facebook">
-  </button>
-  <button class="iconbtn" id="btnShare" title="Condividi">
-    <img src="share.png" alt="Condividi">
-  </button>
+<!-- TOOLBAR: sinistra condivisione, destra link IG -->
+<div class="toolbar">
+  <div class="tools-left">
+    <!-- Instagram (apre menu formati) -->
+    <button class="iconbtn" id="btnIG" title="Instagram" aria-label="Condividi su Instagram">
+      <!-- Material-like Instagram -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+        <circle cx="12" cy="12" r="3.5"></circle>
+        <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"></circle>
+      </svg>
+    </button>
+    <!-- Facebook -->
+    <button class="iconbtn" id="btnFB" title="Facebook" aria-label="Condividi su Facebook">
+      <!-- Material-like Facebook -->
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M13.5 9H15V6.5h-1.5A3.5 3.5 0 0 0 10 10v2H8v2.5h2V21h3v-6h2l.5-2.5H13v-2a1 1 0 0 1 1-1Z"/>
+        <rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+    <!-- Condividi nativo / Collage -->
+    <button class="iconbtn" id="btnShare" title="Condividi" aria-label="Condividi">
+      <!-- Material-like Share -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <path d="M8.9 10.9l6.2-3.6M8.9 13.1l6.2 3.6"></path>
+      </svg>
+    </button>
+  </div>
+  <div class="tools-right">
+    <a class="ig-link" href="https://www.instagram.com/asd_petriolese_calcio/" target="_blank" rel="noopener">
+      <!-- piccolo logo IG -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+        <circle cx="12" cy="12" r="3.2"></circle>
+        <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"></circle>
+      </svg>
+      VISITA IL NOSTRO IG
+    </a>
+  </div>
 </div>
 
 <main class="wrap">
   <section class="board">
     <div>
-      <!-- Sezione catturabile per Instagram: XI TITOLARI -->
+      <!-- Sezione catturabile per Instagram: XI TITOLARI (senza intestazione) -->
       <section class="capture" id="capture-xi">
-        <div class="matchstrap">
-          <img class="logo" src="logo.png" alt="Logo">
-          <div class="club"><span class="red">PETRIOLESE</span> <span class="blue">CALCIO</span></div>
-          <img class="vs" src="vs_battle.png" alt="VS">
-          <div class="opp" id="strapOppXI">AVVERSARIO</div>
-        </div>
         <div class="pitch" id="pitch">
           <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
         </div>
@@ -174,14 +178,8 @@
 
     <aside class="side">
       <div class="card">
-        <!-- Sezione catturabile per Instagram: PANCHINA -->
+        <!-- Sezione catturabile per Instagram: PANCHINA (senza intestazione) -->
         <section class="capture" id="capture-bench">
-          <div class="matchstrap">
-            <img class="logo" src="logo.png" alt="Logo">
-            <div class="club"><span class="red">PETRIOLESE</span> <span class="blue">CALCIO</span></div>
-            <img class="vs" src="vs_battle.png" alt="VS">
-            <div class="opp" id="strapOppBENCH">AVVERSARIO</div>
-          </div>
           <div class="bench" id="bench"></div>
         </section>
 
@@ -200,7 +198,7 @@
       <button id="igStoryBtn">Storia (1080×1920)</button>
       <button id="igFeedBtn">Feed/Reel (1080×1350)</button>
     </div>
-    <small style="color:var(--muted)">L’app di Instagram deciderà dove pubblicare; da web non possiamo forzare Storia/Reel. Qui prepariamo i PNG nel formato corretto.</small>
+    <small style="color:var(--muted)">Da web non si può forzare Storia/Reel: prepariamo i PNG nel formato giusto e poi scegli dall’app.</small>
   </div>
 </div>
 
@@ -226,13 +224,9 @@
 
   const el = s => document.querySelector(s);
 
-  /* ====== COSTRUTTORI URL ====== */
-  function gvizJsonURL(fileId, gid){
-    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
-  }
-  function gvizCsvURL(fileId, gid){
-    return `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
-  }
+  /* ====== HELPERS URL ====== */
+  const gvizJsonURL = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
+  const gvizCsvURL  = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
   function pubCsvURL(pubhtmlUrl){
     const u = new URL(pubhtmlUrl);
     const parts = u.pathname.split('/');
@@ -277,15 +271,13 @@
   }
 
   function parseGVizJSON(text){
-    const start = text.indexOf('{');
-    const end   = text.lastIndexOf('}');
+    const start = text.indexOf('{'); const end = text.lastIndexOf('}');
     if (start<0 || end<0) throw new Error('JSON GViz non trovato');
     const json = JSON.parse(text.slice(start, end+1));
     const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
     const rows = json.table.rows.map(r => {
       const obj={};
-      r.c.forEach((cell,i)=>{ obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : '';
-      });
+      r.c.forEach((cell,i)=>{ obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : ''; });
       return obj;
     });
     return rows;
@@ -296,7 +288,6 @@
     const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
     const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
 
-    // 1) GViz JSON
     if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
       try{
         const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
@@ -305,7 +296,6 @@
         const rows = parseGVizJSON(txt);
         if (rows.length){ return rows; }
       }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
-      // 2) GViz CSV
       try{
         const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
         if (!res.ok) throw new Error('GViz CSV '+res.status);
@@ -315,7 +305,6 @@
       }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
     }
 
-    // 3) CSV pubblicato
     try{
       const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
       if (!res.ok) throw new Error('PUB CSV '+res.status);
@@ -324,7 +313,6 @@
       if (rows.length){ return rows; }
     }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
 
-    // 4) Pubhtml: parse della tabella
     const htmlRes = await fetch(pub, {cache:'no-store'});
     if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
     const html = await htmlRes.text();
@@ -445,15 +433,15 @@
   }
 
   /* ====== RENDER ====== */
+  let CURRENT_META = {};
   function renderAll(meta, byNum){
+    CURRENT_META = meta || {};
     const opp = meta['avversario'] || 'AVVERSARIO';
     const when= meta['when'] || meta['data'] || '';
     const logoURL = meta['logourl'] || '';
     el('#clubLogo').src=logoURL||'logo.png';
     el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
     el('#opponentInline').textContent = opp;
-    el('#strapOppXI').textContent = opp;
-    el('#strapOppBENCH').textContent = opp;
     el('#matchWhen').textContent=when;
     if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
 
@@ -479,12 +467,12 @@
     benchItems.forEach(item=>{
       const card=document.createElement('div'); card.className='item';
 
+      const wrap=document.createElement('div'); wrap.className='avatar-wrap';
       const av=document.createElement('div'); av.className='avatar';
       if(item.photo){ const img=document.createElement('img'); img.src=item.photo; img.alt=item.name; img.onerror=()=>img.remove(); av.appendChild(img); }
-      // numero dentro al cerchio, in alto a destra
-      const nb=document.createElement('div'); nb.className='num-badge'; nb.textContent=item.code; av.appendChild(nb);
-
-      card.appendChild(av);
+      const nb=document.createElement('div'); nb.className='num-out'; nb.textContent=item.code; // fuori dal cerchio
+      wrap.appendChild(av); wrap.appendChild(nb);
+      card.appendChild(wrap);
 
       const nm=document.createElement('div'); nm.className='name'; nm.textContent=item.name||''; card.appendChild(nm);
       benchEl.appendChild(card);
@@ -497,10 +485,7 @@
   /* ====== INIT ====== */
   (async function init(){
     try{
-      const [metaRows,distRows]=await Promise.all([
-        fetchRows('meta'),
-        fetchRows('dist')
-      ]);
+      const [metaRows,distRows]=await Promise.all([ fetchRows('meta'), fetchRows('dist') ]);
       const meta=normalizeMeta(metaRows);
       const byNum=normalizeDistinta(distRows);
       renderAll(meta,byNum);
@@ -519,12 +504,11 @@
   // Modal Instagram
   const igModal = document.getElementById('igModal');
   const openIG  = ()=>igModal.classList.add('open');
-  const closeIG = e => { if(e && e.target===igModal) igModal.classList.remove('open'); };
+  const closeIG = e => { if(!e || e.target===igModal) igModal.classList.remove('open'); };
   igModal.addEventListener('click', closeIG);
-
   document.getElementById('btnIG')?.addEventListener('click', openIG);
 
-  // Utility
+  // Helpers
   async function captureNode(node, scale=2){
     const canvas = await html2canvas(node, {
       backgroundColor: '#0b0f0c',
@@ -532,76 +516,115 @@
       useCORS: true,
       logging: false
     });
-    return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
+    return canvas;
   }
-  async function makeImages(){
-    const nodeXI    = document.getElementById('capture-xi');
-    const nodeBench = document.getElementById('capture-bench');
-    if(!nodeXI || !nodeBench) throw new Error('Sezioni da catturare non trovate');
-    const [blobXI, blobBench] = await Promise.all([ captureNode(nodeXI, 2), captureNode(nodeBench, 2) ]);
-    return { blobXI, blobBench };
+  function canvasToFile(canvas, name){ return new Promise(r => canvas.toBlob(b => r(new File([b], name, {type:'image/png'})), 'image/png')); }
+  function downloadFile(file){
+    const url = URL.createObjectURL(file); const a=document.createElement('a');
+    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
-  function blobToImage(blob){
-    return new Promise((resolve,reject)=>{
-      const url = URL.createObjectURL(blob);
-      const img = new Image();
-      img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
-      img.onerror = e=>{ URL.revokeObjectURL(url); reject(e); };
-      img.src = url;
-    });
-  }
-  function downloadBlob(blob, name){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+  function loadImage(src){
+    return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>res(im); im.onerror=rej; im.src=src; });
   }
 
-  // Ridimensiona un blob immagine dentro una cornice target (W x H), centrata
-  async function fitInto(blob, W, H, filename){
-    const img = await blobToImage(blob);
-    const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
+  // Disegna titolo (logo + PETRIOLESE CALCIO + VS + AVVERSARIO) in alto sul canvas
+  async function drawHeaderOverlay(canvas){
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#0b0f0c'; ctx.fillRect(0,0,W,H);
-    const s = Math.min(W/img.width, H/img.height);
-    const w = img.width*s, h = img.height*s;
-    const x = (W-w)/2, y=(H-h)/2;
-    ctx.drawImage(img, x, y, w, h);
-    const out = await new Promise(r=>canvas.toBlob(r,'image/png'));
-    return new File([out], filename, {type:'image/png'});
+    const W = canvas.width; const pad=40;
+    // fascia semi-trasparente
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fillRect(0,0,W,120);
+
+    const logoSrc = (document.getElementById('clubLogo')?.getAttribute('src')) || 'logo.png';
+    const vsSrc   = 'vs_battle.png';
+    const opp     = (document.getElementById('opponentInline')?.textContent||'AVVERSARIO').trim();
+
+    const [logo, vs] = await Promise.all([ loadImage(logoSrc), loadImage(vsSrc) ]);
+    const logoH = 70; const logoW = logo.width * (logoH/logo.height);
+    const vsH   = 42; const vsW   = vs.width * (vsH/vs.height);
+
+    // misure testi
+    ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
+    const club1 = 'PETRIOLESE'; const club2 = ' CALCIO';
+    const club1W = ctx.measureText(club1).width;
+    ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
+    const club2W = ctx.measureText(club2).width;
+
+    ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
+    const oppW = ctx.measureText(opp).width;
+
+    const gap = 16;
+    const totalW = logoW + gap + (club1W+club2W) + gap + vsW + gap + oppW;
+    let x = (W - totalW)/2; const yMid = 70;
+
+    // logo
+    ctx.drawImage(logo, x, yMid - logoH/2, logoW, logoH); x += logoW + gap;
+
+    // PETRIOLESE (rosso) + CALCIO (blu)
+    ctx.textBaseline='middle';
+    ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
+    ctx.fillStyle='#e11d48'; ctx.fillText(club1, x, yMid); x += club1W;
+    ctx.fillStyle='#1d4ed8'; ctx.fillText(club2, x, yMid); x += club2W + gap;
+
+    // VS
+    ctx.drawImage(vs, x, yMid - vsH/2, vsW, vsH); x += vsW + gap;
+
+    // Avversario
+    ctx.fillStyle='#ffffff'; ctx.fillText(opp, x, yMid);
   }
 
-  // IG: Storia 1080×1920
+  // Fit in una cornice target (W x H), centrato
+  async function fitCanvasTo(canvas, W, H){
+    const out = document.createElement('canvas'); out.width=W; out.height=H;
+    const ctx=out.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
+    const s = Math.min(W/canvas.width, H/canvas.height);
+    const w = canvas.width*s, h = canvas.height*s;
+    const x = (W-w)/2, y=(H-h)/2;
+    ctx.drawImage(canvas, x, y, w, h);
+    return out;
+  }
+
+  async function generatePair(){
+    const xi = document.getElementById('capture-xi');
+    const bench = document.getElementById('capture-bench');
+    if(!xi || !bench) throw new Error('Sezioni non trovate');
+    let c1 = await captureNode(xi, 2);
+    let c2 = await captureNode(bench, 2);
+    await drawHeaderOverlay(c1);
+    await drawHeaderOverlay(c2);
+    return [c1, c2];
+  }
+
+  // IG Story (1080x1920)
   document.getElementById('igStoryBtn')?.addEventListener('click', async ()=>{
     try{
-      const { blobXI, blobBench } = await makeImages();
-      const fileXI    = await fitInto(blobXI,    1080, 1920, 'petriolese_xi_story.png');
-      const fileBench = await fitInto(blobBench, 1080, 1920, 'petriolese_panchina_story.png');
-      const files=[fileXI,fileBench];
-      if (navigator.canShare && navigator.canShare({files})) {
-        await navigator.share({ files, title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      const [c1,c2] = await generatePair();
+      const s1 = await fitCanvasTo(c1,1080,1920);
+      const s2 = await fitCanvasTo(c2,1080,1920);
+      const f1 = await canvasToFile(s1,'petriolese_xi_story.png');
+      const f2 = await canvasToFile(s2,'petriolese_panchina_story.png');
+      if (navigator.canShare && navigator.canShare({files:[f1,f2]})) {
+        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
       } else {
-        downloadBlob(fileXI,    fileXI.name);
-        downloadBlob(fileBench, fileBench.name);
+        downloadFile(f1); downloadFile(f2);
         alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Storia.');
       }
     }catch(e){ console.error(e); alert('Errore durante la generazione immagini Storia.'); }
     igModal.classList.remove('open');
   });
 
-  // IG: Feed/Reel 1080×1350 (portrait)
+  // IG Feed/Reel (1080x1350)
   document.getElementById('igFeedBtn')?.addEventListener('click', async ()=>{
     try{
-      const { blobXI, blobBench } = await makeImages();
-      const fileXI    = await fitInto(blobXI,    1080, 1350, 'petriolese_xi_feed.png');
-      const fileBench = await fitInto(blobBench, 1080, 1350, 'petriolese_panchina_feed.png');
-      const files=[fileXI,fileBench];
-      if (navigator.canShare && navigator.canShare({files})) {
-        await navigator.share({ files, title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      const [c1,c2] = await generatePair();
+      const s1 = await fitCanvasTo(c1,1080,1350);
+      const s2 = await fitCanvasTo(c2,1080,1350);
+      const f1 = await canvasToFile(s1,'petriolese_xi_feed.png');
+      const f2 = await canvasToFile(s2,'petriolese_panchina_feed.png');
+      if (navigator.canShare && navigator.canShare({files:[f1,f2]})) {
+        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
       } else {
-        downloadBlob(fileXI,    fileXI.name);
-        downloadBlob(fileBench, fileBench.name);
+        downloadFile(f1); downloadFile(f2);
         alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Feed.');
       }
     }catch(e){ console.error(e); alert('Errore durante la generazione immagini Feed.'); }
@@ -615,34 +638,28 @@
     window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
   });
 
-  // Condividi generico: collage 1080x1920 (story)
+  // Condividi generico: collage (story 1080x1920)
   document.getElementById('btnShare')?.addEventListener('click', async ()=>{
     try{
-      const { blobXI, blobBench } = await makeImages();
-      const imgXI = await blobToImage(blobXI);
-      const imgB  = await blobToImage(blobBench);
-      const W=1080, H=1920, pad=40, halfH=(H-pad*3)/2;
+      const [c1,c2] = await generatePair();
+      const W=1080,H=1920,pad=40; const out=document.createElement('canvas'); out.width=W; out.height=H;
+      const ctx=out.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
 
-      const canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
-      const ctx=canvas.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
+      const s1 = await fitCanvasTo(c1, W-pad*2, (H-pad*3)/2);
+      const s2 = await fitCanvasTo(c2, W-pad*2, (H-pad*3)/2);
 
-      const sXI = Math.min((W - pad*2)/imgXI.width, halfH/imgXI.height);
-      const wXI = imgXI.width * sXI, hXI = imgXI.height* sXI;
-      const xXI = (W - wXI)/2, yXI = pad;
+      const x = pad;
+      const y1 = pad;
+      const y2 = y1 + s1.height + pad;
 
-      const sB = Math.min((W - pad*2)/imgB.width, halfH/imgB.height);
-      const wB = imgB.width * sB, hB = imgB.height* sB;
-      const xB = (W - wB)/2, yB = yXI + hXI + pad;
+      ctx.drawImage(s1, x, y1);
+      ctx.drawImage(s2, x, y2);
 
-      ctx.drawImage(imgXI, xXI, yXI, wXI, hXI);
-      ctx.drawImage(imgB , xB , yB , wB , hB );
-
-      const blobCollage = await new Promise(r => canvas.toBlob(r, 'image/png'));
-      const fileCollage = new File([blobCollage], 'petriolese_matchday_story.png', {type:'image/png'});
-      if (navigator.canShare && navigator.canShare({files:[fileCollage]})) {
-        await navigator.share({ files:[fileCollage], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      const file = await canvasToFile(out,'petriolese_matchday_story.png');
+      if (navigator.canShare && navigator.canShare({files:[file]})) {
+        await navigator.share({ files:[file], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
       } else {
-        downloadBlob(blobCollage, 'petriolese_matchday_story.png');
+        downloadFile(file);
         alert('Condivisione nativa non supportata. Ho scaricato il collage (Story).');
       }
     }catch(e){ console.error(e); alert('Errore durante la creazione del collage.'); }
