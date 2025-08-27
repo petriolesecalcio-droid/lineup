@@ -79,12 +79,21 @@
   .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
   .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 
+  /* ===== STARTING XI chip ===== */
+  .starting-chip{
+    position:absolute; left:12px; bottom:12px; z-index:5;
+    background:linear-gradient(90deg,var(--club-red),var(--club-blue));
+    color:#fff; font-weight:900; letter-spacing:.6px;
+    padding:8px 14px; border-radius:999px;
+    box-shadow:0 4px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25);
+    border:0; text-transform:uppercase; font-size:13px;
+  }
+
   /* ===== Titolari ===== */
   .player{position:absolute;transform:translate(-50%,-50%);width:clamp(60px,11.5vw,96px);height:clamp(60px,11.5vw,96px)}
   .player .ballwrap{position:relative;width:100%;height:100%}
   .player .ball{width:100%;height:100%;border-radius:999px;overflow:hidden;border:2px solid rgba(255,255,255,.7);box-shadow:0 6px 16px rgba(0,0,0,.35);background:linear-gradient(90deg,var(--club-red) 0 50%,var(--club-blue) 50% 100%);display:grid;place-items:center;padding:4px}
   .player .ball img{width:100%;height:100%;object-fit:cover;display:block}
-  /* numero FUORI in alto-destra, come panchina */
   .player .num-out{
     position:absolute; top:-6px; right:-6px;
     background:var(--club-blue); color:#fff; border:2px solid rgba(255,255,255,.7);
@@ -189,17 +198,18 @@
 <main class="wrap">
   <section class="board">
     <div>
-      <!-- Sezione catturabile: XI TITOLARI (senza intestazione: la mettiamo in overlay solo per IG) -->
+      <!-- Sezione catturabile: XI TITOLARI (mostra chip STARTING XI; l'header si aggiunge solo in fase di export) -->
       <section class="capture" id="capture-xi">
         <div class="pitch" id="pitch">
           <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
+          <div class="starting-chip">STARTING XI</div>
         </div>
       </section>
     </div>
 
     <aside class="side">
       <div class="card">
-        <!-- Sezione catturabile: PANCHINA (senza intestazione) -->
+        <!-- Sezione catturabile: PANCHINA (nessuna chip) -->
         <section class="capture" id="capture-bench">
           <div class="bench" id="bench"></div>
         </section>
@@ -511,7 +521,7 @@
   })();
 </script>
 
-<!-- ===== Condivisione (solo header per overlay; niente banner/hashtag/watermark) ===== -->
+<!-- ===== Condivisione (header overlay; la chip STARTING XI è nel DOM e viene catturata) ===== -->
 <script>
 (function(){
   const igModal = document.getElementById('igModal');
@@ -527,7 +537,7 @@
       useCORS: true,
       logging: false
     });
-    return canvas;
+    return canvas; // la chip STARTING XI è già dentro al canvas
   }
   function canvasToFile(canvas, name){ return new Promise(r => canvas.toBlob(b => r(new File([b], name, {type:'image/png'})), 'image/png')); }
   function downloadFile(file){
@@ -541,10 +551,7 @@
   // Header overlay: solo logo + "PETRIOLESE CALCIO" + VS + OPP
   async function drawHeaderOverlay(canvas){
     const ctx = canvas.getContext('2d');
-    const W = canvas.width;
-    const headerH = 120;
-
-    // fascia scura
+    const W = canvas.width; const headerH = 120;
     ctx.fillStyle = 'rgba(0,0,0,.38)';
     ctx.fillRect(0,0,W,headerH);
 
@@ -558,7 +565,6 @@
     const logoH = 70; const logoW = logo.width * (logoH/logo.height);
     const vsH   = 42; const vsW   = vs.width * (vsH/vs.height);
 
-    // misure testi
     ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
     const club1='PETRIOLESE', club2=' CALCIO';
     const club1W=ctx.measureText(club1).width, club2W=ctx.measureText(club2).width, oppW=ctx.measureText(opp).width;
@@ -603,7 +609,7 @@
     igModal.classList.remove('open');
   });
 
-  // ===== IG: Feed/Reel (due foto, entrambe con header) =====
+  // ===== IG: Feed/Reel (due foto, entrambe con header; aggiungiamo testo con hashtag) =====
   document.getElementById('igFeedBtn')?.addEventListener('click', async ()=>{
     try{
       const xi    = document.getElementById('capture-xi');
@@ -635,7 +641,7 @@
     window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
   });
 
-  // ===== Condividi generico: collage story (senza banner/hashtag/watermark) =====
+  // ===== Condividi generico: collage story (con header su entrambi) =====
   document.getElementById('btnShare')?.addEventListener('click', async ()=>{
     try{
       const xi    = document.getElementById('capture-xi');
