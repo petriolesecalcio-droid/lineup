@@ -81,12 +81,12 @@
 
   /* ===== STARTING XI chip ===== */
   .starting-chip{
-    position:absolute; left:12px; top:12px; z-index:5;
+    position:absolute; left:12px; bottom:12px; z-index:5;
     background:linear-gradient(90deg,var(--club-red),var(--club-blue));
     color:#fff; font-weight:900; letter-spacing:.6px;
     padding:8px 14px; border-radius:999px;
     box-shadow:0 4px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25);
-    border:0; text-transform:uppercase; font-size:13px;
+    border:0; text-transform:uppercase; font-size:10px;
   }
 
   /* ===== Titolari ===== */
@@ -247,9 +247,9 @@
   const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
   const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
   const coords3412 = [
-    [50,90], [80,68], [50,71], [20,68],
-    [88,43], [62,49], [38,49], [12,43],
-    [50,30], [62,11], [38,11]
+    [50,88], [80,66], [50,69], [20,66],
+    [88,41], [62,47], [38,47], [12,41],
+    [50,28], [62,9], [38,9]
   ];
 
   const el = s => document.querySelector(s);
