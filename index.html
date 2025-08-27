@@ -21,7 +21,7 @@
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
   img{max-width:100%;height:auto}
 
-  /* ===== TOPBAR (una riga centrata) ===== */
+  /* ===== TOPBAR ===== */
   .topbar{
     width:100%;
     display:flex;justify-content:center;align-items:center;gap:12px;
@@ -39,7 +39,7 @@
     .opponent{font-size:14px}
   }
 
-  /* ===== Toolbar: sinistra share, destra IG link ===== */
+  /* ===== Toolbar: share a sinistra, link IG a destra ===== */
   .toolbar{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
     padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);
@@ -79,12 +79,12 @@
   .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
   .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 
-  /* ===== Giocatori (titolari) ===== */
+  /* ===== Titolari ===== */
   .player{position:absolute;transform:translate(-50%,-50%);width:clamp(60px,11.5vw,96px);height:clamp(60px,11.5vw,96px)}
   .player .ballwrap{position:relative;width:100%;height:100%}
   .player .ball{width:100%;height:100%;border-radius:999px;overflow:hidden;border:2px solid rgba(255,255,255,.7);box-shadow:0 6px 16px rgba(0,0,0,.35);background:linear-gradient(90deg,var(--club-red) 0 50%,var(--club-blue) 50% 100%);display:grid;place-items:center;padding:4px}
   .player .ball img{width:100%;height:100%;object-fit:cover;display:block}
-  /* numero FUORI in alto-destra, come la panchina */
+  /* numero FUORI in alto-destra, come panchina */
   .player .num-out{
     position:absolute; top:-6px; right:-6px;
     background:var(--club-blue); color:#fff; border:2px solid rgba(255,255,255,.7);
@@ -113,7 +113,7 @@
 
   .notice{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 
-  /* ===== Modal Instagram (scelta formati) ===== */
+  /* ===== Modal Instagram ===== */
   .modal{
     position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
     align-items:center;justify-content:center;padding:16px;z-index:1000;
@@ -189,7 +189,7 @@
 <main class="wrap">
   <section class="board">
     <div>
-      <!-- Sezione catturabile per Instagram: XI TITOLARI (senza intestazione: la mettiamo in overlay nei PNG) -->
+      <!-- Sezione catturabile: XI TITOLARI (senza intestazione: la mettiamo in overlay solo per IG) -->
       <section class="capture" id="capture-xi">
         <div class="pitch" id="pitch">
           <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
@@ -199,7 +199,7 @@
 
     <aside class="side">
       <div class="card">
-        <!-- Sezione catturabile per Instagram: PANCHINA (senza intestazione) -->
+        <!-- Sezione catturabile: PANCHINA (senza intestazione) -->
         <section class="capture" id="capture-bench">
           <div class="bench" id="bench"></div>
         </section>
@@ -210,7 +210,7 @@
   </section>
 </main>
 
-<!-- Modal Instagram: scelta formati -->
+<!-- Modal Instagram: scelta formato -->
 <div class="modal" id="igModal" aria-hidden="true">
   <div class="box">
     <h3>Condividi su Instagram</h3>
@@ -219,7 +219,7 @@
       <button id="igStoryBtn">Storia (1080×1920)</button>
       <button id="igFeedBtn">Feed/Reel (1080×1350)</button>
     </div>
-    <small style="color:var(--muted)">Prepariamo i PNG con header, banner, hashtag e watermark. Nell’app scegli tu Storia o Feed/Reel.</small>
+    <small style="color:var(--muted)">Nel formato Storia condividiamo solo l’XI; nel Feed/Reel inviamo XI + Panchina.</small>
   </div>
 </div>
 
@@ -470,7 +470,6 @@
       const ball=document.createElement('div'); ball.className='ball';
       if(p.photo){ const img=document.createElement('img'); img.src=p.photo; img.alt=p.name; img.onerror=()=>img.remove(); ball.appendChild(img); }
       wrap.appendChild(ball);
-
       const nb=document.createElement('div'); nb.className='num-out'; nb.textContent=num; wrap.appendChild(nb);
       node.appendChild(wrap);
 
@@ -512,7 +511,7 @@
   })();
 </script>
 
-<!-- ===== Condivisione (header+banner+hashtag+watermark nei PNG) ===== -->
+<!-- ===== Condivisione (solo header per overlay; niente banner/hashtag/watermark) ===== -->
 <script>
 (function(){
   const igModal = document.getElementById('igModal');
@@ -539,15 +538,14 @@
     return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>res(im); im.onerror=rej; im.src=src; });
   }
 
-  const HASHTAGS = '#Matchday #ForzaPetriolese #PetrioleseCalcio';
-
-  async function drawOverlay(canvas, bannerText){
+  // Header overlay: solo logo + "PETRIOLESE CALCIO" + VS + OPP
+  async function drawHeaderOverlay(canvas){
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
-
-    // Header fascia
-    ctx.fillStyle = 'rgba(0,0,0,.38)';
     const headerH = 120;
+
+    // fascia scura
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
     ctx.fillRect(0,0,W,headerH);
 
     const logoSrc = (document.getElementById('clubLogo')?.getAttribute('src')) || 'logo.png';
@@ -556,16 +554,15 @@
 
     const [logo, vs] = await Promise.all([ loadImage(logoSrc), loadImage(vsSrc) ]);
 
-    // dimensioni elementi header
-    const pad = 40;
+    const gap=16;
     const logoH = 70; const logoW = logo.width * (logoH/logo.height);
     const vsH   = 42; const vsW   = vs.width * (vsH/vs.height);
 
+    // misure testi
     ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
     const club1='PETRIOLESE', club2=' CALCIO';
     const club1W=ctx.measureText(club1).width, club2W=ctx.measureText(club2).width, oppW=ctx.measureText(opp).width;
 
-    const gap=16;
     const totalW = logoW + gap + (club1W+club2W) + gap + vsW + gap + oppW;
     let x=(W-totalW)/2, yMid=headerH/2;
 
@@ -575,43 +572,6 @@
     ctx.fillStyle='#1d4ed8'; ctx.fillText(club2, x, yMid); x+=club2W+gap;
     ctx.drawImage(vs, x, yMid-vsH/2, vsW, vsH); x+=vsW+gap;
     ctx.fillStyle='#ffffff'; ctx.fillText(opp, x, yMid);
-
-    // Banner centrale
-    const bannerH = 58;
-    ctx.fillStyle='rgba(17,24,39,.85)';
-    ctx.fillRect(0, headerH, W, bannerH);
-    ctx.font='900 24px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
-    const labelText = bannerText.toUpperCase();
-    const labelW = ctx.measureText(labelText).width;
-    const grad = ctx.createLinearGradient((W-labelW)/2-14,0,(W+labelW)/2+14,0);
-    grad.addColorStop(0,'#e11d48'); grad.addColorStop(1,'#1d4ed8');
-    ctx.fillStyle=grad;
-    ctx.fillText(labelText, (W-labelW)/2, headerH + bannerH/2 + 1);
-
-    // Hashtag in basso a sinistra
-    ctx.font='700 20px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
-    ctx.fillStyle='rgba(229,231,235,.9)';
-    ctx.fillText(HASHTAGS, 24, canvas.height - 28);
-
-    // Watermark logo in basso a destra
-    const wmSize = 100;
-    ctx.globalAlpha = 0.7;
-    ctx.drawImage(logo, canvas.width - wmSize - 20, canvas.height - wmSize - 20, wmSize, wmSize);
-    ctx.globalAlpha = 1;
-  }
-
-  async function generatePair(){
-    const xi    = document.getElementById('capture-xi');
-    const bench = document.getElementById('capture-bench');
-    if(!xi || !bench) throw new Error('Sezioni non trovate');
-
-    let c1 = await captureNode(xi, 2);
-    let c2 = await captureNode(bench, 2);
-
-    await drawOverlay(c1, 'XI TITOLARI');
-    await drawOverlay(c2, 'PANCHINA');
-
-    return [c1, c2];
   }
 
   async function fitCanvasTo(canvas, W, H){
@@ -624,49 +584,67 @@
     return out;
   }
 
+  // ===== IG: Story (solo XI, con header) =====
   document.getElementById('igStoryBtn')?.addEventListener('click', async ()=>{
     try{
-      const [c1,c2] = await generatePair();
+      const xi = document.getElementById('capture-xi');
+      if(!xi) throw new Error('Sezione XI non trovata');
+      let c1 = await captureNode(xi, 2);
+      await drawHeaderOverlay(c1);
       const s1 = await fitCanvasTo(c1,1080,1920);
-      const s2 = await fitCanvasTo(c2,1080,1920);
       const f1 = await canvasToFile(s1,'petriolese_xi_story.png');
-      const f2 = await canvasToFile(s2,'petriolese_panchina_story.png');
-      if (navigator.canShare && navigator.canShare({files:[f1,f2]})) {
-        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+      if (navigator.canShare && navigator.canShare({files:[f1]})) {
+        await navigator.share({ files:[f1], title:'Petriolese Matchday' });
       } else {
-        downloadFile(f1); downloadFile(f2);
-        alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Storia.');
+        downloadFile(f1);
+        alert('Condivisione nativa non supportata. Ho scaricato l’immagine formato Storia.');
       }
-    }catch(e){ console.error(e); alert('Errore durante la generazione immagini Storia.'); }
+    }catch(e){ console.error(e); alert('Errore durante la generazione della Storia.'); }
     igModal.classList.remove('open');
   });
 
+  // ===== IG: Feed/Reel (due foto, entrambe con header) =====
   document.getElementById('igFeedBtn')?.addEventListener('click', async ()=>{
     try{
-      const [c1,c2] = await generatePair();
+      const xi    = document.getElementById('capture-xi');
+      const bench = document.getElementById('capture-bench');
+      if(!xi || !bench) throw new Error('Sezioni non trovate');
+      let c1 = await captureNode(xi, 2);
+      let c2 = await captureNode(bench, 2);
+      await Promise.all([ drawHeaderOverlay(c1), drawHeaderOverlay(c2) ]);
       const s1 = await fitCanvasTo(c1,1080,1350);
       const s2 = await fitCanvasTo(c2,1080,1350);
       const f1 = await canvasToFile(s1,'petriolese_xi_feed.png');
       const f2 = await canvasToFile(s2,'petriolese_panchina_feed.png');
+
+      const shareText = '#PetrioleseCalcio #ForzaPetriolese';
       if (navigator.canShare && navigator.canShare({files:[f1,f2]})) {
-        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text: shareText });
       } else {
         downloadFile(f1); downloadFile(f2);
-        alert('Condivisione nativa non supportata. Ho scaricato le immagini formato Feed.');
+        alert('Condivisione nativa non supportata. Ho scaricato le immagini per il Feed/Reel.');
       }
-    }catch(e){ console.error(e); alert('Errore durante la generazione immagini Feed.'); }
+    }catch(e){ console.error(e); alert('Errore durante la generazione per Feed/Reel.'); }
     igModal.classList.remove('open');
   });
 
+  // ===== Facebook (link live) =====
   document.getElementById('btnFB')?.addEventListener('click', ()=>{
     const liveUrl = new URL('live.html', location.href).href;
     const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(liveUrl);
     window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
   });
 
+  // ===== Condividi generico: collage story (senza banner/hashtag/watermark) =====
   document.getElementById('btnShare')?.addEventListener('click', async ()=>{
     try{
-      const [c1,c2] = await generatePair();
+      const xi    = document.getElementById('capture-xi');
+      const bench = document.getElementById('capture-bench');
+      if(!xi || !bench) throw new Error('Sezioni non trovate');
+      let c1 = await captureNode(xi, 2);
+      let c2 = await captureNode(bench, 2);
+      await Promise.all([ drawHeaderOverlay(c1), drawHeaderOverlay(c2) ]);
+
       const W=1080,H=1920,pad=40; const out=document.createElement('canvas'); out.width=W; out.height=H;
       const ctx=out.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
       const s1 = await fitCanvasTo(c1, W-pad*2, (H-pad*3)/2);
@@ -674,9 +652,10 @@
       const x = pad, y1 = pad, y2 = y1 + s1.height + pad;
       ctx.drawImage(s1, x, y1);
       ctx.drawImage(s2, x, y2);
+
       const file = await canvasToFile(out,'petriolese_matchday_story.png');
       if (navigator.canShare && navigator.canShare({files:[file]})) {
-        await navigator.share({ files:[file], title:'Petriolese Matchday', text:'Forza Petriolese! 💙❤️' });
+        await navigator.share({ files:[file], title:'Petriolese Matchday' });
       } else {
         downloadFile(file);
         alert('Condivisione nativa non supportata. Ho scaricato il collage (Story).');
