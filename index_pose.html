@@ -3,254 +3,122 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Petriolese — Starting XI (Busti)</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<meta name="theme-color" content="#0b0f0c">
-<link rel="preconnect" href="https://docs.google.com">
-<link rel="dns-prefetch" href="https://docs.google.com">
-
+<title>Campo con badge SUBS interno + spazio panchina</title>
 <style>
   :root{
-    --club-red:#e11d48; --club-blue:#1d4ed8;
-    --bg:#0b0f0c; --text:#e5e7eb; --muted:#94a3b8;
-    --plate:#ffffff; --plate-text:#111827;
+    /* layout */
+    --pitch-bottom: 14%;  /* distanza del campo dal fondo (alzalo/abbassalo) */
+    --subs-gap:      6%;  /* spazio tra fondo campo e lista panchinari */
+    /* colori */
+    --bg:#0b0c11;
+    --roof-dark:#151923;
+    --roof-mid:#1f2531;
+    --roof-glow:rgba(255,255,255,.08);
+    --grass-1:#0a6f20; --grass-2:#0d7f26;
+    --rossoblu:linear-gradient(90deg,#8b0000,#000080);
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-  /* HEADER (logo + vs + avversario) */
-  .topbar{
-    display:flex;justify-content:center;align-items:center;gap:12px;
-    padding:12px 14px;border-bottom:2px solid rgba(255,255,255,.08);
-    background:linear-gradient(135deg,#0b0f0c 0%,#0f172a 60%,#0b0f0c 100%);
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg);
+    display:grid; place-items:center;
+    font-family:system-ui,Arial,sans-serif;
   }
-  .brand{display:flex;align-items:center;gap:10px}
-  .brand img{width:42px;height:42px;object-fit:contain}
-  .brand .club{font-weight:900;white-space:nowrap}
-  .vs-img{height:26px}
-  .opponent{font-weight:900;text-transform:uppercase;white-space:nowrap}
 
-  /* BACKDROP rossoblù + “stadio” astratto */
-  .hero{
+  .stage{
+    position:relative; width:min(1200px,96vw); aspect-ratio:9/16; max-height:96vh;
+    overflow:hidden; border-radius:18px; background:#0b0c11;
+    box-shadow:0 25px 80px rgba(0,0,0,.6);
+  }
+
+  .stadium{
+    position:absolute; inset:0;
     background:
-      radial-gradient(120% 80% at 20% 0%, rgba(225,29,72,.35), transparent 60%),
-      radial-gradient(120% 80% at 80% 0%, rgba(29,78,216,.35), transparent 60%),
-      linear-gradient(180deg,#0b0f0c 0%,#0b0f0c 100%);
-    padding:16px 16px 28px;
+      radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
+      repeating-linear-gradient(-10deg, rgba(255,255,255,.05) 0 14px, rgba(0,0,0,0) 14px 44px),
+      linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
-  /* CAMPO: pannello con linee bianche in overlay */
-  .panel{
-    width:100%; max-width:960px; margin:0 auto;
-    border-radius:18px; border:1px solid rgba(255,255,255,.12);
-    background:linear-gradient(180deg, rgba(225,29,72,.14), rgba(29,78,216,.14));
-    box-shadow:0 10px 28px rgba(0,0,0,.35);
-    overflow:hidden; position:relative;
+  /* Campo in prospettiva */
+  .pitch-wrap{
+    position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
+    width:100%; height:75%;
+    clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
   }
-  .pitch{
-    position:relative; width:100%; aspect-ratio:3/4; /* più “cinematografico” */
-    background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.15));
-    isolation:isolate;
+  .grass{
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(to bottom, rgba(255,255,255,.08) 0 6%, rgba(0,0,0,0) 6% 12%),
+      linear-gradient(to bottom, var(--grass-2), var(--grass-1));
+    box-shadow: inset 0 -40px 80px rgba(0,0,0,.35);
   }
-  .pitch::before{
-    /* Linee campo SVG inline, sempre nitide */
-    content:"";
-    position:absolute; inset:0; opacity:.85; mix-blend-mode:screen; pointer-events:none;
-    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" preserveAspectRatio="none"><defs><style>.l{stroke:%23fff;stroke-width:1.2;fill:none;}</style></defs><rect x="3" y="3" width="114" height="154" class="l"/><line x1="3" y1="80" x2="117" y2="80" class="l"/><circle cx="60" cy="80" r="10" class="l"/><rect x="30" y="3" width="60" height="22" class="l"/><rect x="40" y="3" width="40" height="8" class="l"/><rect x="30" y="135" width="60" height="22" class="l"/><rect x="40" y="149" width="40" height="8" class="l"/><circle cx="60" cy="15" r="1.2" fill="%23fff"/><circle cx="60" cy="145" r="1.2" fill="%23fff"/></svg>');
-    background-size:cover; background-position:center;
+  svg{position:absolute; inset:0; width:100%; height:100%;}
+
+  /* Badge SUBS: DENTRO il campo, in basso a sinistra, attaccato alla linea di fondo */
+  .subs-badge{
+    position:absolute; bottom:calc(var(--pitch-bottom) + 6px); /* 6px sopra la linea di fondo del campo */
+    left:calc(3% + 6px); /* un po' dentro rispetto al bordo obliquo */
+    padding:4px 10px;
+    background:var(--rossoblu);
+    color:#fff; font-weight:700; font-size:.9rem;
+    border-radius:4px;
+    pointer-events:none; /* è solo grafica */
   }
 
-  /* STARTING XI badge */
-  .starting{position:absolute; left:14px; top:14px; z-index:5;
-    background:linear-gradient(90deg,var(--club-red),var(--club-blue));
-    color:#fff; font-weight:900; font-size:12px; letter-spacing:.6px;
-    padding:8px 12px; border-radius:999px; text-transform:uppercase;
-    box-shadow:0 4px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25);
+  /* Lista panchinari SOTTO il campo, con spazio */
+  .subs-list{
+    position:absolute;
+    left:0; right:0;
+    bottom:calc(var(--pitch-bottom) - var(--subs-gap)); /* sotto il campo, non al fondo pagina */
+    color:#fff; font-size:1rem; text-align:center;
+    padding:2px 12px;
   }
-
-  /* GIOCATORI (busto + targhetta) */
-  .player{position:absolute; transform:translate(-50%,-50%); width:clamp(86px,14vw,140px); z-index:2; text-align:center}
-  .bust{
-    width:100%; aspect-ratio:1/1; border-radius:50%;
-    overflow:hidden; border:3px solid rgba(255,255,255,.9);
-    box-shadow:0 14px 30px rgba(0,0,0,.45), 0 0 0 10px rgba(15,23,42,.45);
-    background:linear-gradient(135deg, rgba(225,29,72,.75), rgba(29,78,216,.75));
-  }
-  .bust img{width:100%; height:100%; object-fit:cover; object-position:50% 15%;}
-  /* targhetta “brush” */
-  .tag{
-    position:relative; margin-top:6px; display:inline-block;
-    color:var(--plate-text); font-weight:900; letter-spacing:.3px; text-transform:uppercase;
-    padding:6px 12px; background:var(--plate);
-    /* bordo grezzo con mask */
-    -webkit-mask:
-      radial-gradient(10px 8px at 8px 50%, #000 98%, transparent 101%) left center/14px 100%,
-      radial-gradient(10px 8px at calc(100% - 8px) 50%, #000 98%, transparent 101%) right center/14px 100%,
-      linear-gradient(#000 0 0) center/100% 100%;
-    -webkit-mask-repeat:no-repeat;
-            mask:
-      radial-gradient(10px 8px at 8px 50%, #000 98%, transparent 101%) left center/14px 100%,
-      radial-gradient(10px 8px at calc(100% - 8px) 50%, #000 98%, transparent 101%) right center/14px 100%,
-      linear-gradient(#000 0 0) center/100% 100%;
-    box-shadow:0 6px 16px rgba(0,0,0,.35);
-  }
-
-  /* BARRA PANCHINA in basso (testo scorrevole su mobile) */
-  .benchbar{
-    display:flex; align-items:center; gap:10px;
-    border-top:1px solid rgba(255,255,255,.12);
-    background:linear-gradient(90deg, rgba(225,29,72,.18), rgba(29,78,216,.18));
-    padding:10px 12px; font-size:14px;
-    overflow:auto; white-space:nowrap; scrollbar-width:none;
-  }
-  .benchbar::-webkit-scrollbar{display:none}
-  .benchbar .label{font-weight:800; margin-right:8px; opacity:.9}
-  .benchbar .name{opacity:.95}
-
-  /* LAYOUT */
-  .wrap{padding:16px 0 0}
 </style>
 </head>
 <body>
+  <div class="stage">
+    <div class="stadium"></div>
 
-<header class="topbar">
-  <div class="brand">
-    <img id="clubLogo" src="logo.png" alt="Logo Petriolese" onerror="this.style.display='none'"/>
-    <div class="club">Petriolese Calcio</div>
-  </div>
-  <img class="vs-img" src="vs_battle.png" alt="VS" />
-  <div id="opponent" class="opponent">AVVERSARIO</div>
-</header>
-
-<section class="hero">
-  <div class="panel">
-    <div class="pitch" id="pitch">
-      <div class="starting">Starting XI</div>
-      <!-- i giocatori vengono inseriti via JS -->
+    <div class="pitch-wrap">
+      <div class="grass"></div>
+      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
+        <g id="lines" stroke="white" fill="none"></g>
+      </svg>
     </div>
 
-    <!-- panchina in striscia -->
-    <div class="benchbar" id="benchbar">
-      <span class="label">Panchina:</span>
-      <span class="name">carico…</span>
-    </div>
-  </div>
+    <!-- Badge dentro al campo -->
+    <div class="subs-badge">SUBS:</div>
 
-  <div class="wrap" id="notice" style="text-align:center;color:var(--muted);font-size:12px;">Carico i dati…</div>
-</section>
+    <!-- Spazio per i panchinari (testo d’esempio) -->
+    <div class="subs-list">[nomi panchinari qui]</div>
+  </div>
 
 <script>
-/* ====== CONFIG: stessi Google Sheet ====== */
-const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const META_GID = '254048258';
-const DIST_GID = '116187224';
+/* === Disegno del campo in prospettiva === */
+const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
+const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
+const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
+const G=document.getElementById('lines');
+function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline'); el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')); el.setAttribute('stroke','white'); el.setAttribute('fill','none'); el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round'); G.appendChild(el);}
+const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
+function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
+function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
+function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
 
-/* Modulo 3-4-1-2 (percentuali su aspect 3:4) */
-const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
-const coords3412 = [
-  [50,90],  // POR
-  [77,69],[50,72],[23,69], // 3
-  [88,48],[62,52],[38,52],[12,48], // 4
-  [50,34], // 1
-  [68,17],[32,17] // 2 punte
-];
-const BENCH_NUMBERS = [12,13,14,15,16,17,18,19,20];
+addPolyline([TL,TR,BR,BL,TL],6);
+addLine(0,H/2,W,H/2,3);
+addCircle(W/2,H/2,9.15,0,2*Math.PI,280,3); addDot(W/2,H/2);
 
-/* ====== HELPERS ====== */
-const el = s => document.querySelector(s);
-const gvizJsonURL = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
+const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2, ay2=areaD;
+const gx1=cx-goalW/2, gx2=cx+goalW/2, gy2=goalD;
+addRect(ax1,0,ax2,ay2,3); addRect(gx1,0,gx2,gy2,3); addDot(cx,spot);
+const ay1b=H-areaD, gy1b=H-goalD;
+addRect(ax1,ay1b,ax2,H,3); addRect(gx1,gy1b,gx2,H,3); addDot(cx,H-spot);
 
-function parseGVizJSON(text){
-  const start = text.indexOf('{'); const end = text.lastIndexOf('}');
-  if (start<0 || end<0) throw new Error('JSON GViz non trovato');
-  const json = JSON.parse(text.slice(start, end+1));
-  const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
-  return json.table.rows.map(r=>{
-    const obj={}; r.c.forEach((cell,i)=>{ obj[ cols[i] ] = (cell && cell.v!=null) ? String(cell.v) : ''; });
-    return obj;
-  });
-}
-async function fetchRows(gid){ const r=await fetch(gvizJsonURL(SHEET_FILE_ID,gid),{cache:'no-store'}); return parseGVizJSON(await r.text()); }
-const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1]; };
-
-/* ====== RENDER ====== */
-function render(metaRows, distRows){
-  // META
-  const meta = Object.fromEntries(metaRows.map(r=>[String(r.key||'').toLowerCase(), r.value||'']));
-  el('#clubLogo').src = meta.logourl || 'logo.png';
-  const opp = meta.avversario || 'AVVERSARIO';
-  el('#opponent').textContent = opp;
-
-  // DISTINTA
-  // prova a indovinare colonne se i nomi sono diversi
-  const sample = distRows[0] || {};
-  const keys = Object.keys(sample);
-  const keyFor = (alts) => keys.find(k=> alts.includes(k.toLowerCase())) || keys[0];
-  const kNum   = keyFor(['num','numero','#','n']);
-  const kName  = keyFor(['giocatore','nome','player','cognome','nomecognome']);
-  const kPhoto = keyFor(['foto','photo','immagine','img','picture']);
-
-  const byNum = new Map();
-  distRows.forEach(r=>{
-    const n = Number(r[kNum]); if(!n) return;
-    byNum.set(n, { num:n, name:r[kName]||'', photo:r[kPhoto]||'' });
-  });
-
-  // XI in campo (busto + targhetta)
-  const pitch = el('#pitch');
-  pitch.querySelectorAll('.player').forEach(n=>n.remove());
-
-  XI_NUMBERS.forEach((num,i)=>{
-    const p = byNum.get(num) || {num, name:'', photo:''};
-    const [x,y] = coords3412[i] || [50,50];
-
-    const node = document.createElement('div');
-    node.className = 'player';
-    node.style.left = x+'%';
-    node.style.top  = y+'%';
-
-    const bust = document.createElement('div');
-    bust.className = 'bust';
-    if (p.photo){
-      const img = document.createElement('img');
-      img.src = p.photo; img.alt = p.name;
-      img.onerror = ()=> img.remove();
-      bust.appendChild(img);
-    }
-    node.appendChild(bust);
-
-    const plate = document.createElement('div');
-    plate.className = 'tag';
-    plate.textContent = surname(p.name || '') || ('#'+num);
-    node.appendChild(plate);
-
-    pitch.appendChild(node);
-  });
-
-  // Panchina: riga di testi
-  const benchbar = el('#benchbar');
-  benchbar.innerHTML = '<span class="label">Panchina:</span>';
-  const names = [];
-  BENCH_NUMBERS.forEach(n=>{
-    const p = byNum.get(n);
-    if (p && p.name) names.push(surname(p.name));
-  });
-  names.push('All. Castellani');
-  benchbar.insertAdjacentHTML('beforeend', names.map(n=>`<span class="name">${n}</span>`).join('<span class="name">, </span>'));
-
-  el('#notice').textContent = 'Dati caricati';
-}
-
-/* ====== INIT ====== */
-(async function(){
-  try{
-    const [metaRows, distRows] = await Promise.all([ fetchRows(META_GID), fetchRows(DIST_GID) ]);
-    render(metaRows, distRows);
-  }catch(err){
-    console.error(err);
-    el('#notice').textContent = 'Errore nel leggere i dati dagli Sheet.';
-  }
-})();
+const eps=0.03, base=Math.acos((areaD-spot)/9.15);
+addCircle(cx,spot,9.15,base-eps,Math.PI-base+eps,260,3);
+addCircle(cx,H-spot,9.15,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 </script>
 </body>
 </html>
