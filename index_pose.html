@@ -1,142 +1,659 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Campo in prospettiva + SUBS (mobile ready)</title>
+<title>Petriolese — Matchday</title>
+<meta name="theme-color" content="#0b0f0c">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="dns-prefetch" href="https://docs.google.com">
+
+<!-- html2canvas per la cattura PNG -->
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
   :root{
-    /* layout */
-    --pitch-bottom: 14%; /* distanza del campo dal fondo */
-    --subs-gap:      6%; /* spazio tra fondo campo e lista panchinari */
-    /* colori */
-    --bg:#0b0c11;
-    --roof-dark:#151923;
-    --roof-mid:#1f2531;
-    --roof-glow:rgba(255,255,255,.08);
-    --grass-1:#0a6f20; --grass-2:#0d7f26;
-    --rossoblu:linear-gradient(90deg,#8b0000,#000080);
+    --club-red:#e11d48; --club-blue:#1d4ed8;
+    --bg:#0b0f0c; --card:#0f172a; --text:#e5e7eb; --muted:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  img{max-width:100%;height:auto}
+
+  /* ===== TOPBAR ===== */
+  .topbar{
+    width:100%;
+    display:flex;justify-content:center;align-items:center;gap:12px;
+    padding:10px 12px;border-bottom:2px solid rgba(29,78,216,.35)
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand img{width:42px;height:42px;object-fit:contain}
+  .brand .club{font-weight:900;letter-spacing:.3px;white-space:nowrap}
+  .vs-img{height:26px;width:auto;display:block}
+  .opponent{font-weight:900;text-transform:uppercase;white-space:nowrap}
+  .matchline,.subline{display:none}
+  @media (max-width:520px){
+    .brand .club{font-size:14px}
+    .vs-img{height:22px}
+    .opponent{font-size:14px}
   }
 
-  html,body{height:100%}
-  body{
-    margin:0; background:var(--bg);
-    display:grid; place-items:center;
-    font-family:system-ui,Arial,sans-serif;
+  /* ===== Toolbar ===== */
+  .toolbar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);
+    backdrop-filter:saturate(1.2) blur(2px);
+  }
+  .tools-left{display:flex;gap:12px;align-items:center}
+  .tools-right{display:flex;gap:8px;align-items:center}
+
+  .iconbtn{
+    appearance:none;border:0;background:linear-gradient(180deg,#ffffff22,#ffffff10);
+    color:#fff;width:46px;height:46px;border-radius:12px;
+    display:inline-flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.2);
+    cursor:pointer;transition:.15s transform ease, .15s filter ease;
+  }
+  .iconbtn:hover{filter:brightness(1.08)}
+  .iconbtn:active{transform:translateY(1px)}
+  .iconbtn svg{width:24px;height:24px;display:block;stroke:currentColor;fill:none}
+  .iconbtn--fb{color:#1877F2}
+  .iconbtn--ig{color:#E4405F}
+  .iconbtn--share{color:#10b981}
+
+  .ig-link{
+    display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    color:#fff;font-weight:800;border:1px solid rgba(255,255,255,.18);
+    border-radius:12px;padding:8px 12px;background:linear-gradient(180deg,#ffffff14,#ffffff0a);
+  }
+  .ig-link:hover{filter:brightness(1.08)}
+  .ig-link svg{width:18px;height:18px;stroke:currentColor;fill:none}
+
+  /* ===== Layout ===== */
+  .wrap{min-height:100svh;display:grid;place-items:start center;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
+  .board{display:grid;gap:16px;grid-template-columns:1fr;width:100%;max-width:960px}
+  @media (min-width:860px){.board{grid-template-columns:minmax(300px,520px) 1fr;align-items:start;gap:20px}}
+
+  .capture{background:#0b0f0c;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.06)}
+  .pitch{position:relative;width:100%;max-width:520px;aspect-ratio:2/3;margin:0 auto;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.30);overflow:hidden;border:2px solid rgba(29,78,216,.25)}
+  .pitch>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+  /* ===== Chip STARTING XI ===== */
+  .starting-chip{
+    position:absolute; left:12px; bottom:12px; z-index:5;
+    background:linear-gradient(90deg,var(--club-red),var(--club-blue));
+    color:#fff; font-weight:900; letter-spacing:.6px;
+    padding:8px 14px; border-radius:999px;
+    box-shadow:0 4px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25);
+    border:0; text-transform:uppercase; font-size:10px;
   }
 
-  .stage{
-    position:relative; width:min(1200px,96vw); aspect-ratio:9/16; max-height:96vh;
-    overflow:hidden; border-radius:18px; background:#0b0c11;
-    box-shadow:0 25px 80px rgba(0,0,0,.6);
+  /* ===== Titolari: etichette stile "Tribuna" ===== */
+  .player{position:absolute;transform:translate(-50%,-50%)}
+  .label{
+    position:relative; display:inline-block;
+    background:#fff; color:#0b0f0c; font-weight:900;
+    padding:6px 12px; border-radius:10px;
+    box-shadow:
+      0 6px 14px rgba(0,0,0,.35),
+      inset 0 -2px 0 rgba(0,0,0,.08);
+    font-size:clamp(11px, 2.6vw, 14px);
+    line-height:1;
+    white-space:nowrap;
   }
+  /* bordi sfrangiati “pennellata” */
+  .label::before, .label::after{
+    content:""; position:absolute; left:6px; right:6px; height:2px; background:#fff;
+    filter:blur(1px);
+  }
+  .label::before{top:-3px} .label::after{bottom:-3px}
 
-  .stadium{
-    position:absolute; inset:0;
-    background:
-      radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
-      repeating-linear-gradient(-10deg, rgba(255,255,255,.05) 0 14px, rgba(0,0,0,0) 14px 44px),
-      linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
-  }
+  /* ===== Pannello dx ===== */
+  .side{display:grid;gap:16px}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
 
-  /* Campo in prospettiva */
-  .pitch-wrap{
-    position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
-    width:100%; height:75%;
-    clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
-  }
-  .grass{
-    position:absolute; inset:0;
-    background:
-      repeating-linear-gradient(to bottom, rgba(255,255,255,.08) 0 6%, rgba(0,0,0,0) 6% 12%),
-      linear-gradient(to bottom, var(--grass-2), var(--grass-1));
-    box-shadow: inset 0 -40px 80px rgba(0,0,0,.35);
-  }
-  svg{position:absolute; inset:0; width:100%; height:100%;}
+  /* ===== Panchina: una stringa unica, non griglia ===== */
+  .bench-line{font-size:14px;line-height:1.35;color:#e5e7eb;text-align:center}
+  .bench-line strong{font-weight:900; background:linear-gradient(90deg,var(--club-red),var(--club-blue)); -webkit-background-clip:text; background-clip:text; color:transparent}
 
-  /* Badge SUBS dentro il campo (attaccato alla linea di fondo) */
-  .subs-badge{
-    position:absolute; bottom:calc(var(--pitch-bottom) + 6px);
-    left:calc(3% + 6px);
-    padding:4px 10px;
-    background:var(--rossoblu);
-    color:#fff; font-weight:700;
-    font-size: clamp(.8rem, 1.2vw, .95rem); /* tipografia fluida */
-    border-radius:4px;
-    min-width:56px; text-align:center;     /* non diventa troppo piccolo */
-    pointer-events:none;
-  }
+  .notice{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
 
-  /* Lista panchinari SOTTO il campo, con spazio e wrap robusto */
-  .subs-list{
-    position:absolute; left:0; right:0;
-    bottom:calc(var(--pitch-bottom) - var(--subs-gap));
-    color:#fff;
-    font-size: clamp(.85rem, 1.3vw, 1rem);  /* tipografia fluida */
-    text-align:center;
-    padding:2px 12px;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+  /* ===== Modal Instagram ===== */
+  .modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
+    align-items:center;justify-content:center;padding:16px;z-index:1000;
   }
-
-  /* Tweak per telefoni stretti */
-  @media (max-width: 480px){
-    :root{
-      --pitch-bottom: 16%;
-      --subs-gap: 8%;
-    }
+  .modal.open{display:flex}
+  .modal .box{
+    background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;max-width:360px;width:100%;
+    display:grid;gap:10px;text-align:center
+  }
+  .modal .box h3{margin:0 0 6px;font-size:16px}
+  .modal .box .row{display:flex;gap:10px;justify-content:center}
+  .modal .box button{
+    background:linear-gradient(90deg,var(--club-red),var(--club-blue));color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer;
   }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="stadium"></div>
+<header class="topbar">
+  <div class="brand">
+    <img id="clubLogo" src="logo.png" alt="Logo Petriolese" onerror="this.style.display='none'"/>
+    <div class="club">Petriolese Calcio</div>
+  </div>
+  <img class="vs-img" src="vs_battle.png" alt="VS" />
+  <div id="opponentInline" class="opponent">AVVERSARIO</div>
 
-    <div class="pitch-wrap">
-      <div class="grass"></div>
-      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
-        <g id="lines" stroke="white" fill="none"></g>
+  <div>
+    <div class="matchline" id="matchLine">PETRIOLESE vs AVVERSARIO</div>
+    <div class="subline" id="matchWhen"></div>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="tools-left">
+    <button type="button" class="iconbtn iconbtn--ig" id="btnIG" title="Instagram" aria-label="Condividi su Instagram">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+        <circle cx="12" cy="12" r="3.5"></circle>
+        <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"></circle>
       </svg>
+    </button>
+    <button type="button" class="iconbtn iconbtn--fb" id="btnFB" title="Facebook" aria-label="Condividi su Facebook">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M13.2 9H15V6.5h-1.8A3.2 3.2 0 0 0 10 9.7V12H8v2.5h2V21h3v-6h2l.5-2.5H13v-2a1 1 0 0 1 1-1Z" fill="currentColor"></path>
+        <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+      </svg>
+    </button>
+    <button type="button" class="iconbtn iconbtn--share" id="btnShare" title="Condividi" aria-label="Condividi">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <path d="M8.9 10.9l6.2-3.6M8.9 13.1l6.2 3.6"></path>
+      </svg>
+    </button>
+  </div>
+  <div class="tools-right">
+    <a class="ig-link" href="https://www.instagram.com/asd_petriolese_calcio/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+        <circle cx="12" cy="12" r="3.2"></circle>
+        <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"></circle>
+      </svg>
+      VISITA IL NOSTRO IG
+    </a>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="board">
+    <div>
+      <!-- XI TITOLARI (catturabile) -->
+      <section class="capture" id="capture-xi">
+        <div class="pitch" id="pitch">
+          <img id="pitchImg" src="https://tse3.mm.bing.net/th/id/OIP.xR8peX5FCoXBMSXQkppsfwAAAA?pid=Api" alt="Mezzo campo" loading="lazy" decoding="async"/>
+          <div class="starting-chip">STARTING XI</div>
+        </div>
+      </section>
     </div>
 
-    <!-- Badge SUBS dentro al campo -->
-    <div class="subs-badge">SUBS:</div>
+    <aside class="side">
+      <div class="card">
+        <!-- PANCHINA (catturabile) -->
+        <section class="capture" id="capture-bench">
+          <p class="bench-line" id="benchLine"><strong>SUBS:</strong> …</p>
+        </section>
 
-    <!-- Spazio per i panchinari (verranno poi dal Google Sheet) -->
-    <div class="subs-list">[nomi panchinari qui]</div>
+        <div class="notice" id="notice">Carico i dati…</div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<!-- Modal Instagram -->
+<div class="modal" id="igModal" aria-hidden="true">
+  <div class="box">
+    <h3>Condividi su Instagram</h3>
+    <div>Seleziona il formato:</div>
+    <div class="row">
+      <button id="igStoryBtn">Storia (1080×1920)</button>
+      <button id="igFeedBtn">Feed/Reel (1080×1350)</button>
+    </div>
+    <small style="color:var(--muted)">Nel formato Storia condividiamo solo l’XI; nel Feed/Reel inviamo XI + Panchina.</small>
   </div>
+</div>
 
 <script>
-/* === Disegno del campo in prospettiva (parametri FIFA) === */
-const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
-const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
-const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
-function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
-const G=document.getElementById('lines');
-function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline'); el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')); el.setAttribute('stroke','white'); el.setAttribute('fill','none'); el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round'); G.appendChild(el);}
-const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
-function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
-function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
-function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
+  /* ====== CONFIG ====== */
+  const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+  const META_GID = '254048258';
+  const DIST_GID = '116187224';
 
-/* Perimetro e metà campo */
-addPolyline([TL,TR,BR,BL,TL],6);
-addLine(0,H/2,W,H/2,3);
+  const PUBLISHED_META_URL =
+    'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=254048258&single=true';
+  const PUBLISHED_DIST_URL =
+    'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-/* Cerchio centrocampo */
-addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
+  /* Ordine maglie (titolari + panchina) e coordinate 3-4-1-2 */
+  const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];
+  const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
+  const coords3412 = [
+    [50,88], [80,66], [50,69], [20,66],      // 3 dietro
+    [88,41], [62,47], [38,47], [12,41],      // 4 centrocampo (dx->sx)
+    [50,28],                                 // 1 trequartista
+    [62,9], [38,9]                            // 2 punte
+  ];
 
-/* Aree e 5.5 */
-const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2, ay2=areaD;
-const gx1=cx-goalW/2, gx2=cx+goalW/2, gy2=goalD;
-addRect(ax1,0,ax2,ay2,3); addRect(gx1,0,gx2,gy2,3); addDot(cx,spot);
-const ay1b=H-areaD, gy1b=H-goalD;
-addRect(ax1,ay1b,ax2,H,3); addRect(gx1,gy1b,gx2,H,3); addDot(cx,H-spot);
+  const el = s => document.querySelector(s);
 
-/* Archi del rigore (verso il centrocampo, fuori area) con piccolo epsilon per chiusura pulita */
-const eps=0.03, base=Math.acos((areaD-spot)/R);
-addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
-addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
+  const gvizJsonURL = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
+  const gvizCsvURL  = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+  function pubCsvURL(pubhtmlUrl){
+    const u = new URL(pubhtmlUrl);
+    const parts = u.pathname.split('/');
+    const idIdx = parts.findIndex(p=>p==='e')+1;
+    const id = parts[idIdx] || '';
+    const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+    return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+  }
+
+  function parseCSV(text){
+    let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    while (t.startsWith('\n')) t = t.slice(1);
+    const lines = t.split('\n').filter((ln,i)=> i===0 || ln.trim().length>0);
+    if (!lines.length) return [];
+    const rows=[]; let row=[], cur='', inQ=false;
+    const pushCell=()=>{ row.push(cur); cur=''; };
+    const pushRow =()=>{ rows.push(row); row=[]; };
+    const s = lines.join('\n');
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (inQ){
+        if (c === '"' && n === '"'){ cur+='"'; i++; }
+        else if (c === '"'){ inQ=false; }
+        else { cur += c; }
+      }else{
+        if (c === '"'){ inQ=true; }
+        else if (c === ','){ pushCell(); }
+        else if (c === '\n'){ pushCell(); pushRow(); }
+        else { cur += c; }
+      }
+    }
+    if (cur!=='' || row.length) { pushCell(); pushRow(); }
+    if (!rows.length) return [];
+    let header = rows.shift();
+    while (header && header.every(h=> String(h||'').trim()==='') && rows.length){ header = rows.shift(); }
+    if (!header) return [];
+    header = header.map(h=>String(h||'').trim());
+    return rows
+      .filter(r => r.some(v => String(v||'').trim()!==''))
+      .map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
+  }
+
+  function parseGVizJSON(text){
+    const start = text.indexOf('{'); const end = text.lastIndexOf('}');
+    if (start<0 || end<0) throw new Error('JSON GViz non trovato');
+    const json = JSON.parse(text.slice(start, end+1));
+    const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim() || 'col');
+    const rows = json.table.rows.map(r => {
+      const obj={}; r.c.forEach((cell,i)=>{ obj[ cols[i] || ('col'+(i+1)) ] = (cell && cell.v!=null) ? String(cell.v) : ''; });
+      return obj;
+    });
+    return rows;
+  }
+
+  async function fetchRows(metaOrDist){
+    const gid = (metaOrDist==='meta') ? META_GID : DIST_GID;
+    const pub = (metaOrDist==='meta') ? PUBLISHED_META_URL : PUBLISHED_DIST_URL;
+
+    if (SHEET_FILE_ID && SHEET_FILE_ID !== 'INSERISCI_QUI_FILE_ID'){
+      try{
+        const res = await fetch(gvizJsonURL(SHEET_FILE_ID, gid), {cache:'no-store'});
+        if (!res.ok) throw new Error('GViz JSON '+res.status);
+        const txt = await res.text();
+        const rows = parseGVizJSON(txt);
+        if (rows.length){ return rows; }
+      }catch(e){ console.warn('Fallback a GViz CSV:', e.message); }
+      try{
+        const res = await fetch(gvizCsvURL(SHEET_FILE_ID, gid), {cache:'no-store'});
+        if (!res.ok) throw new Error('GViz CSV '+res.status);
+        const txt = await res.text();
+        const rows = parseCSV(txt);
+        if (rows.length){ return rows; }
+      }catch(e){ console.warn('Fallback a pub CSV:', e.message); }
+    }
+
+    try{
+      const res = await fetch(pubCsvURL(pub), {cache:'no-store'});
+      if (!res.ok) throw new Error('PUB CSV '+res.status);
+      const txt = await res.text();
+      const rows = parseCSV(txt);
+      if (rows.length){ return rows; }
+    }catch(e){ console.warn('Fallback a pubhtml:', e.message); }
+
+    const htmlRes = await fetch(pub, {cache:'no-store'});
+    if (!htmlRes.ok) throw new Error('PUBHTML '+htmlRes.status);
+    const html = await htmlRes.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const table = doc.querySelector('table');
+    if (!table) throw new Error('Tabella non trovata');
+    const ths = Array.from(table.querySelectorAll('thead tr th, thead tr td'));
+    let header = ths.map(th => th.textContent.trim());
+    if (!header.length){
+      const firstRowTds = Array.from(table.querySelectorAll('tbody tr:first-child td'));
+      header = firstRowTds.map((_,i)=> 'col'+(i+1));
+    }
+    const out = [];
+    Array.from(table.querySelectorAll('tbody tr')).forEach(tr=>{
+      const cells = Array.from(tr.children);
+      if (!cells.length) return;
+      const obj = {};
+      cells.forEach((td,i)=>{ obj[ header[i] || ('col'+(i+1)) ] = td.textContent.trim(); });
+      if (Object.values(obj).some(v => v && v.trim() !== '')) out.push(obj);
+    });
+    return out;
+  }
+
+  /* ====== NORMALIZZAZIONE ====== */
+  function normalizeMeta(rows){
+    const out={};
+    if (!rows || !rows.length) return out;
+    const headerKeys = Object.keys(rows[0]);
+    const norm = k => k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
+    const idxKey = headerKeys.findIndex(k => ['key','chiave','campo','colonna'].includes(norm(k)));
+    const idxVal = headerKeys.findIndex(k => ['value','valore','dato','val'].includes(norm(k)));
+    rows.forEach(r=>{
+      const cols = Object.values(r);
+      let raw = '', val = '';
+      if (idxKey >= 0 && idxVal >= 0){ raw = String(cols[idxKey]||'').trim(); val = String(cols[idxVal]||'').trim(); }
+      else { raw = String(cols[0]||'').trim(); val = String(cols[1]||'').trim(); }
+      if (!raw) return;
+      const key = raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      out[key] = val;
+    });
+    return out;
+  }
+  function normalizeDistinta(rows){
+    if (!rows || !rows.length) return new Map();
+    const keys = Object.keys(rows[0]);
+    const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    let numKey   = keys.find(k=>['num','numero','n','maglia','shirt','#'].includes(norm(k)));
+    let nameKey  = keys.find(k=>['giocatore','nome','cognome','nomecognome','player'].includes(norm(k)));
+    let photoKey = keys.find(k=>['foto','photo','immagine','img','picture'].includes(norm(k)));
+    const score = Object.fromEntries(keys.map(k=>[k,{num:0,url:0,text:0}]));
+    rows.forEach(r=>{
+      keys.forEach(k=>{
+        const v = String(r[k] ?? '').trim();
+        if (!v) return;
+        if (/^https?:\/\//i.test(v) || v.includes('/')) score[k].url++;
+        if (/^\d{1,2}$/.test(v)) score[k].num++;
+        if (/[A-Za-zÀ-ÿ]/.test(v)) score[k].text++;
+      });
+    });
+    if (!numKey)   numKey   = keys.reduce((a,b)=> score[a].num >= score[b].num ? a:b);
+    if (!photoKey) photoKey = keys.reduce((a,b)=> score[a].url >= score[b].url ? a:b);
+    if (!nameKey){
+      const rem = keys.filter(k=>k!==numKey && k!==photoKey);
+      nameKey = rem.reduce((a,b)=> (score[a]?.text||0) >= (score[b]?.text||0) ? a:b);
+    }
+    const map = new Map();
+    rows.forEach(r=>{
+      const num = Number(String(r[numKey]||'').trim());
+      if (!(num>0)) return;
+      const name = String(r[nameKey]||'').trim();
+      const photo= String(r[photoKey]||'').trim();
+      map.set(num, {num, name, photo});
+    });
+    return map;
+  }
+  const surname = full => { const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase(); };
+
+  /* ====== RENDER ====== */
+  function distributeNoOverlap(){
+    const pitch = el('#pitch');
+    const rect = pitch.getBoundingClientRect();
+    const items = Array.from(pitch.querySelectorAll('.player')).map(node=>{
+      const xPerc=parseFloat(node.style.left), yPerc=parseFloat(node.style.top);
+      const r=node.offsetWidth/2 + 4;
+      return {node,xPerc,yPerc,r};
+    });
+    for(let step=0; step<28; step++){
+      let moved=false;
+      for(let i=0;i<items.length;i++){
+        for(let j=i+1;j<items.length;j++){
+          const a=items[i], b=items[j];
+          const ax=a.xPerc/100*rect.width, ay=a.yPerc/100*rect.height;
+          const bx=b.xPerc/100*rect.width, by=b.yPerc/100*rect.height;
+          const dx=bx-ax, dy=by-ay; const dist=Math.hypot(dx,dy);
+          const minDist=a.r+b.r+6;
+          if(dist<minDist){
+            const overlap=minDist-dist || 1;
+            const nx=dx/(dist||1), ny=dy/(dist||1);
+            const kx=0.22, ky=0.78;
+            a.xPerc -= (nx*kx*overlap)/rect.width*100;
+            a.yPerc -= (ny*ky*overlap)/rect.height*100;
+            b.xPerc += (nx*kx*overlap)/rect.width*100;
+            b.yPerc += (ny*ky*overlap)/rect.height*100;
+            [a,b].forEach(o=>{
+              o.xPerc=Math.min(94,Math.max(6,o.xPerc));
+              o.yPerc=Math.min(96,Math.max(4,o.yPerc));
+            });
+            moved=true;
+          }
+        }
+      }
+      if(!moved) break;
+    }
+    items.forEach(o=>{
+      o.node.style.left=o.xPerc+'%';
+      o.node.style.top =o.yPerc+'%';
+    });
+  }
+
+  function renderAll(meta, byNum){
+    // meta
+    const opp = meta['avversario'] || 'AVVERSARIO';
+    const when= meta['when'] || meta['data'] || '';
+    const logoURL = meta['logourl'] || '';
+    el('#clubLogo').src=logoURL||'logo.png';
+    el('#matchLine').textContent=`PETRIOLESE vs ${opp}`;
+    el('#opponentInline').textContent = opp;
+    el('#matchWhen').textContent=when;
+    if(meta['pitchurl']) el('#pitchImg').src=meta['pitchurl'];
+
+    // Titolari: badge testo (num. COGNOME)
+    const pitch=el('#pitch'); pitch.querySelectorAll('.player').forEach(n=>n.remove());
+    XI_NUMBERS.forEach((num,i)=>{
+      const p=byNum.get(num)||{num,name:''};
+      const [x,y]=coords3412[i]||[50,50];
+
+      const node=document.createElement('div');
+      node.className='player'; node.style.left=x+'%'; node.style.top=y+'%';
+
+      const label=document.createElement('div');
+      label.className='label';
+      const name = surname(p.name)||'';
+      label.textContent = `${num}. ${name}`;
+      node.appendChild(label);
+
+      pitch.appendChild(node);
+    });
+
+    // Panchina: unica stringa "12. Cognome, 13. Cognome, ..."
+    const subs = BENCH_NUMBERS
+      .map(n => {
+        const p = byNum.get(n)||{num:n,name:''};
+        return `${n}. ${surname(p.name)||''}`;
+      })
+      .join(', ');
+    const benchLine = el('#benchLine');
+    benchLine.innerHTML = `<strong>SUBS:</strong> ${subs}`;
+
+    el('#notice').textContent='Dati caricati (GViz/CSV/pubhtml)';
+    requestAnimationFrame(distributeNoOverlap);
+  }
+
+  (async function init(){
+    try{
+      const [metaRows,distRows]=await Promise.all([ fetchRows('meta'), fetchRows('dist') ]);
+      const meta=normalizeMeta(metaRows);
+      const byNum=normalizeDistinta(distRows);
+      renderAll(meta,byNum);
+      window.addEventListener('resize', ()=>requestAnimationFrame(distributeNoOverlap));
+    }catch(e){
+      console.error(e);
+      el('#notice').textContent='Errore nel leggere i dati: '+e.message;
+      renderAll({}, new Map());
+    }
+  })();
+</script>
+
+<!-- ===== Condivisione (resta uguale; catturiamo XI e la panchina) ===== -->
+<script>
+(function(){
+  const igModal = document.getElementById('igModal');
+  const openIG  = ()=>igModal.classList.add('open');
+  const closeIG = e => { if(!e || e.target===igModal) igModal.classList.remove('open'); };
+  igModal.addEventListener('click', closeIG);
+  document.getElementById('btnIG')?.addEventListener('click', openIG);
+
+  async function captureNode(node, scale=2){
+    const canvas = await html2canvas(node, {
+      backgroundColor: '#0b0f0c',
+      scale: scale,
+      useCORS: true,
+      logging: false
+    });
+    return canvas;
+  }
+  function canvasToFile(canvas, name){ return new Promise(r => canvas.toBlob(b => r(new File([b], name, {type:'image/png'})), 'image/png')); }
+  function downloadFile(file){
+    const url = URL.createObjectURL(file); const a=document.createElement('a');
+    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function loadImage(src){
+    return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>res(im); im.onerror=rej; im.src=src; });
+  }
+
+  async function drawHeaderOverlay(canvas){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width; const headerH = 120;
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
+    ctx.fillRect(0,0,W,headerH);
+
+    const logoSrc = (document.getElementById('clubLogo')?.getAttribute('src')) || 'logo.png';
+    const vsSrc   = 'vs_battle.png';
+    const opp     = (document.getElementById('opponentInline')?.textContent||'AVVERSARIO').trim();
+
+    const [logo, vs] = await Promise.all([ loadImage(logoSrc), loadImage(vsSrc) ]);
+
+    const gap=16;
+    const logoH = 70; const logoW = logo.width * (logoH/logo.height);
+    const vsH   = 42; const vsW   = vs.width * (vsH/vs.height);
+
+    ctx.font='900 34px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial';
+    const club1='PETRIOLESE', club2=' CALCIO';
+    const club1W=ctx.measureText(club1).width, club2W=ctx.measureText(club2).width, oppW=ctx.measureText(opp).width;
+
+    const totalW = logoW + gap + (club1W+club2W) + gap + vsW + gap + oppW;
+    let x=(W-totalW)/2, yMid=headerH/2;
+
+    ctx.drawImage(logo, x, yMid-logoH/2, logoW, logoH); x+=logoW+gap;
+    ctx.textBaseline='middle';
+    ctx.fillStyle='#e11d48'; ctx.fillText(club1, x, yMid); x+=club1W;
+    ctx.fillStyle='#1d4ed8'; ctx.fillText(club2, x, yMid); x+=club2W+gap;
+    ctx.drawImage(vs, x, yMid-vsH/2, vsW, vsH); x+=vsW+gap;
+    ctx.fillStyle='#ffffff'; ctx.fillText(opp, x, yMid);
+  }
+
+  async function fitCanvasTo(canvas, W, H){
+    const out = document.createElement('canvas'); out.width=W; out.height=H;
+    const ctx=out.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
+    const s = Math.min(W/canvas.width, H/canvas.height);
+    const w = canvas.width*s, h = canvas.height*s;
+    const x = (W-w)/2, y=(H-h)/2;
+    ctx.drawImage(canvas, x, y, w, h);
+    return out;
+  }
+
+  // IG: Story (solo XI)
+  document.getElementById('igStoryBtn')?.addEventListener('click', async ()=>{
+    try{
+      const xi = document.getElementById('capture-xi');
+      let c1 = await captureNode(xi, 2);
+      await drawHeaderOverlay(c1);
+      const s1 = await fitCanvasTo(c1,1080,1920);
+      const f1 = await canvasToFile(s1,'petriolese_xi_story.png');
+      if (navigator.canShare && navigator.canShare({files:[f1]})) {
+        await navigator.share({ files:[f1], title:'Petriolese Matchday' });
+      } else {
+        downloadFile(f1);
+        alert('Condivisione nativa non supportata. Ho scaricato l’immagine formato Storia.');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la generazione della Storia.'); }
+    igModal.classList.remove('open');
+  });
+
+  // IG: Feed/Reel (XI + panchina)
+  document.getElementById('igFeedBtn')?.addEventListener('click', async ()=>{
+    try{
+      const xi    = document.getElementById('capture-xi');
+      const bench = document.getElementById('capture-bench');
+      let c1 = await captureNode(xi, 2);
+      let c2 = await captureNode(bench, 2);
+      await Promise.all([ drawHeaderOverlay(c1), drawHeaderOverlay(c2) ]);
+      const s1 = await fitCanvasTo(c1,1080,1350);
+      const s2 = await fitCanvasTo(c2,1080,1350);
+      const f1 = await canvasToFile(s1,'petriolese_xi_feed.png');
+      const f2 = await canvasToFile(s2,'petriolese_panchina_feed.png');
+      const shareText = '#PetrioleseCalcio #ForzaPetriolese';
+      if (navigator.canShare && navigator.canShare({files:[f1,f2]})) {
+        await navigator.share({ files:[f1,f2], title:'Petriolese Matchday', text: shareText });
+      } else {
+        downloadFile(f1); downloadFile(f2);
+        alert('Condivisione nativa non supportata. Ho scaricato le immagini per il Feed/Reel.');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la generazione per Feed/Reel.'); }
+    igModal.classList.remove('open');
+  });
+
+  // Facebook
+  document.getElementById('btnFB')?.addEventListener('click', ()=>{
+    const liveUrl = new URL('live.html', location.href).href;
+    const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(liveUrl);
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=700,height=540');
+  });
+
+  // Condividi generale: collage story
+  document.getElementById('btnShare')?.addEventListener('click', async ()=>{
+    try{
+      const xi    = document.getElementById('capture-xi');
+      const bench = document.getElementById('capture-bench');
+      let c1 = await captureNode(xi, 2);
+      let c2 = await captureNode(bench, 2);
+      await Promise.all([ drawHeaderOverlay(c1), drawHeaderOverlay(c2) ]);
+
+      const W=1080,H=1920,pad=40; const out=document.createElement('canvas'); out.width=W; out.height=H;
+      const ctx=out.getContext('2d'); ctx.fillStyle='#0b0f0c'; ctx.fillRect(0,0,W,H);
+      const s1 = await fitCanvasTo(c1, W-pad*2, (H-pad*3)/2);
+      const s2 = await fitCanvasTo(c2, W-pad*2, (H-pad*3)/2);
+      const x = pad, y1 = pad, y2 = y1 + s1.height + pad;
+      ctx.drawImage(s1, x, y1);
+      ctx.drawImage(s2, x, y2);
+
+      const file = await canvasToFile(out,'petriolese_matchday_story.png');
+      if (navigator.canShare && navigator.canShare({files:[file]})) {
+        await navigator.share({ files:[file], title:'Petriolese Matchday' });
+      } else {
+        downloadFile(file);
+        alert('Condivisione nativa non supportata. Ho scaricato il collage (Story).');
+      }
+    }catch(e){ console.error(e); alert('Errore durante la creazione del collage.'); }
+  });
+})();
 </script>
 </body>
 </html>
