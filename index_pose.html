@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Campo con badge SUBS interno + spazio panchina</title>
+<title>Campo in prospettiva + SUBS (mobile ready)</title>
 <style>
   :root{
     /* layout */
-    --pitch-bottom: 14%;  /* distanza del campo dal fondo (alzalo/abbassalo) */
-    --subs-gap:      6%;  /* spazio tra fondo campo e lista panchinari */
+    --pitch-bottom: 14%; /* distanza del campo dal fondo */
+    --subs-gap:      6%; /* spazio tra fondo campo e lista panchinari */
     /* colori */
     --bg:#0b0c11;
     --roof-dark:#151923;
@@ -54,24 +54,37 @@
   }
   svg{position:absolute; inset:0; width:100%; height:100%;}
 
-  /* Badge SUBS: DENTRO il campo, in basso a sinistra, attaccato alla linea di fondo */
+  /* Badge SUBS dentro il campo (attaccato alla linea di fondo) */
   .subs-badge{
-    position:absolute; bottom:calc(var(--pitch-bottom) + 6px); /* 6px sopra la linea di fondo del campo */
-    left:calc(3% + 6px); /* un po' dentro rispetto al bordo obliquo */
+    position:absolute; bottom:calc(var(--pitch-bottom) + 6px);
+    left:calc(3% + 6px);
     padding:4px 10px;
     background:var(--rossoblu);
-    color:#fff; font-weight:700; font-size:.9rem;
+    color:#fff; font-weight:700;
+    font-size: clamp(.8rem, 1.2vw, .95rem); /* tipografia fluida */
     border-radius:4px;
-    pointer-events:none; /* è solo grafica */
+    min-width:56px; text-align:center;     /* non diventa troppo piccolo */
+    pointer-events:none;
   }
 
-  /* Lista panchinari SOTTO il campo, con spazio */
+  /* Lista panchinari SOTTO il campo, con spazio e wrap robusto */
   .subs-list{
-    position:absolute;
-    left:0; right:0;
-    bottom:calc(var(--pitch-bottom) - var(--subs-gap)); /* sotto il campo, non al fondo pagina */
-    color:#fff; font-size:1rem; text-align:center;
+    position:absolute; left:0; right:0;
+    bottom:calc(var(--pitch-bottom) - var(--subs-gap));
+    color:#fff;
+    font-size: clamp(.85rem, 1.3vw, 1rem);  /* tipografia fluida */
+    text-align:center;
     padding:2px 12px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Tweak per telefoni stretti */
+  @media (max-width: 480px){
+    :root{
+      --pitch-bottom: 16%;
+      --subs-gap: 8%;
+    }
   }
 </style>
 </head>
@@ -86,15 +99,15 @@
       </svg>
     </div>
 
-    <!-- Badge dentro al campo -->
+    <!-- Badge SUBS dentro al campo -->
     <div class="subs-badge">SUBS:</div>
 
-    <!-- Spazio per i panchinari (testo d’esempio) -->
+    <!-- Spazio per i panchinari (verranno poi dal Google Sheet) -->
     <div class="subs-list">[nomi panchinari qui]</div>
   </div>
 
 <script>
-/* === Disegno del campo in prospettiva === */
+/* === Disegno del campo in prospettiva (parametri FIFA) === */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
 const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
@@ -106,19 +119,24 @@ function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w)
 function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
 function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
 
+/* Perimetro e metà campo */
 addPolyline([TL,TR,BR,BL,TL],6);
 addLine(0,H/2,W,H/2,3);
-addCircle(W/2,H/2,9.15,0,2*Math.PI,280,3); addDot(W/2,H/2);
 
+/* Cerchio centrocampo */
+addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
+
+/* Aree e 5.5 */
 const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2, ay2=areaD;
 const gx1=cx-goalW/2, gx2=cx+goalW/2, gy2=goalD;
 addRect(ax1,0,ax2,ay2,3); addRect(gx1,0,gx2,gy2,3); addDot(cx,spot);
 const ay1b=H-areaD, gy1b=H-goalD;
 addRect(ax1,ay1b,ax2,H,3); addRect(gx1,gy1b,gx2,H,3); addDot(cx,H-spot);
 
-const eps=0.03, base=Math.acos((areaD-spot)/9.15);
-addCircle(cx,spot,9.15,base-eps,Math.PI-base+eps,260,3);
-addCircle(cx,H-spot,9.15,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
+/* Archi del rigore (verso il centrocampo, fuori area) con piccolo epsilon per chiusura pulita */
+const eps=0.03, base=Math.acos((areaD-spot)/R);
+addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
+addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 </script>
 </body>
 </html>
