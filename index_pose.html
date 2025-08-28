@@ -46,7 +46,7 @@
     font-size: clamp(1rem, 2vw, 1.2rem);
   }
 
-  /* Campo in prospettiva */
+  /* Campo in prospettiva (solo sfondo + linee) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -60,6 +60,19 @@
     box-shadow: inset 0 -40px 80px rgba(0,0,0,.35);
   }
   svg{position:absolute; inset:0; width:100%; height:100%}
+
+  /* Overlay giocatori SENZA clip-path: può uscire dal pitch */
+  .players-overlay{
+    position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
+    width:100%; height:75%;
+    overflow:visible; pointer-events:none; z-index:12;
+  }
+  .player{position:absolute; transform:translate(-50%,-50%);}
+  .chip{
+    background:#fff; color:#111; border-radius:999px;
+    padding:6px 10px; font-weight:900; font-size:12px; letter-spacing:.2px; white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.08);
+  }
 
   /* Badge SUBS dentro al campo */
   .subs-badge{
@@ -79,15 +92,6 @@
     word-break: break-word; overflow-wrap:anywhere;
   }
 
-  /* Titolari: badge numero. COGNOME */
-  .players{position:absolute; inset:0; z-index:12; pointer-events:none;}
-  .player{position:absolute; transform:translate(-50%,-50%);}
-  .chip{
-    background:#fff; color:#111; border-radius:999px;
-    padding:6px 10px; font-weight:900; font-size:12px; letter-spacing:.2px; white-space:nowrap;
-    box-shadow:0 6px 16px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.08);
-  }
-
   @media (max-width: 480px){
     :root{ --pitch-bottom: 16%; --subs-gap: 8%; }
   }
@@ -99,15 +103,16 @@
 
     <div class="matchday-badge">MATCHDAY</div>
 
+    <!-- Sfondo campo con clip-path -->
     <div class="pitch-wrap" id="pitchWrap">
       <div class="grass"></div>
       <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
         <g id="lines" stroke="white" fill="none"></g>
       </svg>
-
-      <!-- contenitore titolari -->
-      <div class="players" id="players"></div>
     </div>
+
+    <!-- Overlay giocatori (nessun clipping) -->
+    <div class="players-overlay" id="players"></div>
 
     <div class="subs-badge">SUBS:</div>
     <div class="subs-list" id="subsText">[nomi panchinari qui]</div>
@@ -147,7 +152,6 @@ addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
    Dati dai Google Sheet
    ======================= */
 const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const META_GID='254048258'; // non usato qui, ma lasciato per eventuali estensioni
 const DIST_GID='116187224';
 
 const gvizJsonURL=(id,gid)=>`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:json`;
@@ -200,36 +204,37 @@ function normalizeDist(rows){
 const COGNOME = full => {const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
 
 /* =======================
-   Posizioni 3-4-1-2 (percentuali nel box .pitch-wrap)
+   Posizioni 3-4-1-2 (shiftate più indietro)
    ======================= */
+/* Shift globale verso l’alto di ~3% per tutti, con GK custom vicino alla porta inferiore */
 const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // GK, D3, M4, AM, ST2
 const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
 
-const coords3412 = [
-  /* GK   */ [50, 86],
-  /* D3   */ [22, 66], [50, 70], [78, 66],
-  /* M4   */ [12, 47], [38, 47], [62, 47], [88, 47],
-  /* AM   */ [50, 35],
-  /* ST2  */ [38, 16], [62, 16],
+const baseCoords3412 = [
+  /* GK   */ [50, 92],   // Taborri: poco sopra la linea di porta inferiore
+  /* D3   */ [22, 63], [50, 67], [78, 63],
+  /* M4   */ [12, 44], [38, 44], [62, 44], [88, 44],
+  /* AM   */ [50, 32],
+  /* ST2  */ [38, 13], [62, 13],
 ];
 
-/* =======================
-   Render titolari + panchina
-   ======================= */
 function renderPlayers(byNum){
   const box=document.getElementById('players'); box.innerHTML='';
-  XI_NUMBERS.forEach((num,i)=>{
+  baseCoords3412.forEach((pos,i)=>{
+    const num=XI_NUMBERS[i];
     const p=byNum.get(num)||{num, name:''};
-    const [x,y]=coords3412[i]||[50,50];
+    const [x,y]=pos;
     const d=document.createElement('div'); d.className='player'; d.style.left=x+'%'; d.style.top=y+'%';
     const chip=document.createElement('div'); chip.className='chip'; chip.textContent=`${num}. ${COGNOME(p.name)}`;
     d.appendChild(chip); box.appendChild(d);
   });
 }
+
 function renderBench(byNum){
+  /* Nessuna virgola; stesso formato numero.COGNOME separato da spazio */
   const text = BENCH_NUMBERS.map(n=>{
-    const p=byNum.get(n)||{num:n,name:''}; return `${n} ${COGNOME(p.name)}`.trim();
-  }).join(', ');
+    const p=byNum.get(n)||{num:n,name:''}; return `${n}.${COGNOME(p.name)}`.trim();
+  }).join(' ');
   document.getElementById('subsText').textContent = text || '[nessun dato]';
 }
 
