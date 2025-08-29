@@ -191,12 +191,21 @@ const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // 3-4-1-2
 const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
 
 const coords3412 = [
-  [50,98],
-  [78,69], [50,72], [22,69],
-  [90,50], [64,60], [36,60], [10,50],
-  [50,43],
-  [64,16], [36,16]
-]; 
+  [34, 2],   // Portiere (GK)
+  [56, 18],  // Difensore centrale destro (RCB)
+  [34, 21],  // Difensore centrale (CB)
+  [12, 18],  // Difensore centrale sinistro (LCB)
+
+  [62, 42],  // Esterno destro (RWB)
+  [44, 45],  // Mezzala destra (RCM)
+  [24, 45],  // Mezzala sinistra (LCM)
+  [6,  42],  // Esterno sinistro (LWB)
+
+  [34, 62],  // Trequartista (CAM)
+
+  [44, 85],  // Attaccante destro (RST)
+  [24, 85]   // Attaccante sinistro (LST)
+];
 
 /* helpers */
 const el = s => document.querySelector(s);
