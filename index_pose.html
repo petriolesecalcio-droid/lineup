@@ -6,8 +6,8 @@
 <title>Campo in prospettiva + MATCHDAY + Foto sopra badge</title>
 <style>
   :root{
-    --pitch-bottom: 14%;
-    --subs-gap:      6%;
+    --pitch-bottom: 14%;     /* distanza del trapezio dal fondo */
+    --subs-gap:      6%;     /* quanto spazio lasciare fra campo e panchina */
     --bg:#0b0c11;
     --roof-dark:#151923;
     --roof-mid:#1f2531;
@@ -37,6 +37,7 @@
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
+  /* Trapezio del campo (clip SOLO per erba/linee) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -51,14 +52,17 @@
   }
   svg{position:absolute; inset:0; width:100%; height:100%;}
 
+  /* Layer dei giocatori: NIENTE clip, così foto/badge possono uscire */
   .players{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
     overflow:visible; pointer-events:none;
   }
 
-  .player{ position:absolute; transform:translate(-50%, -100%); }
+  /* Singolo giocatore (posizionato con left/top in %) */
+  .player{ position:absolute; transform:translate(-50%, -100%); /* l'ancora è sotto i piedi */ }
 
+  /* Foto busto scontornata */
   .player .photo{
     display:block;
     width:clamp(70px, 9.8vw, 130px);
@@ -67,22 +71,23 @@
     pointer-events:none;
   }
 
-  /* === NUOVO BADGE PENNELLATA === */
+  /* Badge sotto la foto (formato già concordato) */
   .badge{
-    position: relative;
-    display: inline-block;
-    width: 160px;               /* larghezza fissa sufficiente per 11.ACCIARRESI */
-    height: 50px;               /* adattala alle proporzioni del PNG */
-    background: url('img/badge.png') no-repeat center/contain;
-    text-align: center;
-    font-weight: 900;
-    font-size: clamp(12px,1.4vw,16px);
-    line-height: 50px;          /* centra verticalmente il testo */
-    color: #000;
-    margin-top: 4px;
-    white-space: nowrap;
+    margin-top:0px;
+    display:inline-block;
+    padding:6px 12px;
+    background:#fff;
+    color:#111;
+    border-radius:18px;
+    font-weight:900;
+    font-size:clamp(11px,1.3vw,14px);
+    line-height:1;
+    white-space:nowrap;
+    border:2px solid rgba(0,0,0,.08);
+    box-shadow:0 2px 8px rgba(0,0,0,.18);
   }
 
+  /* SUBS: badge dentro al campo, lista fuori */
   .subs-badge{
     position:absolute; bottom:calc(var(--pitch-bottom) + 6px);
     left:calc(3% + 6px);
@@ -107,6 +112,7 @@
     letter-spacing:.3px;
   }
 
+  /* MATCHDAY badge */
   .matchday-badge{
     position:absolute; top:12px; left:12px;
     padding:6px 14px;
@@ -119,15 +125,17 @@
 
   @media (max-width: 480px){
     :root{ --pitch-bottom: 16%; --subs-gap: 8%; }
-    .player .photo{ width:clamp(80px, 22vw, 140px); }
+    .player .photo{ width:clamp(80px, 22vw, 140px); } /* un filo più grande su mobile */
   }
 </style>
 </head>
 <body>
   <div class="stage">
     <div class="stadium"></div>
+
     <div class="matchday-badge">MATCHDAY</div>
 
+    <!-- Campo (clip) -->
     <div class="pitch-wrap">
       <div class="grass"></div>
       <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -135,15 +143,204 @@
       </svg>
     </div>
 
+    <!-- Layer giocatori (NO clip, così escono dai bordi su mobile) -->
     <div class="players" id="players"></div>
 
+    <!-- SUBS -->
     <div class="subs-badge">SUBS:</div>
     <div class="subs-list" id="subsList">[panchinari qui]</div>
   </div>
 
 <script>
-/* === Tutto lo script rimane invariato === */
-/* Pesca dati da Google Sheet e genera: foto + badge con `${num}.${SURNAME(name)}` */
+/* ====== DISEGNO CAMPO (uguale alla tua versione “giusta”) ====== */
+const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
+const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
+const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
+const G=document.getElementById('lines');
+function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline'); el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')); el.setAttribute('stroke','white'); el.setAttribute('fill','none'); el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round'); G.appendChild(el);}
+const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
+function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
+function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
+function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
+addPolyline([TL,TR,BR,BL,TL],6);
+addLine(0,H/2,W,H/2,3);
+addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
+const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2, ay2=areaD;
+const gx1=cx-goalW/2, gx2=cx+goalW/2, gy2=goalD;
+addRect(ax1,0,ax2,ay2,3); addRect(gx1,0,gx2,gy2,3); addDot(cx,spot);
+const ay1b=H-areaD, gy1b=H-goalD;
+addRect(ax1,ay1b,ax2,H,3); addRect(gx1,gy1b,gx2,H,3); addDot(cx,H-spot);
+const eps=0.03, base=Math.acos((areaD-spot)/R);
+addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
+addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
+
+/* ====== DATI (stesso foglio del tuo index con i “pallini”) ====== */
+const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const DIST_GID = '116187224';  // distinta
+const PUBLISHED_DIST_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
+
+const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // 3-4-1-2
+const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
+
+const coords3412 = [
+  [50,98], [78,79], [50,82], [22,79],
+  [86,58], [62,60], [38,60], [14,58],
+  [50,43], [62,26], [38,26]
+]; // leggermente arretrate; GK sta poco sopra la linea di porta
+
+/* helpers */
+const el = s => document.querySelector(s);
+const gvizCsvURL  = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u = new URL(pubhtmlUrl);
+  const parts = u.pathname.split('/');
+  const idIdx = parts.findIndex(p=>p==='e')+1;
+  const id = parts[idIdx] || '';
+  const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
+function parseCSV(text){
+  let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  const lines = t.split('\n').filter((ln,i)=> i===0 || ln.trim().length>0);
+  if (!lines.length) return [];
+  const rows=[]; let row=[], cur='', inQ=false;
+  const pushCell=()=>{ row.push(cur); cur=''; };
+  const pushRow =()=>{ rows.push(row); row=[]; };
+  const s = lines.join('\n');
+  for (let i=0;i<s.length;i++){
+    const c=s[i], n=s[i+1];
+    if (inQ){
+      if (c === '"' && n === '"'){ cur+='"'; i++; }
+      else if (c === '"'){ inQ=false; }
+      else { cur += c; }
+    }else{
+      if (c === '"'){ inQ=true; }
+      else if (c === ','){ pushCell(); }
+      else if (c === '\n'){ pushCell(); pushRow(); }
+      else { cur += c; }
+    }
+  }
+  if (cur!=='' || row.length) { pushCell(); pushRow(); }
+  const header = rows.shift().map(h=>String(h||'').trim());
+  return rows.map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
+}
+
+async function fetchDistRows(){
+  // 1) GViz CSV
+  try{
+    const res = await fetch(gvizCsvURL(SHEET_FILE_ID, DIST_GID), {cache:'no-store'});
+    if (!res.ok) throw new Error('gviz '+res.status);
+    const txt = await res.text();
+    const rows = parseCSV(txt);
+    if (rows.length) return rows;
+  }catch(e){}
+  // 2) Pub CSV fallback
+  const res = await fetch(pubCsvURL(PUBLISHED_DIST_URL), {cache:'no-store'});
+  const txt = await res.text();
+  return parseCSV(txt);
+}
+
+function normalizeDist(rows){
+  if (!rows || !rows.length) return new Map();
+  const keys = Object.keys(rows[0]);
+  // heuristics
+  const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  let kNum = keys.find(k=>/#|num|numero|maglia/.test(norm(k))) || keys[0];
+  let kName= keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k))) || keys[1];
+  let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
+  const map = new Map();
+  rows.forEach(r=>{
+    const n = Number(String(r[kNum]||'').trim());
+    if(!(n>0)) return;
+    map.set(n, {
+      num:n,
+      name: String(r[kName]||'').trim(),
+      photo: String(r[kPhoto]||'').trim()
+    });
+  });
+  return map;
+}
+const SURNAME = full => {
+  const t=String(full||'').trim();
+  if(!t) return '';
+  const p=t.split(/\s+/);
+  return p[p.length-1].toUpperCase();
+};
+
+/* ====== RENDER ====== */
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+
+function playerNode(obj, x, y){
+  const div = document.createElement('div');
+  div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+
+  // foto (se presente) sopra il badge
+  if (obj.photo) {
+    const img = document.createElement('img');
+    img.className='photo';
+    img.alt = obj.name || '';
+    img.src = obj.photo;
+    img.onerror = () => {
+      // fallback locale: img/players/NUMERO.png
+      img.onerror=null;
+      img.src = `img/players/${obj.num}.png`;
+    };
+    div.appendChild(img);
+  } else {
+    // tenta direttamente il locale
+    const img = document.createElement('img');
+    img.className='photo';
+    img.alt = obj.name || '';
+    img.src = `img/players/${obj.num}.png`;
+    img.onerror = () => img.remove();
+    div.appendChild(img);
+  }
+
+  const badge = document.createElement('span');
+  badge.className='badge';
+  badge.textContent = `${obj.num}.${SURNAME(obj.name)}`;
+  div.appendChild(badge);
+
+  return div;
+}
+
+function render(byNum){
+  const layer = document.getElementById('players');
+  layer.innerHTML = '';
+
+  XI_NUMBERS.forEach((n,i)=>{
+    const p = byNum.get(n) || {num:n, name:''};
+    const [ux,uy] = coords3412[i];
+    // mappa coordinate 0..100 in x/y (percent), convertendole sul trapezio (0..1000)
+    const world = map( W*ux/100, H*uy/100 );
+    const node = playerNode(p, world.x, world.y);
+    layer.appendChild(node);
+  });
+
+  // PANCHINA: senza virgole, stesso formato numero.COGNOME
+  const subs = BENCH_NUMBERS
+    .map(n => {
+      const p = byNum.get(n) || {num:n, name:''};
+      return `${p.num}.${SURNAME(p.name)}`;
+    })
+    .join('  ');
+  document.getElementById('subsList').textContent = subs;
+}
+
+/* ==== GO! ==== */
+(async function init(){
+  try{
+    const rows = await fetchDistRows();
+    const byNum = normalizeDist(rows);
+    render(byNum);
+  }catch(e){
+    console.error(e);
+    render(new Map()); // mostra solo numeri
+  }
+})();
 </script>
 </body>
 </html>
