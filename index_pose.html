@@ -134,6 +134,12 @@
     :root{ --pitch-bottom: 16%; --subs-gap: 8%; }
     .player .photo{ width:clamp(80px, 22vw, 140px); } /* un filo più grande su mobile */
   }
+  img.badge, .badge img, .badge {
+  width: clamp(220px, 32vw, 360px) !important; /* aumenta pure se vuoi */
+  height: auto !important;
+  max-width: none !important;
+  transform: none !important;   /* annulla eventuali scale() */
+}
 </style>
 </head>
 <body>
