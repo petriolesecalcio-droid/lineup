@@ -130,10 +130,20 @@
     letter-spacing:1px;
   }
 
-  @media (max-width: 480px){
-    :root{ --pitch-bottom: 16%; --subs-gap: 8%; }
-    .player .photo{ width:clamp(80px, 22vw, 140px); } /* un filo più grande su mobile */
+ @media (max-width: 480px){
+  :root{
+    --pitch-bottom: 16%;
+    --subs-gap: 8%;
   }
+
+  .player .photo{
+    width: clamp(80px, 22vw, 140px); /* un filo più grande su mobile */
+  }
+
+  .badge{
+    width: clamp(240px, 40vw, 400px); /* molto più grande su mobile */
+  }
+}
   img.badge, .badge img, .badge {
   width: clamp(220px, 32vw, 360px) !important; /* aumenta pure se vuoi */
   height: auto !important;
