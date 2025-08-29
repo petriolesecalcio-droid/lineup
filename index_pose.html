@@ -68,30 +68,33 @@
   align-items:center;           /* <— nuovo: centra orizzontalmente foto+badge */
 }
 
-  /* Default (desktop/tablet) */
-.badge{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width: clamp(160px, 18vw, 240px);   /* desktop più contenuto */
-  aspect-ratio: 5.5/1;
-  margin-top:-4px;
-  background: url('badge.png?v=4') center/100% auto no-repeat;
-  font-weight:900;
-  font-size: clamp(12px,1.6vw,16px);
-  color:#000;
-  white-space:nowrap;
-  line-height:1;
-  pointer-events:none;
-}
-  
 .player .photo{
   display:block;
-  width:clamp(70px, 9.8vw, 130px);
+  width: 9%;          /* circa il 9% della larghezza del campo */
   height:auto;
   filter: drop-shadow(0 8px 18px rgba(0,0,0,.45));
   pointer-events:none;
   margin:0 auto;
+  position:relative;
+  z-index:1;          /* sta dietro al badge */
+}
+
+.badge{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width: 28%;         /* circa il 28% della larghezza del campo */
+  aspect-ratio: 5.5/1;
+  margin-top:4px;
+  background: url('badge.png?v=6') center/100% auto no-repeat;
+  font-weight:900;
+  font-size: 2.2vw;   /* scala anche il testo */
+  color:#000;
+  white-space:nowrap;
+  line-height:1;
+  pointer-events:none;
+  position:relative;
+  z-index:2;          /* sta davanti alla foto */
 }
 
   /* SUBS: badge dentro al campo, lista fuori */
