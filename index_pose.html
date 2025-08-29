@@ -68,16 +68,7 @@
   align-items:center;           /* <— nuovo: centra orizzontalmente foto+badge */
 }
 
-.player .photo{
-  display:block;
-  width:clamp(70px, 9.8vw, 130px);
-  height:auto;
-  filter: drop-shadow(0 8px 18px rgba(0,0,0,.45));
-  pointer-events:none;
-  margin:0 auto;
-}
-
-/* Default (desktop/tablet) */
+  /* Default (desktop/tablet) */
 .badge{
   display:flex;
   align-items:center;
@@ -92,6 +83,15 @@
   white-space:nowrap;
   line-height:1;
   pointer-events:none;
+}
+  
+.player .photo{
+  display:block;
+  width:clamp(70px, 9.8vw, 130px);
+  height:auto;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,.45));
+  pointer-events:none;
+  margin:0 auto;
 }
 
   /* SUBS: badge dentro al campo, lista fuori */
