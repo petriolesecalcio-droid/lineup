@@ -191,20 +191,20 @@ const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // 3-4-1-2
 const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
 
 const coords3412 = [
-  [34, 2],   // Portiere (GK)
-  [56, 18],  // Difensore centrale destro (RCB)
-  [34, 21],  // Difensore centrale (CB)
-  [12, 18],  // Difensore centrale sinistro (LCB)
+  [34,103], // GK
+  [56, 87], // RCB
+  [34, 90], // CB
+  [12, 87], // LCB
 
-  [62, 42],  // Esterno destro (RWB)
-  [44, 45],  // Mezzala destra (RCM)
-  [24, 45],  // Mezzala sinistra (LCM)
-  [6,  42],  // Esterno sinistro (LWB)
+  [62, 63], // RWB
+  [44, 60], // RCM
+  [24, 60], // LCM
+  [ 6, 63], // LWB
 
-  [34, 62],  // Trequartista (CAM)
+  [34, 43], // CAM
 
-  [44, 85],  // Attaccante destro (RST)
-  [24, 85]   // Attaccante sinistro (LST)
+  [44, 20], // ST destro
+  [24, 20]  // ST sinistro
 ];
 
 /* helpers */
@@ -332,7 +332,7 @@ function render(byNum){
     const p = byNum.get(n) || {num:n, name:''};
     const [ux,uy] = coords3412[i];
     // mappa coordinate 0..100 in x/y (percent), convertendole sul trapezio (0..1000)
-    const world = map( W*ux/100, H*uy/100 );
+    const world = map( ux, uy );
     const node = playerNode(p, world.x, world.y);
     layer.appendChild(node);
   });
