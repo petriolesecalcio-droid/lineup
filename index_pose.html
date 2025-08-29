@@ -59,34 +59,40 @@
     overflow:visible; pointer-events:none;
   }
 
-  /* Singolo giocatore (posizionato con left/top in %) */
-  .player{ position:absolute; transform:translate(-50%, -100%);text-align:center; /* l'ancora è sotto i piedi */ }
+ .player{
+  position:absolute;
+  left:0; top:0;
+  transform:translate(-50%, -100%);
+  display:flex;                 /* <— nuovo */
+  flex-direction:column;        /* <— nuovo */
+  align-items:center;           /* <— nuovo: centra orizzontalmente foto+badge */
+}
 
-  /* Foto busto scontornata */
-  .player .photo{
-    display:block;
-    width:clamp(70px, 9.8vw, 130px);
-    height:auto;
-    filter: drop-shadow(0 8px 18px rgba(0,0,0,.45));
-    pointer-events:none;
-  }
+.player .photo{
+  display:block;
+  width:clamp(70px, 9.8vw, 130px);
+  height:auto;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,.45));
+  pointer-events:none;
+  margin:0 auto;
+}
 
-  /* Badge sotto la foto (formato già concordato) */
-  .badge{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width: clamp(150px, 22vw, 240px); /* abbastanza lungo per 11.ACCIARRESI */
-    aspect-ratio: 5.5/1;              /* proporzione del tuo PNG */
-    margin:4px auto 0;
-    background: url('img/badge.png') center/contain no-repeat;
-    font-weight:900;
-    font-size:clamp(12px,1.6vw,16px);
-    color:#000;
-    white-space:nowrap;
-    line-height:1;
-    pointer-events:none;
-  }
+/* BADGE pennellata */
+.badge{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width: clamp(150px, 22vw, 240px);  /* stessa lunghezza per tutti */
+  aspect-ratio: 5.5/1;               /* proporzione del tuo PNG */
+  margin-top:4px;
+  background: url('badge.png?v=2') center/contain no-repeat; /* <— percorso corretto */
+  font-weight:900;
+  font-size:clamp(12px,1.6vw,16px);
+  color:#000;
+  white-space:nowrap;
+  line-height:1;
+  pointer-events:none;
+}
 
   /* SUBS: badge dentro al campo, lista fuori */
   .subs-badge{
