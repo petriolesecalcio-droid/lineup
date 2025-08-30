@@ -111,23 +111,39 @@
     z-index:3;
     box-shadow:0 0 0 .2cqh rgba(0,0,0,.25);
   }
+/* lista panchinari centrata nello spazio sotto il campo */
+.subs-list{
+  position:absolute;
+  left:0; right:0;
 
+  /* occupa lo spazio sotto al campo, con un piccolo margine interno */
+  bottom: calc(var(--subs-gap) + 1cqh);
+  height: calc(var(--pitch-bottom) - var(--subs-gap) - 2cqh);
+
+  display:flex;
+  align-items:center;      /* centro verticale */
+  justify-content:center;  /* centro orizzontale */
+
+  color:#fff;
+  font-size:clamp(.85rem,1.3cqw,1rem);
+  line-height:1.15;                 /* riduce l’altezza della riga */
+  text-align:center;
+  padding:.3cqh 1cqw;               /* padding più leggero */
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  opacity:.95;
+  letter-spacing:.2cqw;
+}
+
+/* su schermi stretti aumenta lo spazio sotto al campo */
+@media (max-width: 600px) {
+  :root { --subs-gap: 10%; }        /* prima era 8% */
   .subs-list{
-    position:absolute; left:0; right:0;
-
-    /* occupa esattamente lo spazio sotto il campo */
-    bottom:var(--subs-gap);
-    height:calc(var(--pitch-bottom) - var(--subs-gap));
-
-    display:flex; align-items:center; justify-content:center;
-
-    color:#fff;
-    font-size:clamp(.85rem,1.3cqw,1rem);
-    text-align:center;
-    padding:.5cqh 1cqw;
-    word-break:break-word; overflow-wrap:anywhere;
-    opacity:.95; letter-spacing:.2cqw;
+    bottom: calc(var(--subs-gap) + 1.2cqh);
+    height: calc(var(--pitch-bottom) - var(--subs-gap) - 2.4cqh);
+    font-size: clamp(.9rem, 1.6cqw, 1.05rem);  /* leggibile ma contenuto */
   }
+}
 </style>
 </head>
 <body>
