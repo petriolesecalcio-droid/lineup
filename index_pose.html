@@ -124,13 +124,25 @@
   /* opzionale per leggibilità sulla linea bianca: */
   box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
 }
-.subs-list{
+  <div class="subs-zone">
+  <div class="subs-list" id="subsList">[panchinari qui]</div>
+</div>
+/* Area sotto al campo: dal bordo del campo fino al margine inferiore meno il gap */
+.subs-zone{
   position:absolute;
   left:0; right:0;
+  bottom: var(--subs-gap);
+  height: calc(var(--pitch-bottom) - var(--subs-gap));
+  display:flex;
+  align-items:center;        /* ← centra verticalmente */
+  justify-content:center;    /* ← centra orizzontalmente */
+  pointer-events:none;
+  padding: 0 1cqw;
+}
 
-  /* metà dello spazio fra il fondo dello stage e il fondo del campo */
-  bottom: calc( (var(--pitch-bottom) - var(--subs-gap)) / 2 );
-
+/* La lista non serve più absolute: lasciamola “statica” nel flex container */
+.subs-list{
+  position:static;
   color:#fff;
   font-size: clamp(.85rem, 1.3cqw, 1rem);
   text-align:center;
@@ -140,7 +152,6 @@
   opacity:.95;
   letter-spacing:.2cqw;
 }
-
  .matchday-badge{
    position:absolute;
    top:2cqh; left:2cqw;
