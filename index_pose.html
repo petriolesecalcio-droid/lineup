@@ -21,7 +21,7 @@
     --badge-font: min(1.8cqh, 2.3cqw);
     --badge-overlap: 1.4cqh;
 
-    /* === Testo elenco SUBS === */
+    /* === Elenco SUBS === */
     --subs-font:  min(1.6cqh, 2.1cqw);
     --subs-weight: 800;
     --subs-tracking: .18cqw;
@@ -30,15 +30,15 @@
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
 
-    /* ====== Pennellate badge globali ====== */
+    /* === Pennellate globali === */
     --brush-ar: 5.5;                 /* rapporto larghezza/altezza pennellata */
 
-    /* MATCHDAY controls */
+    /* MATCHDAY */
     --md-h: 4.8cqh;                  /* altezza badge */
     --md-scale: 1.15;                /* larghezza pennellata (scala orizzontale) */
     --md-font: min(1.8cqh, 2.3cqw);  /* dimensione testo */
 
-    /* SUBS controls */
+    /* SUBS */
     --sb-h: 4.8cqh;
     --sb-scale: 1.20;
     --sb-font: min(1.6cqh, 2.1cqw);
@@ -127,12 +127,12 @@
     z-index: 2;
   }
 
-  /* ====== BADGE GLOBALI (pennellata ancorata a sinistra, senza drift) ====== */
+  /* ====== BADGE GLOBALI (pennellata centrata, si muove col badge) ====== */
   .badge-plate{
     position:absolute;
     display:flex; align-items:center; justify-content:center;
-    height: var(--h);                               /* altezza modulabile */
-    width: calc(var(--h) * var(--brush-ar));        /* base dal rapporto */
+    height: var(--h);
+    width: calc(var(--h) * var(--brush-ar) * var(--scale)); /* box segue la pennellata */
     font-weight:900; color:#fff; text-transform:uppercase;
     font-size: var(--font); letter-spacing:.18cqw; white-space:nowrap;
     padding: 0 .9cqw;
@@ -141,9 +141,7 @@
   .badge-plate::before{
     content:"";
     position:absolute; inset:0;
-    background: url('badge-bg.webp') left center / contain no-repeat;
-    transform-origin: left center;                  /* ancora al bordo sinistro */
-    transform: scaleX(var(--scale));                /* allarga/accorcia la pennellata */
+    background: url('badge-bg.webp') center / contain no-repeat; /* pennellata centrata */
     z-index:-1;
   }
 
@@ -162,7 +160,7 @@
     --font: var(--sb-font);
     left: 2cqw;
     bottom: var(--pitch-bottom);
-    transform: translateY(50%);
+    transform: translateY(50%);   /* metà sopra la linea bianca */
     z-index:3; pointer-events:none;
   }
 
@@ -213,7 +211,7 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- MATCHDAY (pennellata completa) -->
+    <!-- MATCHDAY (pennellata centrata) -->
     <div class="matchday-badge badge-plate">MATCHDAY</div>
 
     <!-- Campo (clip) -->
@@ -227,7 +225,7 @@
     <!-- Layer giocatori (NO clip) -->
     <div class="players" id="players"></div>
 
-    <!-- SUBS (pennellata completa, sinistra, a cavallo) -->
+    <!-- SUBS (pennellata centrata, sinistra, a cavallo) -->
     <div class="subs-badge badge-plate">SUBS</div>
 
     <!-- Elenco panchina -->
@@ -243,11 +241,22 @@ const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
 const G=document.getElementById('lines');
-function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline'); el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')); el.setAttribute('stroke','white'); el.setAttribute('fill','none'); el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round'); G.appendChild(el);}
+function addPolyline(pts,w=3){
+  const el=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+  el.setAttribute('stroke','white'); el.setAttribute('fill','none');
+  el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
+  G.appendChild(el);
+}
 const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
 function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
-function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
-function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
+function addCircle(cx,cy,r,from,to,steps=240,w=3){
+  const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);
+}
+function addDot(u,v,r=2.2){
+  const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);
+}
 addPolyline([TL,TR,BR,BL,TL],6);
 addLine(0,H/2,W,H/2,3);
 addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
