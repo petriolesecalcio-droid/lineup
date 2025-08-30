@@ -133,25 +133,25 @@
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
   }
 
-  /* SUBS centrato a cavallo della linea di fondo campo */
-  .subs-badge{
-    position:absolute;
-    bottom: var(--pitch-bottom);
-    left: 50%;
-    transform: translate(-50%, 50%);
-    width: 30cqw;                /* leggermente più largo del matchday */
-    aspect-ratio: 5.5/1;
-    display:flex; align-items:center; justify-content:center;
-    background: url('badge-bg.webp') center / cover no-repeat;
-    color:#fff; font-weight:900;
-    font-size: min(1.6cqh, 2.1cqw);
-    letter-spacing:.18cqw;
-    text-transform: uppercase;
-    padding: 0 .8cqw;
-    filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
-    pointer-events:none;
-    z-index: 3;
-  }
+/* SUBS a sinistra, a cavallo della linea di fondo campo */
+.subs-badge{
+  position:absolute;
+  bottom: var(--pitch-bottom);
+  left: 2cqw;                 /* <-- allineato a sinistra */
+  transform: translateY(50%); /* metà sopra la linea di fondo */
+  width: 30cqw;
+  aspect-ratio: 5.5/1;
+  display:flex; align-items:center; justify-content:center;
+  background: url('badge-bg.webp') left center / contain no-repeat; /* pennellata completa */
+  color:#fff; font-weight:900;
+  font-size: min(1.6cqh, 2.1cqw);
+  letter-spacing:.18cqw;
+  text-transform: uppercase;
+  padding: 0 .8cqw;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
+  pointer-events:none;
+  z-index: 3;
+}
 
   /* Zona sotto al campo = tutto lo spazio dal fondo campo al fondo stage */
   .subs-zone{
