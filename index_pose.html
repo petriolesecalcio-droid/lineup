@@ -170,6 +170,22 @@
     text-transform: var(--subs-transform);
     color:#fff; opacity:.95;
   }
+  /* Pixel/telefoni: SUBS più grandi, meno tracking, riga più larga */
+@container (max-width: 520px){
+  .stage{
+    /* più grande e guidato dall'altezza del campo */
+    --subs-font: clamp(15px, 2.6cqh, 3.8cqw);
+
+    /* meno spazio tra le lettere: sta tutto su 2 righe più spesso */
+    --subs-tracking: .06cqw;
+
+    /* usa quasi tutta la larghezza disponibile */
+    --subs-maxw: calc(100% - 1cqw);
+  }
+
+  /* recuperiamo un filo di spazio ai lati della zona */
+  .subs-zone{ padding: 0 1cqw; }
+}
 </style>
 </head>
 <body>
