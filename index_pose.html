@@ -23,12 +23,18 @@
     font-family:system-ui,Arial,sans-serif;
   }
 
-  .stage{
-    position:relative; width:min(1200px,96vw); aspect-ratio:9/16; max-height:96vh;
-    overflow:hidden; border-radius:18px; background:#0b0c11;
-    box-shadow:0 25px 80px rgba(0,0,0,.6);
-  }
+.stage{
+  position:relative;
+  width:min(1200px,96vw);
+  aspect-ratio:9/16;
+  max-height:96vh;
+  overflow:hidden;
+  border-radius:18px;
+  background:#0b0c11;
+  box-shadow:0 25px 80px rgba(0,0,0,.6);
 
+  container-type:inline-size;  /* <— aggiunto */
+}
   .stadium{
     position:absolute; inset:0;
     background:
@@ -97,41 +103,44 @@
   z-index:2;
 }
 
-  /* SUBS: badge dentro al campo, lista fuori */
-  .subs-badge{
-    position:absolute; bottom:calc(var(--pitch-bottom) + 6px);
-    left:calc(3% + 6px);
-    padding:4px 10px;
-    background:var(--rossoblu);
-    color:#fff; font-weight:700;
-    font-size: clamp(.8rem, 1.2vw, .95rem);
-    border-radius:4px;
-    min-width:56px; text-align:center;
-    pointer-events:none;
-  }
-  .subs-list{
-    position:absolute; left:0; right:0;
-    bottom:calc(var(--pitch-bottom) - var(--subs-gap));
-    color:#fff;
-    font-size: clamp(.85rem, 1.3vw, 1rem);
-    text-align:center;
-    padding:2px 12px;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    opacity:.95;
-    letter-spacing:.3px;
-  }
+/* SUBS badge dentro al campo, scala con il container */
+.subs-badge{
+  position:absolute;
+  bottom:calc(var(--pitch-bottom) + 2cqh);
+  left:3cqw;
+  padding:.5cqh 1cqw;
+  background:var(--rossoblu);
+  color:#fff; font-weight:700;
+  font-size:clamp(.8rem,1.2cqw,.95rem);
+  border-radius:.4cqw;
+  min-width:10cqw; text-align:center;
+}
 
-  /* MATCHDAY badge */
-  .matchday-badge{
-    position:absolute; top:12px; left:12px;
-    padding:6px 14px;
-    background:var(--rossoblu);
-    color:#fff; font-weight:700;
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    border-radius:6px;
-    letter-spacing:1px;
-  }
+/* Lista dei sostituti: centrata sotto al campo */
+.subs-list{
+  position:absolute;
+  left:0; right:0;
+  bottom:calc(var(--pitch-bottom) - var(--subs-gap));
+  color:#fff;
+  font-size:clamp(.85rem,1.3cqw,1rem);
+  text-align:center;
+  padding:.5cqh 1cqw;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  opacity:.95;
+  letter-spacing:.2cqw;
+}
+
+ .matchday-badge{
+   position:absolute;
+   top:2cqh; left:2cqw;
+   padding:.8cqh 1.6cqw;
+   background:var(--rossoblu);
+   color:#fff; font-weight:700;
+   font-size:clamp(1rem,2cqw,1.2rem);
+   border-radius:.6cqw;
+   letter-spacing:.3cqw;
+ }
 }
 </style>
 </head>
