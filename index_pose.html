@@ -67,39 +67,43 @@
   container-type: inline-size;   /* <— CHIAVE */
 }
 
- .player{
+.player{
   position:absolute;
   left:0; top:0;
   transform:translate(-50%, -100%);
-  display:flex;                 /* <— nuovo */
-  flex-direction:column;        /* <— nuovo */
-  align-items:center;           /* <— nuovo: centra orizzontalmente foto+badge */
+  /* non serve più il flex: il badge viene assoluto */
+  display:block;
+  overflow:visible;
 }
 
-/* 2) Foto e badge proporzionali alla larghezza del campo (.players) */
+/* la foto resta come l'hai impostata: grande su desktop */
 .player .photo{
-  width: 15cqw;                   /* ~9% della larghezza del campo */
+  width: 15cqw;
   height:auto;
   position:relative;
+  display:block;
   z-index:1;
 }
 
+/* badge sovrapposto alla foto → non “alza” più il giocatore */
 .badge{
-  display:flex;
-  align-items:center; 
-  justify-content:center;   /* testo centrato */
-  width: 20cqw;             /* proporzione rispetto al campo */
+  position:absolute;
+  left:50%;
+  top: calc(100% - 1.2cqw);   /* quanto “entra” sulla foto (alza/abbassa qui) */
+  transform: translateX(-50%);
+
+  display:flex; align-items:center; justify-content:center;
+  width: 20cqw;
   aspect-ratio: 5.5/1;
-  margin-top:4px;
+
+  /* niente margin-top qui */
   background: url('badge.png?v=6') center/100% auto no-repeat;
-  font-family: system-ui, Arial, sans-serif; /* lo stesso font del body */
+  font-family: system-ui, Arial, sans-serif;
   font-weight:900;
-  font-size: 2cqw;          /* scala con la larghezza del campo */
+  font-size: 2cqw;
   color:#000;
-  white-space:nowrap;
-  line-height:1;
+  white-space:nowrap; line-height:1;
   pointer-events:none;
-  position:relative;
   z-index:2;
 }
 
