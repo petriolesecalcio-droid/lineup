@@ -18,6 +18,14 @@
     --badge-w: 16cqh;        /* larghezza badge proporzionale all'altezza */
     --badge-font: min(1.8cqh, 2.3cqw); /* testo: segue cqh ma non esplode su stretto */
     --badge-overlap: 1.4cqh;   /* quanto il badge “entra” sulla foto */
+      /* SUBS controls */
+  --subs-font:  min(1.6cqh, 2.1cqw); /* grandezza testo */
+  --subs-weight: 800;                /* 400..900 */
+  --subs-tracking: .18cqw;           /* letter-spacing */
+  --subs-line: 1.15;                 /* line-height */
+  --subs-transform: uppercase;       /* none | uppercase | lowercase */
+  --subs-maxw: calc(100% - 6cqw);    /* larghezza max del blocco per andare a capo */
+  --subs-font-family: system-ui, Arial, sans-serif; /* famiglia */
   }
 
   html,body{height:100%}
@@ -126,17 +134,30 @@
   position:absolute;
   left:0; right:0;
 
-  /* metà dello spazio fra il fondo dello stage e il fondo del campo */
+  /* centrata nell’area sotto al campo (come avevi) */
   bottom: calc( (var(--pitch-bottom) - var(--subs-gap)) / 2 );
 
-  color:#fff;
-  font-size: clamp(.85rem, 1.3cqw, 1rem);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* tipografia modulabile */
+  font-family: var(--subs-font-family);
+  font-size: var(--subs-font);
+  font-weight: var(--subs-weight);
+  letter-spacing: var(--subs-tracking);
+  line-height: var(--subs-line);
+  text-transform: var(--subs-transform);
   text-align:center;
-  padding:.5cqh 1cqw;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+
+  /* wrapping controllato */
+  max-width: var(--subs-maxw);
+  margin: 0 auto;
+  white-space: normal;       /* permetti a capo */
+  overflow-wrap: anywhere;   /* spezza se serve */
+
+  color:#fff;
   opacity:.95;
-  letter-spacing:.2cqw;
 }
 
  .matchday-badge{
