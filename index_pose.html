@@ -130,33 +130,32 @@
   /* opzionale per leggibilità sulla linea bianca: */
   box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
 }
-.subs-list{
+/* area SOTTO al campo: dal bordo inferiore della stage fino
+   a (var(--pitch-bottom) - var(--subs-gap)) sotto la linea di fondo */
+.subs-zone{
   position:absolute;
   left:0; right:0;
-
-  /* centrata nell’area sotto al campo (come avevi) */
-  bottom: calc( (var(--pitch-bottom) - var(--subs-gap)) / 2 );
-
+  bottom:0;
+  height: calc(var(--pitch-bottom) - var(--subs-gap));
   display:flex;
-  align-items:center;
-  justify-content:center;
+  align-items:center;      /* centra VERTICALMENTE */
+  justify-content:center;  /* centra ORIZZONTALMENTE */
+  padding: 0 2cqw;
+  pointer-events:none;
+}
 
-  /* tipografia modulabile */
-  font-family: var(--subs-font-family);
-  font-size: var(--subs-font);
-  font-weight: var(--subs-weight);
-  letter-spacing: var(--subs-tracking);
-  line-height: var(--subs-line);
-  text-transform: var(--subs-transform);
-  text-align:center;
-
-  /* wrapping controllato */
-  max-width: var(--subs-maxw);
+/* la lista non è più assoluta: si fa centrare da flex */
+.subs-list{
+  position: static;
+  max-width: min(96%, 92cqw);
   margin: 0 auto;
-  white-space: normal;       /* permetti a capo */
-  overflow-wrap: anywhere;   /* spezza se serve */
-
   color:#fff;
+  font-size: clamp(.85rem, 1.3cqw, 1rem);
+  text-align:center;
+  letter-spacing:.2cqw;
+  line-height:1.15;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   opacity:.95;
 }
 
@@ -190,9 +189,11 @@
     <!-- Layer giocatori (NO clip, così escono dai bordi su mobile) -->
     <div class="players" id="players"></div>
 
-    <!-- SUBS -->
-    <div class="subs-badge">SUBS:</div>
-    <div class="subs-list" id="subsList">[panchinari qui]</div>
+<!-- SUBS -->
+<div class="subs-badge">SUBS:</div>
+<div class="subs-zone">
+  <div class="subs-list" id="subsList"></div>
+</div>
   </div>
 
 <script>
