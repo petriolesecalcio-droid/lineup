@@ -14,6 +14,10 @@
     --roof-glow:rgba(255,255,255,.08);
     --grass-1:#0a6f20; --grass-2:#0d7f26;
     --rossoblu:linear-gradient(90deg,#8b0000,#000080);
+    --photo-h: 20cqh;          /* tieni la tua taglia attuale */
+    --badge-w: 12.5cqh;        /* larghezza badge proporzionale all'altezza */
+    --badge-font: min(1.6cqh, 2.1cqw); /* testo: segue cqh ma non esplode su stretto */
+    --badge-overlap: 1.4cqh;   /* quanto il badge “entra” sulla foto */
   }
 
   html,body{height:100%}
@@ -76,32 +80,31 @@
 }
 
 .player .photo{
-  /* SCALA VERTICALE: 1 cqh = 1% dell’altezza di .players */
-  height: 20cqh;                 /* prova 10–12cqh a gusto */
+  height: var(--photo-h);
   width: auto;
-  position:relative;
-  display:block;
-  z-index:1;
+  position: relative;
+  display: block;
+  z-index: 1;
 }
 
+/* badge sovrapposto e proporzionato alla stessa “unità” del campo */
 .badge{
-  /* sovrapposto alla foto → non aumenta l’ingombro verticale */
-  position:absolute;
-  left:50%;
-  top: calc(100% - 1.4cqh);      /* quanto “entra” sulla foto (regola qui) */
+  position: absolute;
+  left: 50%;
+  top: calc(100% - var(--badge-overlap));
   transform: translateX(-50%);
 
-  display:flex; align-items:center; justify-content:center;
-  width: 20cqw;                  /* puoi lasciarlo in cqw */
+  display: flex; align-items: center; justify-content: center;
+  width: var(--badge-w);
+  max-width: 24cqw;                /* sicurezza: non superare troppo la larghezza campo */
   aspect-ratio: 5.5/1;
+
+  font-size: var(--badge-font);
+  font-weight: 900;
   background: url('badge.png?v=6') center/100% auto no-repeat;
-  font-family: system-ui, Arial, sans-serif;
-  font-weight:900;
-  font-size: 2cqw;
-  color:#000;
-  white-space:nowrap; line-height:1;
-  pointer-events:none;
-  z-index:2;
+  color:#000; white-space: nowrap; line-height: 1;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .subs-badge{
