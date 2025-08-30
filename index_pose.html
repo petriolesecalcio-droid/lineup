@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Matchday - Petriolese Calcio</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+<title>Matchday - Petriolese Calcio</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
 <style>
   :root{
     --pitch-bottom: 14%;           /* distanza del trapezio dal fondo */
@@ -18,16 +18,16 @@
 
     /* === Manopole giocatori / badge (in cqh = % altezza campo) === */
     --photo-h: 20cqh;              /* altezza foto titolari */
-    --badge-w: 16cqh;            /* larghezza badge */
-    --badge-font: min(1.8cqh, 2.3cqw);  /* grandezza testo badge */
-    --badge-overlap: 1.4cqh;       /* quanto il badge “entra” sulla foto */
+    --badge-w: 16cqh;              /* larghezza badge giocatore */
+    --badge-font: min(1.8cqh, 2.3cqw);
+    --badge-overlap: 1.4cqh;
 
-    /* === Manopole SUBS === */
+    /* === Manopole SUBS (testo elenco) === */
     --subs-font:  min(1.6cqh, 2.1cqw);
     --subs-weight: 800;
     --subs-tracking: .18cqw;
     --subs-line: 1.15;
-    --subs-transform: uppercase;   /* none | uppercase | lowercase */
+    --subs-transform: uppercase;
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
   }
@@ -109,52 +109,61 @@
     aspect-ratio: 5.5/1;
     font-size: var(--badge-font);
     font-weight: 900;
-    background: url('badge.png?v=6') center/100% auto no-repeat;
+    background: url('badge.png?v=6') center/100% auto no-repeat; /* badge dei giocatori (resta invariato) */
     color:#000; white-space: nowrap; line-height: 1;
     pointer-events: none;
     z-index: 2;
   }
 
-  /* MATCHDAY */
+  /* ====== BADGE GLOBALI CON PENNELLATA WEBP ====== */
+
+  /* MATCHDAY in alto a sinistra */
   .matchday-badge{
     position:absolute;
     top:2cqh; left:2cqw;
-    padding:.8cqh 1.6cqw;
-    background:var(--rossoblu);
-    color:#fff; font-weight:700;
-    font-size:clamp(1rem,2cqw,1.2rem);
-    border-radius:.6cqw;
-    letter-spacing:.3cqw;
+    width: 26cqw;                /* scala con la larghezza del container */
+    aspect-ratio: 5.5/1;
+    display:flex; align-items:center; justify-content:center;
+    background: url('badge-bg.webp') center / cover no-repeat; /* pennellata rossa/blu */
+    color:#fff; font-weight:900;
+    font-size: min(1.8cqh, 2.3cqw);
+    letter-spacing:.2cqw;
+    text-transform: uppercase;
+    padding: 0 .8cqw;            /* un filo di respiro laterale */
+    filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
   }
 
-  /* SUBS: badge a cavallo della linea di fondo */
+  /* SUBS centrato a cavallo della linea di fondo campo */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
-    transform: translateY(50%);
-    left: 3cqw;
-    padding: .5cqh 1cqw;
-    background: var(--rossoblu);
-    color:#fff; font-weight:700;
-    font-size: clamp(.8rem, 1.2cqw, .95rem);
-    border-radius: .4cqw;
-    min-width: 10cqw; text-align:center;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: 30cqw;                /* leggermente più largo del matchday */
+    aspect-ratio: 5.5/1;
+    display:flex; align-items:center; justify-content:center;
+    background: url('badge-bg.webp') center / cover no-repeat;
+    color:#fff; font-weight:900;
+    font-size: min(1.6cqh, 2.1cqw);
+    letter-spacing:.18cqw;
+    text-transform: uppercase;
+    padding: 0 .8cqw;
+    filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
     pointer-events:none;
     z-index: 3;
-    box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
   }
 
-/* Zona sotto al campo = TUTTO lo spazio dal fondo campo al fondo stage */
-.subs-zone{
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height: var(--pitch-bottom);   /* <— prima c’era calc(var(--pitch-bottom) - var(--subs-gap)) */
-  display:flex;
-  align-items:center;            /* centro verticale */
-  justify-content:center;        /* centro orizzontale */
-  padding: 0 2cqw;
-  pointer-events:none;
-}
+  /* Zona sotto al campo = tutto lo spazio dal fondo campo al fondo stage */
+  .subs-zone{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height: var(--pitch-bottom);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 0 2cqw;
+    pointer-events:none;
+  }
 
   .subs-zone .subs-list{
     position: static;
@@ -171,28 +180,23 @@
     text-transform: var(--subs-transform);
     color:#fff; opacity:.95;
   }
+
   /* Pixel/telefoni: SUBS più grandi, meno tracking, riga più larga */
-@container (max-width: 520px){
-  .stage{
-    /* più grande e guidato dall'altezza del campo */
-    --subs-font: clamp(15px, 2.6cqh, 3.8cqw);
-
-    /* meno spazio tra le lettere: sta tutto su 2 righe più spesso */
-    --subs-tracking: .06cqw;
-
-    /* usa quasi tutta la larghezza disponibile */
-    --subs-maxw: calc(100% - 1cqw);
+  @container (max-width: 520px){
+    .stage{
+      --subs-font: clamp(15px, 2.6cqh, 3.8cqw);
+      --subs-tracking: .06cqw;
+      --subs-maxw: calc(100% - 1cqw);
+    }
+    .subs-zone{ padding: 0 1cqw; }
   }
-
-  /* recuperiamo un filo di spazio ai lati della zona */
-  .subs-zone{ padding: 0 1cqw; }
-}
 </style>
 </head>
 <body>
   <div class="stage">
     <div class="stadium"></div>
 
+    <!-- MATCHDAY (pennellata) -->
     <div class="matchday-badge">MATCHDAY</div>
 
     <!-- Campo (clip) -->
@@ -206,8 +210,10 @@
     <!-- Layer giocatori (NO clip) -->
     <div class="players" id="players"></div>
 
-    <!-- SUBS -->
-    <div class="subs-badge">SUBS:</div>
+    <!-- SUBS (pennellata) -->
+    <div class="subs-badge">SUBS</div>
+
+    <!-- Elenco panchina -->
     <div class="subs-zone">
       <div class="subs-list" id="subsList"></div>
     </div>
