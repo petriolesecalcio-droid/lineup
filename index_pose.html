@@ -23,18 +23,18 @@
     font-family:system-ui,Arial,sans-serif;
   }
 
-.stage{
-  position:relative;
-  width:min(1200px,96vw);
-  aspect-ratio:9/16;
-  max-height:96vh;
-  overflow:hidden;
-  border-radius:18px;
-  background:#0b0c11;
-  box-shadow:0 25px 80px rgba(0,0,0,.6);
+  .stage{
+    position:relative;
+    width:min(1200px,96vw);
+    aspect-ratio:9/16;
+    max-height:96vh;
+    overflow:hidden;
+    border-radius:18px;
+    background:#0b0c11;
+    box-shadow:0 25px 80px rgba(0,0,0,.6);
+    container-type:inline-size;
+  }
 
-  container-type:inline-size;  /* <— aggiunto */
-}
   .stadium{
     position:absolute; inset:0;
     background:
@@ -58,115 +58,76 @@
   }
   svg{position:absolute; inset:0; width:100%; height:100%;}
 
-/* 1) Rendi il layer un container */
-.players{
-  position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
-  width:100%; height:75%;
-  overflow:visible; pointer-events:none;
+  /* Layer giocatori */
+  .players{
+    position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
+    width:100%; height:75%;
+    overflow:visible; pointer-events:none;
+    container-type:inline-size;
+  }
+  .player{
+    position:absolute;
+    left:0; top:0;
+    transform:translate(-50%, -100%);
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .player .photo{
+    width:9cqw; height:auto; position:relative; z-index:1;
+  }
+  .badge{
+    display:flex; align-items:center; justify-content:center;
+    width:20cqw; aspect-ratio:5.5/1; margin-top:4px;
+    background:url('badge.png?v=6') center/100% auto no-repeat;
+    font-family:system-ui,Arial,sans-serif; font-weight:900;
+    font-size:2cqw; color:#000; white-space:nowrap; line-height:1;
+    pointer-events:none; position:relative; z-index:2;
+  }
 
-  container-type: inline-size;   /* <— CHIAVE */
-}
+  /* MATCHDAY badge */
+  .matchday-badge{
+    position:absolute;
+    top:2cqh; left:2cqw;
+    padding:.8cqh 1.6cqw;
+    background:var(--rossoblu);
+    color:#fff; font-weight:700;
+    font-size:clamp(1rem,2cqw,1.2rem);
+    border-radius:.6cqw;
+    letter-spacing:.3cqw;
+  }
 
- .player{
-  position:absolute;
-  left:0; top:0;
-  transform:translate(-50%, -100%);
-  display:flex;                 /* <— nuovo */
-  flex-direction:column;        /* <— nuovo */
-  align-items:center;           /* <— nuovo: centra orizzontalmente foto+badge */
-}
+  /* SUBS: badge a cavallo, lista centrata sotto */
+  .subs-badge{
+    position:absolute;
+    bottom:var(--pitch-bottom);
+    transform:translateY(50%);         /* metà sopra, metà sotto */
+    left:3cqw;
+    padding:.5cqh 1cqw;
+    background:var(--rossoblu);
+    color:#fff; font-weight:700;
+    font-size:clamp(.8rem,1.2cqw,.95rem);
+    border-radius:.4cqw;
+    min-width:10cqw; text-align:center;
+    pointer-events:none;
+    z-index:3;
+    box-shadow:0 0 0 .2cqh rgba(0,0,0,.25);
+  }
 
-/* 2) Foto e badge proporzionali alla larghezza del campo (.players) */
-.player .photo{
-  width: 9cqw;                   /* ~9% della larghezza del campo */
-  height:auto;
-  position:relative;
-  z-index:1;
-}
+  .subs-list{
+    position:absolute; left:0; right:0;
 
-.badge{
-  display:flex;
-  align-items:center; 
-  justify-content:center;   /* testo centrato */
-  width: 20cqw;             /* proporzione rispetto al campo */
-  aspect-ratio: 5.5/1;
-  margin-top:4px;
-  background: url('badge.png?v=6') center/100% auto no-repeat;
-  font-family: system-ui, Arial, sans-serif; /* lo stesso font del body */
-  font-weight:900;
-  font-size: 2cqw;          /* scala con la larghezza del campo */
-  color:#000;
-  white-space:nowrap;
-  line-height:1;
-  pointer-events:none;
-  position:relative;
-  z-index:2;
-}
+    /* occupa esattamente lo spazio sotto il campo */
+    bottom:var(--subs-gap);
+    height:calc(var(--pitch-bottom) - var(--subs-gap));
 
-.subs-badge{
-  position:absolute;
+    display:flex; align-items:center; justify-content:center;
 
-  /* allinea il bordo inferiore esattamente alla linea di fondo campo */
-  bottom: var(--pitch-bottom);
-
-  /* sposta giù di metà della propria altezza → metà sopra, metà sotto */
-  transform: translateY(50%);
-
-  left: 3cqw;
-  padding: .5cqh 1cqw;
-  background: var(--rossoblu);
-  color:#fff; font-weight:700;
-  font-size: clamp(.8rem, 1.2cqw, .95rem);
-  border-radius: .4cqw;
-  min-width: 10cqw; text-align:center;
-  pointer-events:none;
-  z-index: 3;               /* assicura che stia sopra erba/linee */
-  /* opzionale per leggibilità sulla linea bianca: */
-  box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
-}
-  <div class="subs-zone">
-  <div class="subs-list" id="subsList">[panchinari qui]</div>
-</div>
-/* Area sotto al campo: dal bordo del campo fino al margine inferiore meno il gap */
-.subs-zone{
-  position:absolute;
-  left:0; right:0;
-
-  /* ancoriamo la zona al fondo campo */
-  bottom: 0;
-
-  /* altezza = spazio sotto il campo */
-  height: calc(var(--pitch-bottom) - var(--subs-gap));
-
-  display:flex;
-  align-items:center;       /* centra verticalmente */
-  justify-content:center;   /* centra orizzontalmente */
-  pointer-events:none;
-  padding:0 1cqw;
-}
-
-.subs-list{
-  position:static;          /* lascia flex occuparsi del centro */
-  color:#fff;
-  font-size:clamp(.85rem, 1.3cqw, 1rem);
-  text-align:center;
-  padding:.5cqh 1cqw;
-  word-break:break-word;
-  overflow-wrap:anywhere;
-  opacity:.95;
-  letter-spacing:.2cqw;
-}
- .matchday-badge{
-   position:absolute;
-   top:2cqh; left:2cqw;
-   padding:.8cqh 1.6cqw;
-   background:var(--rossoblu);
-   color:#fff; font-weight:700;
-   font-size:clamp(1rem,2cqw,1.2rem);
-   border-radius:.6cqw;
-   letter-spacing:.3cqw;
- }
-}
+    color:#fff;
+    font-size:clamp(.85rem,1.3cqw,1rem);
+    text-align:center;
+    padding:.5cqh 1cqw;
+    word-break:break-word; overflow-wrap:anywhere;
+    opacity:.95; letter-spacing:.2cqw;
+  }
 </style>
 </head>
 <body>
@@ -188,11 +149,11 @@
 
     <!-- SUBS -->
     <div class="subs-badge">SUBS:</div>
-    <div class="subs-list" id="subsList">[panchinari qui]</div>
+    <div class="subs-list" id="subsList"></div>
   </div>
 
 <script>
-/* ====== DISEGNO CAMPO (uguale alla tua versione “giusta”) ====== */
+/* ====== DISEGNO CAMPO ====== */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
 const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
@@ -215,7 +176,7 @@ const eps=0.03, base=Math.acos((areaD-spot)/R);
 addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
 addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
-/* ====== DATI (stesso foglio del tuo index con i “pallini”) ====== */
+/* ====== DATI ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID = '116187224';  // distinta
 const PUBLISHED_DIST_URL =
@@ -229,20 +190,16 @@ const coords3412 = [
   [56, 87], // RCB
   [34, 90], // CB
   [12, 87], // LCB
-
   [62, 63], // RWB
   [44, 60], // RCM
   [24, 60], // LCM
   [ 6, 63], // LWB
-
   [34, 43], // CAM
-
   [44, 20], // ST destro
   [24, 20]  // ST sinistro
 ];
 
 /* helpers */
-const el = s => document.querySelector(s);
 const gvizCsvURL  = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u = new URL(pubhtmlUrl);
@@ -296,7 +253,6 @@ async function fetchDistRows(){
 function normalizeDist(rows){
   if (!rows || !rows.length) return new Map();
   const keys = Object.keys(rows[0]);
-  // heuristics
   const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   let kNum = keys.find(k=>/#|num|numero|maglia/.test(norm(k))) || keys[0];
   let kName= keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k))) || keys[1];
@@ -329,26 +285,18 @@ function playerNode(obj, x, y){
   div.style.left=pct(x); div.style.top=pct(y);
 
   // foto (se presente) sopra il badge
+  const img = document.createElement('img');
+  img.className='photo';
+  img.alt = obj.name || '';
+
   if (obj.photo) {
-    const img = document.createElement('img');
-    img.className='photo';
-    img.alt = obj.name || '';
     img.src = obj.photo;
-    img.onerror = () => {
-      // fallback locale: img/players/NUMERO.png
-      img.onerror=null;
-      img.src = `img/players/${obj.num}.png`;
-    };
-    div.appendChild(img);
+    img.onerror = () => { img.onerror=null; img.src = `img/players/${obj.num}.png`; };
   } else {
-    // tenta direttamente il locale
-    const img = document.createElement('img');
-    img.className='photo';
-    img.alt = obj.name || '';
     img.src = `img/players/${obj.num}.png`;
     img.onerror = () => img.remove();
-    div.appendChild(img);
   }
+  div.appendChild(img);
 
   const badge = document.createElement('span');
   badge.className='badge';
@@ -365,8 +313,7 @@ function render(byNum){
   XI_NUMBERS.forEach((n,i)=>{
     const p = byNum.get(n) || {num:n, name:''};
     const [ux,uy] = coords3412[i];
-    // mappa coordinate 0..100 in x/y (percent), convertendole sul trapezio (0..1000)
-    const world = map( ux, uy );
+    const world = map(ux, uy);
     const node = playerNode(p, world.x, world.y);
     layer.appendChild(node);
   });
