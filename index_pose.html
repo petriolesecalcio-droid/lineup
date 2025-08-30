@@ -131,24 +131,28 @@
 .subs-zone{
   position:absolute;
   left:0; right:0;
-  bottom: var(--subs-gap);
+
+  /* ancoriamo la zona al fondo campo */
+  bottom: 0;
+
+  /* altezza = spazio sotto il campo */
   height: calc(var(--pitch-bottom) - var(--subs-gap));
+
   display:flex;
-  align-items:center;        /* ← centra verticalmente */
-  justify-content:center;    /* ← centra orizzontalmente */
+  align-items:center;       /* centra verticalmente */
+  justify-content:center;   /* centra orizzontalmente */
   pointer-events:none;
-  padding: 0 1cqw;
+  padding:0 1cqw;
 }
 
-/* La lista non serve più absolute: lasciamola “statica” nel flex container */
 .subs-list{
-  position:static;
+  position:static;          /* lascia flex occuparsi del centro */
   color:#fff;
-  font-size: clamp(.85rem, 1.3cqw, 1rem);
+  font-size:clamp(.85rem, 1.3cqw, 1rem);
   text-align:center;
   padding:.5cqh 1cqw;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  word-break:break-word;
+  overflow-wrap:anywhere;
   opacity:.95;
   letter-spacing:.2cqw;
 }
