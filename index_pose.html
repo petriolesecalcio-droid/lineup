@@ -33,7 +33,7 @@
   background:#0b0c11;
   box-shadow:0 25px 80px rgba(0,0,0,.6);
 
-  container-type:inline-size;  /* <— aggiunto */
+  container-type: size;  /* <— aggiunto */
 }
   .stadium{
     position:absolute; inset:0;
@@ -64,39 +64,36 @@
   width:100%; height:75%;
   overflow:visible; pointer-events:none;
 
-  container-type: inline-size;   /* <— CHIAVE */
+  container-type: size;   /* <— CHIAVE */
 }
 
 .player{
   position:absolute;
   left:0; top:0;
   transform:translate(-50%, -100%);
-  /* non serve più il flex: il badge viene assoluto */
-  display:block;
+  display:block;                 /* niente flex: il badge sarà assoluto */
   overflow:visible;
 }
 
-/* la foto resta come l'hai impostata: grande su desktop */
 .player .photo{
-  width: 15cqw;
-  height:auto;
+  /* SCALA VERTICALE: 1 cqh = 1% dell’altezza di .players */
+  height: 11cqh;                 /* prova 10–12cqh a gusto */
+  width: auto;
   position:relative;
   display:block;
   z-index:1;
 }
 
-/* badge sovrapposto alla foto → non “alza” più il giocatore */
 .badge{
+  /* sovrapposto alla foto → non aumenta l’ingombro verticale */
   position:absolute;
   left:50%;
-  top: calc(100% - 1.2cqw);   /* quanto “entra” sulla foto (alza/abbassa qui) */
+  top: calc(100% - 1.4cqh);      /* quanto “entra” sulla foto (regola qui) */
   transform: translateX(-50%);
 
   display:flex; align-items:center; justify-content:center;
-  width: 20cqw;
+  width: 20cqw;                  /* puoi lasciarlo in cqw */
   aspect-ratio: 5.5/1;
-
-  /* niente margin-top qui */
   background: url('badge.png?v=6') center/100% auto no-repeat;
   font-family: system-ui, Arial, sans-serif;
   font-weight:900;
