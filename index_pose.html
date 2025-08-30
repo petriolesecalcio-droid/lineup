@@ -15,7 +15,7 @@
     --grass-1:#0a6f20; --grass-2:#0d7f26;
     --rossoblu:linear-gradient(90deg,#8b0000,#000080);
     --photo-h: 20cqh;          /* tieni la tua taglia attuale */
-    --badge-w: 20cqh;        /* larghezza badge proporzionale all'altezza */
+    --badge-w: 19cqh;        /* larghezza badge proporzionale all'altezza */
     --badge-font: min(1.8cqh, 2.3cqw); /* testo: segue cqh ma non esplode su stretto */
     --badge-overlap: 1.4cqh;   /* quanto il badge “entra” sulla foto */
   }
@@ -93,11 +93,9 @@
   left: 50%;
   top: calc(100% - var(--badge-overlap));
   transform: translateX(-50%);
-
   display: flex; align-items: center; justify-content: center;
   width: var(--badge-w);
   aspect-ratio: 5.5/1;
-
   font-size: var(--badge-font);
   font-weight: 900;
   background: url('badge.png?v=6') center/100% auto no-repeat;
@@ -108,13 +106,10 @@
 
 .subs-badge{
   position:absolute;
-
   /* allinea il bordo inferiore esattamente alla linea di fondo campo */
   bottom: var(--pitch-bottom);
-
   /* sposta giù di metà della propria altezza → metà sopra, metà sotto */
   transform: translateY(50%);
-
   left: 3cqw;
   padding: .5cqh 1cqw;
   background: var(--rossoblu);
