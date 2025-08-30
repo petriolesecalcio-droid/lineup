@@ -103,19 +103,27 @@
   z-index:2;
 }
 
-/* SUBS badge dentro al campo, scala con il container */
 .subs-badge{
   position:absolute;
-  bottom:calc(var(--pitch-bottom) + 2cqh);
-  left:3cqw;
-  padding:.5cqh 1cqw;
-  background:var(--rossoblu);
-  color:#fff; font-weight:700;
-  font-size:clamp(.8rem,1.2cqw,.95rem);
-  border-radius:.4cqw;
-  min-width:10cqw; text-align:center;
-}
 
+  /* allinea il bordo inferiore esattamente alla linea di fondo campo */
+  bottom: var(--pitch-bottom);
+
+  /* sposta giù di metà della propria altezza → metà sopra, metà sotto */
+  transform: translateY(50%);
+
+  left: 3cqw;
+  padding: .5cqh 1cqw;
+  background: var(--rossoblu);
+  color:#fff; font-weight:700;
+  font-size: clamp(.8rem, 1.2cqw, .95rem);
+  border-radius: .4cqw;
+  min-width: 10cqw; text-align:center;
+  pointer-events:none;
+  z-index: 3;               /* assicura che stia sopra erba/linee */
+  /* opzionale per leggibilità sulla linea bianca: */
+  box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
+}
 .subs-list{
   position:absolute;
   left:0; right:0;
