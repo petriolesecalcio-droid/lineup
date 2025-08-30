@@ -143,17 +143,17 @@
     box-shadow: 0 0 0 .2cqh rgba(0,0,0,.25);
   }
 
-  /* Zona sotto al campo: centraggio perfetto della lista */
-  .subs-zone{
-    position:absolute;
-    left:0; right:0; bottom:0;
-    height: calc(var(--pitch-bottom) - var(--subs-gap));
-    display:flex;
-    align-items:center;         /* centro verticale */
-    justify-content:center;     /* centro orizzontale */
-    padding: 0 2cqw;
-    pointer-events:none;
-  }
+/* Zona sotto al campo = TUTTO lo spazio dal fondo campo al fondo stage */
+.subs-zone{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height: var(--pitch-bottom);   /* <— prima c’era calc(var(--pitch-bottom) - var(--subs-gap)) */
+  display:flex;
+  align-items:center;            /* centro verticale */
+  justify-content:center;        /* centro orizzontale */
+  padding: 0 2cqw;
+  pointer-events:none;
+}
 
   .subs-zone .subs-list{
     position: static;
