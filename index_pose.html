@@ -224,6 +224,29 @@
     }
     .subs-zone{ padding: 0 .8cqw; }
   }
+
+  /* === FAB Share (Instagram style) === */
+  .fab-share{
+    --fab-size: 56px;
+    --fab-right: 18px;     /* sposta orizzontalmente */
+    --fab-bottom: 18px;    /* sposta verticalmente */
+    position:absolute; right:var(--fab-right); bottom:var(--fab-bottom);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center; border:none; border-radius:999px;
+    background: radial-gradient(circle at 30% 110%, #feda75, #fa7e1e 60%, #d62976 80%, #962fbf 95%, #4f5bd5);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    cursor:pointer; z-index:10;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    opacity:.95;
+  }
+  .fab-share:hover{ transform: translateY(-1px) scale(1.02); box-shadow:0 10px 28px rgba(0,0,0,.45); opacity:1; }
+  .fab-share:active{ transform: translateY(1px) scale(.98); }
+  .fab-share svg{ width:26px; height:26px; fill:#fff }
+  .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.6 }
+  @container (max-width:520px){
+    .fab-share{ --fab-size: 52px; --fab-right: 12px; --fab-bottom: 12px; }
+    .fab-share svg{ width:24px; height:24px }
+  }
 </style>
 </head>
 <body>
@@ -263,6 +286,13 @@
     <div class="subs-zone">
       <div class="subs-list" id="subsList"></div>
     </div>
+
+    <!-- FAB Share (non verrà catturato nello screenshot perché si nasconde al volo) -->
+    <button id="shareFab" class="fab-share" title="Condividi storia">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 3l1.5 2H15a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3V8a3 3 0 013-3h2.5L9 3zm3 5a5 5 0 100 10 5 5 0 000-10zm0 2.2a2.8 2.8 0 110 5.6 2.8 2.8 0 010-5.6zM18 8.2a.8.8 0 110 1.6.8.8 0 010-1.6z"/>
+      </svg>
+    </button>
   </div>
 
 <script>
@@ -505,6 +535,76 @@ function setLogo(imgEl, src, alt){
     window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
   }
 })();
+</script>
+
+<!-- html2canvas per screenshot -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+
+<!-- Handler FAB Share -->
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const fab = document.getElementById('shareFab');
+  const stage = document.querySelector('.stage');
+
+  async function stageToBlob(){
+    // nascondo il FAB per non catturarlo
+    const prevVis = fab.style.visibility;
+    fab.style.visibility = 'hidden';
+
+    const scale = 2; // qualità
+    const canvas = await html2canvas(stage, { backgroundColor: null, scale });
+
+    // normalizza a 1080x1920 (Story IG)
+    const targetW = 1080, targetH = 1920;
+    const out = document.createElement('canvas');
+    out.width = targetW; out.height = targetH;
+    const ctx = out.getContext('2d');
+
+    const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
+    const w = Math.round(canvas.width * ratio);
+    const h = Math.round(canvas.height * ratio);
+    const x = Math.floor((targetW - w)/2);
+    const y = Math.floor((targetH - h)/2);
+    ctx.drawImage(canvas, x, y, w, h);
+
+    fab.style.visibility = prevVis || 'visible';
+    return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+  }
+
+  async function shareOrDownload(){
+    try{
+      fab.setAttribute('aria-busy','true');
+      const blob = await stageToBlob();
+      const fileName = `matchday_petriolese_${new Date().toISOString().slice(0,10)}.png`;
+
+      // Tentativo di condivisione nativa
+      const file = new File([blob], fileName, { type: 'image/png' });
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({
+          title: 'Matchday – Petriolese Calcio',
+          text: 'Formazione titolari e panchina.',
+          files: [file]
+        });
+        fab.removeAttribute('aria-busy');
+        return;
+      }
+
+      // Fallback: download locale
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      fab.removeAttribute('aria-busy');
+    }catch(err){
+      console.error(err);
+      fab.removeAttribute('aria-busy');
+      alert('Impossibile condividere automaticamente. Ho scaricato l’immagine, caricala nelle Storie di Instagram.');
+    }
+  }
+
+  fab.addEventListener('click', shareOrDownload, { passive:true });
+});
 </script>
 </body>
 </html>
