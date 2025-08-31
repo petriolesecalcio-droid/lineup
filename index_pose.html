@@ -31,16 +31,16 @@
     --subs-font-family: system-ui, Arial, sans-serif;
     --subs-drop: 1cqh;
 
-    /* === pennellate === */
+    /* pennellate */
     --brush-bleed-y: 2cqh;
 
-    /* === MATCHDAY (macchia) === */
+    /* MATCHDAY */
     --md-w: 88cqw;
     --md-font-top: 3.6cqw;
     --md-font-sub: 2.2cqw;
     --md-splat-bleed: 2.2cqh;
 
-    /* === VS (quadrante destro) === */
+    /* VS */
     --vs-w: 88cqw;
     --vs-logo-h: 10cqh;
     --vs-gap: 2cqw;
@@ -67,24 +67,38 @@
     container-type:size;
   }
 
+  /* Fondale stadio (gradiente + glow) */
   .stadium{
     position:absolute; inset:0;
     background:
       radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
-      repeating-linear-gradient(-10deg, rgba(255,255,255,.05) 0 14px, rgba(0,0,0,0) 14px 44px),
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
+    z-index:0;
+  }
+
+  /* Strisce oblique “tetto/gradoni” via SVG (restano identiche nello screenshot) */
+  .roof-stripes{
+    position:absolute; inset:0; z-index:1; pointer-events:none; display:block;
   }
 
   /* Campo (clip) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
-    clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
+    overflow:hidden; /* anti-sbordo */
+    -webkit-clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
+            clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
+    contain: paint;
+    z-index:2;
   }
   .grass{
     position:absolute; inset:0;
     background:
-      repeating-linear-gradient(to bottom, rgba(255,255,255,.08) 0 6%, rgba(0,0,0,0) 6% 12%),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.12) 0 7%,
+        rgba(0,0,0,0)          7% 14%
+      ),
       linear-gradient(to bottom, var(--grass-2), var(--grass-1));
     box-shadow: inset 0 -40px 80px rgba(0,0,0,.35);
   }
@@ -95,55 +109,33 @@
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
     overflow:visible; pointer-events:none;
-    container-type:size;
+    container-type:size; z-index:3;
   }
 
-  .player{
-    position:absolute;
-    left:0; top:0;
-    transform:translate(-50%, -100%);
-    display:block;
-    overflow:visible;
-  }
-
-  .player .photo{
-    height: var(--photo-h);
-    width: auto;
-    position: relative;
-    display: block;
-    z-index: 1;
-  }
+  .player{ position:absolute; left:0; top:0; transform:translate(-50%, -100%); display:block; overflow:visible; }
+  .player .photo{ height: var(--photo-h); width:auto; position:relative; display:block; z-index:1; }
 
   .badge{
-    position:absolute; left:50%;
-    top: calc(100% - var(--badge-overlap));
+    position:absolute; left:50%; top: calc(100% - var(--badge-overlap));
     transform: translateX(-50%);
     display:flex; align-items:center; justify-content:center;
-    width: var(--badge-w);
-    aspect-ratio: 5.5/1;
-    font-size: var(--badge-font);
-    font-weight: 900;
+    width: var(--badge-w); aspect-ratio: 5.5/1;
+    font-size: var(--badge-font); font-weight: 900;
     background: url('badge.png?v=6') center/100% auto no-repeat;
     color:#000; white-space:nowrap; line-height:1;
     pointer-events:none; z-index:2;
   }
 
-  /* ====== MATCHDAY ====== */
+  /* MATCHDAY */
   .matchday-badge{
-    position:absolute;
-    transform: translate(-50%, -50%);
-    width: var(--md-w);
-    aspect-ratio: 5.5/1;
+    position:absolute; transform: translate(-50%, -50%);
+    width: var(--md-w); aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-    background:none; overflow:visible;
-    pointer-events:none; z-index:3;
+    background:none; overflow:visible; pointer-events:none; z-index:4;
   }
   .matchday-badge::before{
-    content:"";
-    position:absolute; left:50%; top:50%;
-    transform: translate(-50%,-50%);
-    width:100%;
-    height: calc(100% + var(--md-splat-bleed) * 2);
+    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
+    width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
     background: url('md-splat.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
@@ -155,55 +147,36 @@
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
-  /* ====== VS ====== */
+  /* VS */
   .versus-badge{
-    position:absolute;
-    transform: translate(-50%, -50%);
+    position:absolute; transform: translate(-50%, -50%);
     width: var(--vs-w);
-    display:flex; align-items:center; justify-content:center;
-    gap: var(--vs-gap);
-    background:none; overflow:visible; pointer-events:none; z-index:3;
+    display:flex; align-items:center; justify-content:center; gap: var(--vs-gap);
+    background:none; overflow:visible; pointer-events:none; z-index:4;
   }
-  .versus-badge .team-logo{
-    height: var(--vs-logo-h);
-    width: auto;
-    object-fit: contain;
-    image-rendering: auto;
-    display:block;
-  }
-  .versus-badge .vs-text{
-    color:#fff; font-weight:900; text-transform:uppercase;
-    font-size: var(--vs-font); letter-spacing: var(--vs-letter);
-    line-height:1; display:block;
-  }
+  .versus-badge .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; image-rendering:auto; display:block; }
+  .versus-badge .vs-text{ color:#fff; font-weight:900; text-transform:uppercase; font-size: var(--vs-font); letter-spacing: var(--vs-letter); line-height:1; display:block; }
 
   /* SUBS */
   .subs-badge{
-    position:absolute;
-    bottom: var(--pitch-bottom);
+    position:absolute; bottom: var(--pitch-bottom);
     transform: translate(-50%, calc(50% + var(--subs-drop)));
     width: 30cqw; aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-    background:none; overflow:visible;
-    color:#fff; font-weight:900; text-transform:uppercase;
-    font-size: min(1.6cqh, 2.1cqw);
-    letter-spacing:.18cqw; padding: 0 .8cqw;
-    pointer-events:none; z-index:3;
+    background:none; overflow:visible; color:#fff; font-weight:900; text-transform:uppercase;
+    font-size: min(1.6cqh, 2.1cqw); letter-spacing:.18cqw; padding: 0 .8cqw;
+    pointer-events:none; z-index:4;
   }
   .subs-badge::before{
-    content:"";
-    position:absolute; left:50%; top:50%;
-    transform: translate(-50%,-50%);
+    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
     width:100%; height: calc(100% + var(--brush-bleed-y) * 2);
     background: url('badge-bg.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
 
   .subs-zone{
-    position:absolute; left:0; right:0; bottom:0;
-    height: var(--pitch-bottom);
-    display:flex; align-items:center; justify-content:center;
-    padding: 0 2cqw; pointer-events:none;
+    position:absolute; left:0; right:0; bottom:0; height: var(--pitch-bottom);
+    display:flex; align-items:center; justify-content:center; padding: 0 2cqw; pointer-events:none; z-index:4;
   }
   .subs-zone .subs-list{
     margin:0 auto; max-width: var(--subs-maxw);
@@ -215,60 +188,53 @@
   }
 
   @container (max-width: 520px){
-    .stage{
-      --subs-font: clamp(16px, 3cqh, 4.2cqw);
-      --subs-tracking: .10cqw;
-      --subs-maxw: 100%;
-    }
+    .stage{ --subs-font: clamp(16px, 3cqh, 4.2cqw); --subs-tracking: .10cqw; --subs-maxw: 100%; }
     .subs-zone{ padding: 0 .8cqw; }
   }
 
-  /* === FAB Share - Material Design, piccolo, top-right === */
+  /* FAB Share - Material (piccolo, top-right) */
   .fab-share{
-    /* dimensione responsiva e margini edge */
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(8px, 1.8cqw, 14px);
-
     position:absolute; top:var(--fab-edge); right:var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
-    display:grid; place-items:center;
-    border: none; border-radius: 999px;
-
-    background: #2a2f3a; /* surface container high */
-    color: #fff;
-    box-shadow:
-      0 2px 4px rgba(0,0,0,.30),
-      0 8px 16px rgba(0,0,0,.28);
+    display:grid; place-items:center; border:none; border-radius:999px;
+    background:#2a2f3a; color:#fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,.30), 0 8px 16px rgba(0,0,0,.28);
     cursor:pointer; z-index:10;
     transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease;
   }
-  .fab-share:hover{ transform: translateY(-1px); background:#343a46;
-    box-shadow: 0 3px 6px rgba(0,0,0,.32), 0 12px 20px rgba(0,0,0,.30);
-  }
+  .fab-share:hover{ transform: translateY(-1px); background:#343a46; box-shadow: 0 3px 6px rgba(0,0,0,.32), 0 12px 20px rgba(0,0,0,.30); }
   .fab-share:active{ transform: translateY(0); background:#3b4150; }
-  .fab-share:focus-visible{
-    outline: 3px solid rgba(134, 189, 255, .55);
-    outline-offset: 2px;
-  }
+  .fab-share:focus-visible{ outline:3px solid rgba(134,189,255,.55); outline-offset:2px; }
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
+  .fab-share svg{ width: calc(var(--fab-size)*.55); height: calc(var(--fab-size)*.55); fill: currentColor; }
 
-  .fab-share svg{
-    width: calc(var(--fab-size) * .55);
-    height: calc(var(--fab-size) * .55);
-    fill: currentColor;
+  /* ===== EXPORT MODE (solo durante lo scatto) ===== */
+  .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
+  .stage.is-capturing .pitch-wrap{
+    -webkit-clip-path: polygon(13% 12%, 87% 12%, 100% 100%, 0 100%);
+            clip-path: polygon(13% 12%, 87% 12%, 100% 100%, 0 100%);
   }
-
-  @container (max-width:520px){
-    .fab-share{
-      --fab-size: clamp(34px, 12cqw, 44px);
-      --fab-edge: clamp(8px, 2cqw, 12px);
-    }
-  }
+  .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
+  .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; } /* linee campo appena più spesse */
 </style>
 </head>
 <body>
   <div class="stage">
     <div class="stadium"></div>
+
+    <!-- Strisce oblique tetto/gradoni: SVG per resa identica anche nello screenshot -->
+    <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <!-- pattern: banda chiara 14px su passo 44px, ruotata -10° -->
+        <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
+          <rect x="0" y="0" width="44" height="14" fill="#ffffff" opacity="0.06"/>
+          <rect x="0" y="14" width="44" height="30" fill="transparent"/>
+        </pattern>
+      </defs>
+      <rect x="0" y="0" width="1000" height="1778" fill="url(#diag)"/>
+    </svg>
 
     <!-- MATCHDAY -->
     <div id="matchdayBadge" class="matchday-badge">
@@ -447,8 +413,7 @@ function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
 function playerNode(obj,x,y){
   const div=document.createElement('div'); div.className='player';
   div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
-  img.crossOrigin='anonymous';
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
   if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
   else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
@@ -472,16 +437,8 @@ function computeTopForBadges(){
   const spazioSopra=Math.max(0, topCampo - sRect.top);
   return ((spazioSopra*0.5)/sRect.height)*100;
 }
-function placeMatchday(){
-  const el=document.getElementById('matchdayBadge'); if(!el) return;
-  el.style.top = computeTopForBadges().toFixed(3)+'%';
-  el.style.left = '25%';
-}
-function placeVersus(){
-  const el=document.getElementById('versusBadge'); if(!el) return;
-  el.style.top = computeTopForBadges().toFixed(3)+'%';
-  el.style.left = '75%';
-}
+function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
+function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
 function placeSubsByPitch(){
   const el=document.getElementById('subsBadge'); if(!el) return;
   const cx=W/2; const xAreaLeft=cx-areaW/2;
@@ -491,55 +448,36 @@ function placeSubsByPitch(){
 
 /* ====== LOGHI ====== */
 function resolveLogoSrc(teamName, oppMap){
-  const name = (teamName||'').trim();
+  const name=(teamName||'').trim();
   if(!name) return '';
-  const fromSheet = oppMap.get(name.toLowerCase()) || '';
+  const fromSheet=oppMap.get(name.toLowerCase())||'';
   if(fromSheet) return fromSheet;
   return `logos/${slugify(name)}.webp`;
 }
 function setLogo(imgEl, src, alt){
   if(!src){ imgEl.style.visibility='hidden'; return; }
-  imgEl.alt = alt || '';
-  imgEl.crossOrigin = 'anonymous';
-  imgEl.src = src;
-  imgEl.onload = ()=>{ imgEl.style.visibility='visible'; };
-  imgEl.onerror = ()=>{ imgEl.style.visibility='hidden'; };
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
 }
 
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const [distRows, metaRows, oppRows] = await Promise.all([
-      fetchDistRows(),
-      fetchMetaRows(),
-      fetchOppRows()
-    ]);
+    const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
+    const byNum = normalizeDist(distRows); render(byNum);
 
-    const byNum = normalizeDist(distRows);
-    render(byNum);
-
-    const meta = normalizeMeta(metaRows);
-    const opp  = normalizeOpp(oppRows);
-
-    const giornata = (meta.get('giornata') || '').toString().trim();
-    const squadra1 = (meta.get('squadra1') || '').toString().trim() || 'Petriolese';
-    const squadra2 = (meta.get('squadra2') || '').toString().trim();
+    const meta = normalizeMeta(metaRows); const opp = normalizeOpp(oppRows);
+    const giornata = (meta.get('giornata')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
+    const squadra2 = (meta.get('squadra2')||'').toString().trim();
 
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
+    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+  }catch(e){ console.error(e); render(new Map()); }
 
-    const src1 = resolveLogoSrc(squadra1, opp);
-    const src2 = resolveLogoSrc(squadra2, opp);
-    setLogo(document.getElementById('logo1'), src1, squadra1);
-    setLogo(document.getElementById('logo2'), src2, squadra2);
-
-  }catch(e){
-    console.error(e);
-    render(new Map());
-  }
-
-  placeSubsByPitch();
-  placeMatchday();
-  placeVersus();
+  placeSubsByPitch(); placeMatchday(); placeVersus();
 
   const stage=document.querySelector('.stage');
   if(window.ResizeObserver && stage){
@@ -564,18 +502,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   async function stageToBlob(){
     const prevVis = fab.style.visibility;
     fab.style.visibility = 'hidden';
+    stage.classList.add('is-capturing');
 
-    const scale = 2;
+    const scale = 2.5; // più nitido
     const canvas = await html2canvas(stage, {
-      backgroundColor: null,
+      backgroundColor: '#0b0c11', // niente alpha
       scale,
       useCORS: true
     });
 
+    // 1080x1920 (puoi alzare a 1440x2560)
     const targetW = 1080, targetH = 1920;
     const out = document.createElement('canvas');
     out.width = targetW; out.height = targetH;
-    const ctx = out.getContext('2d');
+    const ctx = out.getContext('2d', { willReadFrequently:true });
+
+    ctx.fillStyle = '#0b0c11';
+    ctx.fillRect(0,0,targetW,targetH);
 
     const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
     const w = Math.round(canvas.width * ratio);
@@ -584,6 +527,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const y = Math.floor((targetH - h)/2);
     ctx.drawImage(canvas, x, y, w, h);
 
+    stage.classList.remove('is-capturing');
     fab.style.visibility = prevVis || 'visible';
     return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
   }
@@ -596,25 +540,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
       const file = new File([blob], fileName, { type: 'image/png' });
       if(navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share({
-          title: 'Matchday – Petriolese Calcio',
-          text: 'Formazione titolari e panchina.',
-          files: [file]
-        });
-        fab.removeAttribute('aria-busy');
-        return;
+        await navigator.share({ title:'Matchday – Petriolese Calcio', text:'Formazione titolari e panchina.', files:[file] });
+        fab.removeAttribute('aria-busy'); return;
       }
 
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
       fab.removeAttribute('aria-busy');
     }catch(err){
       console.error(err);
       fab.removeAttribute('aria-busy');
-      alert('Impossibile condividere automaticamente. Ho scaricato l’immagine, caricala nelle Storie di Instagram.');
+      alert('Impossibile condividere automaticamente. Ho scaricato l’immagine: caricala nelle Storie.');
     }
   }
 
