@@ -31,21 +31,21 @@
     --subs-font-family: system-ui, Arial, sans-serif;
     --subs-drop: 1cqh;
 
-    /* === “bleed” verticale pennellate === */
+    /* === pennellate === */
     --brush-bleed-y: 2cqh;
 
     /* === MATCHDAY (macchia) === */
     --md-w: 88cqw;
-    --md-font-top: 3.6cqw;   /* MATCHDAY */
-    --md-font-sub: 2.2cqw;   /* GIORNATA N */
+    --md-font-top: 3.6cqw;
+    --md-font-sub: 2.2cqw;
     --md-splat-bleed: 2.2cqh;
 
     /* === VS (quadrante destro) === */
-    --vs-w: 88cqw;           /* larghezza blocco VS */
-    --vs-logo-h: 10cqh;      /* altezza loghi */
-    --vs-gap: 2cqw;          /* spazio fra logo e VS e logo */
-    --vs-font: 2.2cqw;       /* dimensione “VS” */
-    --vs-letter: .18cqw;     /* tracking “VS” */
+    --vs-w: 88cqw;
+    --vs-logo-h: 10cqh;
+    --vs-gap: 2cqw;
+    --vs-font: 2.2cqw;
+    --vs-letter: .18cqw;
   }
 
   html,body{height:100%}
@@ -128,7 +128,7 @@
     pointer-events:none; z-index:2;
   }
 
-  /* ====== MATCHDAY (quadrante sinistro) ====== */
+  /* ====== MATCHDAY ====== */
   .matchday-badge{
     position:absolute;
     transform: translate(-50%, -50%);
@@ -155,7 +155,7 @@
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
-  /* ====== VS (quadrante destro) ====== */
+  /* ====== VS ====== */
   .versus-badge{
     position:absolute;
     transform: translate(-50%, -50%);
@@ -199,7 +199,6 @@
     z-index:-1; pointer-events:none;
   }
 
-  /* Zona elenco SUBS */
   .subs-zone{
     position:absolute; left:0; right:0; bottom:0;
     height: var(--pitch-bottom);
@@ -215,7 +214,6 @@
     text-transform: var(--subs-transform); color:#fff; opacity:.95;
   }
 
-  /* Mobile tuning SUBS */
   @container (max-width: 520px){
     .stage{
       --subs-font: clamp(16px, 3cqh, 4.2cqw);
@@ -225,27 +223,46 @@
     .subs-zone{ padding: 0 .8cqw; }
   }
 
-  /* === FAB Share (Instagram style) === */
+  /* === FAB Share - Material Design, piccolo, top-right === */
   .fab-share{
-    --fab-size: 56px;
-    --fab-right: 18px;     /* sposta orizzontalmente */
-    --fab-bottom: 18px;    /* sposta verticalmente */
-    position:absolute; right:var(--fab-right); bottom:var(--fab-bottom);
+    /* dimensione responsiva e margini edge */
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(8px, 1.8cqw, 14px);
+
+    position:absolute; top:var(--fab-edge); right:var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
-    display:grid; place-items:center; border:none; border-radius:999px;
-    background: radial-gradient(circle at 30% 110%, #feda75, #fa7e1e 60%, #d62976 80%, #962fbf 95%, #4f5bd5);
-    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    display:grid; place-items:center;
+    border: none; border-radius: 999px;
+
+    background: #2a2f3a; /* surface container high */
+    color: #fff;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.30),
+      0 8px 16px rgba(0,0,0,.28);
     cursor:pointer; z-index:10;
-    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
-    opacity:.95;
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease;
   }
-  .fab-share:hover{ transform: translateY(-1px) scale(1.02); box-shadow:0 10px 28px rgba(0,0,0,.45); opacity:1; }
-  .fab-share:active{ transform: translateY(1px) scale(.98); }
-  .fab-share svg{ width:26px; height:26px; fill:#fff }
-  .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.6 }
+  .fab-share:hover{ transform: translateY(-1px); background:#343a46;
+    box-shadow: 0 3px 6px rgba(0,0,0,.32), 0 12px 20px rgba(0,0,0,.30);
+  }
+  .fab-share:active{ transform: translateY(0); background:#3b4150; }
+  .fab-share:focus-visible{
+    outline: 3px solid rgba(134, 189, 255, .55);
+    outline-offset: 2px;
+  }
+  .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
+
+  .fab-share svg{
+    width: calc(var(--fab-size) * .55);
+    height: calc(var(--fab-size) * .55);
+    fill: currentColor;
+  }
+
   @container (max-width:520px){
-    .fab-share{ --fab-size: 52px; --fab-right: 12px; --fab-bottom: 12px; }
-    .fab-share svg{ width:24px; height:24px }
+    .fab-share{
+      --fab-size: clamp(34px, 12cqw, 44px);
+      --fab-edge: clamp(8px, 2cqw, 12px);
+    }
   }
 </style>
 </head>
@@ -253,7 +270,7 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- MATCHDAY (macchia + testo su due righe) -->
+    <!-- MATCHDAY -->
     <div id="matchdayBadge" class="matchday-badge">
       <div class="matchday-text">
         <div class="md-top">MATCHDAY</div>
@@ -261,14 +278,14 @@
       </div>
     </div>
 
-    <!-- VS (logo1 VS logo2) -->
+    <!-- VS -->
     <div id="versusBadge" class="versus-badge">
-      <img id="logo1" class="team-logo" alt="">
+      <img id="logo1" class="team-logo" alt="" crossorigin="anonymous">
       <span class="vs-text">VS</span>
-      <img id="logo2" class="team-logo" alt="">
+      <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
     </div>
 
-    <!-- Campo (clip) -->
+    <!-- Campo -->
     <div class="pitch-wrap">
       <div class="grass"></div>
       <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -276,7 +293,7 @@
       </svg>
     </div>
 
-    <!-- Layer giocatori -->
+    <!-- Giocatori -->
     <div class="players" id="players"></div>
 
     <!-- SUBS -->
@@ -287,10 +304,11 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share (non verrà catturato nello screenshot perché si nasconde al volo) -->
-    <button id="shareFab" class="fab-share" title="Condividi storia">
+    <!-- FAB Share (Material) - top-right -->
+    <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
+      <!-- Material 'share' icon -->
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 3l1.5 2H15a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3V8a3 3 0 013-3h2.5L9 3zm3 5a5 5 0 100 10 5 5 0 000-10zm0 2.2a2.8 2.8 0 110 5.6 2.8 2.8 0 010-5.6zM18 8.2a.8.8 0 110 1.6.8.8 0 010-1.6z"/>
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
   </div>
@@ -328,9 +346,9 @@ const DIST_GID='116187224';
 const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
 /* Fogli */
-const META_GID='254048258';        // Meta: Giornata, Squadra1, Squadra2
-const OPP_GID='1284472120';        // Avversari: Squadra, Logo
-const PUBLISHED_META_URL='';       // opzionali se vuoi usare pubhtml
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
 const PUBLISHED_OPP_URL='';
 
 /* Numeri/squadre */
@@ -406,7 +424,6 @@ function normalizeMeta(rows){
   return out;
 }
 function normalizeOpp(rows){
-  // Avversari: Squadra, Logo
   const out=new Map();
   rows.forEach(r=>{
     const name=(''+(r.Squadra||r.squadra||'')).trim();
@@ -416,7 +433,6 @@ function normalizeOpp(rows){
   return out;
 }
 
-/* slug per fallback filename: "A.C. Moglianese 1905" -> "ac-moglianese-1905" */
 function slugify(s){
   return String(s||'')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -432,6 +448,7 @@ function playerNode(obj,x,y){
   const div=document.createElement('div'); div.className='player';
   div.style.left=pct(x); div.style.top=pct(y);
   const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
+  img.crossOrigin='anonymous';
   if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
   else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
@@ -449,7 +466,7 @@ function render(byNum){
 /* ====== POSIZIONAMENTI ====== */
 function computeTopForBadges(){
   const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
-  if(!stage||!pitch) return 20; // fallback %
+  if(!stage||!pitch) return 20;
   const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
   const topCampo=pRect.top + pRect.height * 0.12;
   const spazioSopra=Math.max(0, topCampo - sRect.top);
@@ -477,12 +494,13 @@ function resolveLogoSrc(teamName, oppMap){
   const name = (teamName||'').trim();
   if(!name) return '';
   const fromSheet = oppMap.get(name.toLowerCase()) || '';
-  if(fromSheet) return fromSheet;                 // URL dal foglio Avversari
-  return `logos/${slugify(name)}.webp`;           // fallback locale
+  if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
 }
 function setLogo(imgEl, src, alt){
   if(!src){ imgEl.style.visibility='hidden'; return; }
   imgEl.alt = alt || '';
+  imgEl.crossOrigin = 'anonymous';
   imgEl.src = src;
   imgEl.onload = ()=>{ imgEl.style.visibility='visible'; };
   imgEl.onerror = ()=>{ imgEl.style.visibility='hidden'; };
@@ -500,7 +518,6 @@ function setLogo(imgEl, src, alt){
     const byNum = normalizeDist(distRows);
     render(byNum);
 
-    // META e AVVERSARI
     const meta = normalizeMeta(metaRows);
     const opp  = normalizeOpp(oppRows);
 
@@ -508,10 +525,8 @@ function setLogo(imgEl, src, alt){
     const squadra1 = (meta.get('squadra1') || '').toString().trim() || 'Petriolese';
     const squadra2 = (meta.get('squadra2') || '').toString().trim();
 
-    // Sotto MATCHDAY -> "GIORNATA N"
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
 
-    // Loghi (ordine deciso da Meta → Squadra1, Squadra2)
     const src1 = resolveLogoSrc(squadra1, opp);
     const src2 = resolveLogoSrc(squadra2, opp);
     setLogo(document.getElementById('logo1'), src1, squadra1);
@@ -537,7 +552,7 @@ function setLogo(imgEl, src, alt){
 })();
 </script>
 
-<!-- html2canvas per screenshot -->
+<!-- html2canvas -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
 <!-- Handler FAB Share -->
@@ -547,14 +562,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const stage = document.querySelector('.stage');
 
   async function stageToBlob(){
-    // nascondo il FAB per non catturarlo
     const prevVis = fab.style.visibility;
     fab.style.visibility = 'hidden';
 
-    const scale = 2; // qualità
-    const canvas = await html2canvas(stage, { backgroundColor: null, scale });
+    const scale = 2;
+    const canvas = await html2canvas(stage, {
+      backgroundColor: null,
+      scale,
+      useCORS: true
+    });
 
-    // normalizza a 1080x1920 (Story IG)
     const targetW = 1080, targetH = 1920;
     const out = document.createElement('canvas');
     out.width = targetW; out.height = targetH;
@@ -577,7 +594,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const blob = await stageToBlob();
       const fileName = `matchday_petriolese_${new Date().toISOString().slice(0,10)}.png`;
 
-      // Tentativo di condivisione nativa
       const file = new File([blob], fileName, { type: 'image/png' });
       if(navigator.canShare && navigator.canShare({ files: [file] })){
         await navigator.share({
@@ -589,7 +605,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
         return;
       }
 
-      // Fallback: download locale
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = fileName;
