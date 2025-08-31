@@ -198,6 +198,21 @@
     text-transform: var(--subs-transform);
     color:#fff; opacity:.95;
   }
+
+  /* === MOBILE TUNING: font più presente, 2 righe, meno padding laterale === */
+  @container (max-width: 520px){
+    .stage{
+      /* più grande ma controllato */
+      --subs-font: clamp(16px, 3cqh, 4.2cqw);
+      /* tracking non troppo stretto (per non sembrare “smagrito”) */
+      --subs-tracking: .10cqw;
+      /* sfrutta tutta la larghezza utile per restare in 2 righe */
+      --subs-maxw: 100%;
+    }
+    .subs-zone{
+      padding: 0 .8cqw; /* un filo meno padding laterale */
+    }
+  }
 </style>
 </head>
 <body>
