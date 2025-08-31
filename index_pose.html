@@ -194,7 +194,7 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ===== FAB Instagram (ora IDENTICO nelle dimensioni al FAB share) ===== */
+  /* ===== FAB Instagram (identico nelle dimensioni al FAB share) ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -269,6 +269,19 @@
     }
   }
 
+  /* ===== SUBS badge BOOST su mobile ===== */
+  @container (max-width: 520px){
+    /* aumento pennellata */
+    .stage{ --brush-bleed-y: 3.4cqh; }
+    /* badge più grande */
+    .subs-badge{
+      width: 40cqw;                          /* prima 30cqw */
+      font-size: clamp(14px, 3.3cqw, 20px);  /* testo più grande */
+      letter-spacing: .22cqw;                 /* tracking un filo più ampio */
+      padding: 0 1cqw;
+    }
+  }
+
   /* Fallback senza container queries */
   @supports not (width: 1cqw){
     @media (max-width: 520px){
@@ -278,6 +291,9 @@
       .versus-badge .team-logo{ height: 9vh; }
       .versus-badge{ gap: 1.5vw; }
       .versus-badge .vs-text{ font-size: clamp(22px, 4.2vw, 36px); letter-spacing: .22vw; }
+
+      /* fallback SUBS mobile */
+      .subs-badge{ width: 40vw; font-size: clamp(14px, 3.3vw, 20px); letter-spacing: .22vw; padding: 0 1vw; }
     }
   }
 </style>
