@@ -68,9 +68,10 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;
+    container-type:size; /* abilita cqw/cqh e @container */
   }
 
+  /* Fondale stadio */
   .stadium{
     position:absolute; inset:0; z-index:0;
     background:
@@ -78,8 +79,10 @@
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
+  /* Strisce oblique */
   .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
 
+  /* Campo (SVG con clipPath) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -87,6 +90,7 @@
   }
   #pitch{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 
+  /* Giocatori */
   .players{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -106,6 +110,7 @@
     color:#000; white-space:nowrap; line-height:1; pointer-events:none; z-index:2;
   }
 
+  /* MATCHDAY */
   .matchday-badge{
     position:absolute; transform: translate(-50%, -50%);
     width: var(--md-w); aspect-ratio: 5.5/1;
@@ -121,6 +126,7 @@
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
+  /* VS */
   .versus-badge{
     position:absolute; transform: translate(-50%, -50%);
     width: var(--vs-w);
@@ -130,6 +136,7 @@
   .versus-badge .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; image-rendering:auto; display:block; }
   .versus-badge .vs-text{ color:#fff; font-weight:900; text-transform:uppercase; font-size: var(--vs-font); letter-spacing: var(--vs-letter); line-height:1; display:block; }
 
+  /* SUBS */
   .subs-badge{
     position:absolute; bottom: var(--pitch-bottom);
     transform: translate(-50%, calc(50% + var(--subs-drop)));
@@ -162,19 +169,24 @@
     .subs-zone{ padding: 0 .8cqw; }
   }
 
+  /* ===== FAB Share (Material bianco, quadrato) ===== */
   .fab-share{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
     --fab-radius: 12px;
+
     position:absolute; top:var(--fab-edge); left:var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
     display:grid; place-items:center;
+
     border: 1px solid rgba(0,0,0,.08);
     border-radius: var(--fab-radius);
     background:#fff;  color:#111;
     box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
     cursor:pointer; z-index:10;
-    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
   }
   .fab-share:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab-share:active{ transform: translateY(0); background:#eceef2; }
@@ -182,21 +194,26 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
+  /* ===== FAB Instagram (identico al FAB share) ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
     --fab-radius: 12px;
+
     position:absolute;
     top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap));
     left: var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
     display:grid; place-items:center;
+
     border: 1px solid rgba(0,0,0,.08);
     border-radius: var(--fab-radius);
     background:#fff; color:#111;
     box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
     cursor:pointer; z-index:10;
-    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
   }
   .fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab-ig:active{ transform: translateY(0); background:#eceef2; }
@@ -213,29 +230,36 @@
     pointer-events:none;
   }
 
+  /* FABs più piccoli su mobile (container) — identici anche qui */
   @container (max-width: 520px){
-    .fab-share,.fab-ig{
+    .fab-share,
+    .fab-ig{
       --fab-size: clamp(24px, 7cqw, 34px);
       --fab-edge: clamp(8px, 1.6cqw, 12px);
       --fab-radius: 10px;
     }
     .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
-    .fab-share svg, .fab-ig svg{
+    .fab-share svg,
+    .fab-ig   svg{
       width: calc(var(--fab-size) * .50);
       height: calc(var(--fab-size) * .50);
     }
   }
 
+  /* EXPORT MODE */
   .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
   .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; }
 
+  /* BOOST MATCHDAY mobile */
   @container (max-width: 520px){
     .matchday-badge{ --md-w: 96cqw; --md-splat-bleed: 3.2cqh; }
     .matchday-text{ letter-spacing: .20cqw; }
     .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
     .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
   }
+
+  /* COMPACT VS mobile */
   @container (max-width: 520px){
     .versus-badge{
       --vs-gap: .8cqw;
@@ -244,6 +268,8 @@
       --vs-letter: .22cqw;
     }
   }
+
+  /* ===== SUBS badge BOOST su mobile ===== */
   @container (max-width: 520px){
     .stage{ --brush-bleed-y: 3.4cqh; }
     .subs-badge{
@@ -254,6 +280,7 @@
     }
   }
 
+  /* Fallback senza container queries */
   @supports not (width: 1cqw){
     @media (max-width: 520px){
       .matchday-badge{ width: min(96vw, 96%); }
@@ -292,9 +319,9 @@
 
     <!-- VS -->
     <div id="versusBadge" class="versus-badge">
-      <img id="logo1" class="team-logo" alt="">
+      <img id="logo1" class="team-logo" alt="" crossorigin="anonymous">
       <span class="vs-text">VS</span>
-      <img id="logo2" class="team-logo" alt="">
+      <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
     </div>
 
     <!-- Campo -->
@@ -305,22 +332,29 @@
             <polygon points="120,120 880,120 1000,1000 0,1000"/>
           </clipPath>
 
+          <!-- Gradiente prato -->
           <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"  stop-color="#0d7f26"/>
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
 
-          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
+          <!-- Bande 50/50 allineate top e bottom (880 = 8 × 110) -->
+          <pattern id="mow"
+                   patternUnits="userSpaceOnUse"
+                   width="1000" height="110"
+                   patternTransform="translate(0,120)">
             <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
             <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
         </defs>
 
+        <!-- Prato con clip trapezoidale -->
         <g clip-path="url(#clipPitch)">
           <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
+        <!-- Linee campo (clip-pate) -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -331,18 +365,19 @@
     <!-- SUBS -->
     <div id="subsBadge" class="subs-badge">SUBS</div>
 
+    <!-- Elenco panchina -->
     <div class="subs-zone">
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share -->
+    <!-- FAB Share (Condividi storia) -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
 
-    <!-- FAB Instagram -->
+    <!-- FAB Instagram (apre profilo IG) -->
     <button id="igFab" class="fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -380,39 +415,29 @@ const eps=0.03, base=Math.acos((areaD-spot)/R);
 addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
 addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
-/* ====== DATI (ID/GID) ====== */
+/* ====== DATI ====== */
 const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const DIST_GID='116187224';   // Distinta
-const META_GID='254048258';   // Meta
-const OPP_GID='1284472120';   // Avversari
+const DIST_GID='116187224';
+const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-/* XI e panchina (numeri maglia) */
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
+
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
-/* 3412 (metri, già perfetto) — ordine = XI_NUMBERS */
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
-/* ====== FORMAZIONI UV (metri) ====== */
-const FORMATIONS_UV = {
-  "4-3-3": {
-    1:[34,107], 2:[62,78], 3:[14,78], 4:[44,78], 5:[6,78],
-    6:[34,66], 7:[62,52], 8:[44,57], 9:[34,13], 10:[24,57], 11:[6,52]
-  },
-  "4-2-3-1": {
-    1:[34,107], 2:[62,78], 3:[6,78], 4:[46,82], 5:[22,82],
-    6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
-  }
-};
-const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
-function canonicalFormation(name){
-  const raw = String(name||"").trim().toLowerCase();
-  const digits = raw.replace(/[^0-9]/g,'');
-  return FORMATION_ALIASES[digits] || "3-4-1-2";
-}
-
-/* ====== CSV helpers ====== */
+/* helpers CSV */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
 function parseCSV(text){
   let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
   const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
@@ -429,13 +454,22 @@ function parseCSV(text){
   const header=rows.shift().map(h=>String(h||'').trim());
   return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
-async function fetchCsv(fileId,gid){
-  const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
-  const txt=await res.text();
-  return parseCSV(txt);
-}
 
-/* ====== Normalizzazioni ====== */
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
+  }catch(e){}
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
+}
+const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
+
 function normalizeDist(rows){
   if(!rows||!rows.length) return new Map();
   const keys=Object.keys(rows[0]);
@@ -450,95 +484,34 @@ function normalizeDist(rows){
   });
   return map;
 }
+const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
 
-/* Meta: colonne "Key" / "Value" (anche in altre grafie) */
 function normalizeMeta(rows){
   const out=new Map();
   rows.forEach(r=>{
-    const k=(''+(r.Key||r.KEY||r.key||'')).trim();
-    const v=(''+(r.Value||r.VALUE||r.value||'')).trim();
-    if(!k) return;
-    const low = k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-    out.set(low, v);
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
   });
   return out;
 }
-
-/* Avversari: colonne Squadra/Team + Logo/URL */
-function normalizeOpp(rows = []){
+function normalizeOpp(rows){
   const out=new Map();
   rows.forEach(r=>{
-    const name=(''+(r.Squadra||r.squadra||r.Team||r.team||'')).trim();
-    const url =(''+(r.Logo||r.logo||r.URL||r.url||'')).trim();
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
     if(name) out.set(name.toLowerCase(), url);
   });
   return out;
 }
-
-/* ====== LOGHI: candidati robusti ====== */
-const LOCAL_LOGO_EXTS = ['webp','png','jpg','jpeg','svg'];
-function slugify(s){
-  return String(s||'')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/&/g,'and')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-}
-function logoCandidates(teamName, oppMap){
-  const name = String(teamName||'').trim();
-  if(!name) return [];
-  const c = [];
-  const fromSheet = oppMap.get(name.toLowerCase());
-  if(fromSheet) c.push(fromSheet);
-
-  // Varianti locali
-  const raw = name;                   // es. "Moglianese"
-  const lower = name.toLowerCase();   // "moglianese"
-  const slug = slugify(name);         // "moglianese"
-  const unders = lower.replace(/\s+/g,'_'); // "moglianese" o "asd_moglianese"
-  const nosp = lower.replace(/\s+/g,'');    // "moglianese"
-
-  [raw, lower, slug, unders, nosp].forEach(base=>{
-    LOCAL_LOGO_EXTS.forEach(ext=> c.push(`logos/${base}.${ext}`));
-  });
-
-  c.push('logos/_placeholder.svg');
-  return [...new Set(c)];
-}
-function isCrossOrigin(url){
-  try{ return new URL(url, location.href).origin !== location.origin; }
-  catch{ return false; }
-}
-function setLogo(imgEl, sources, alt){
-  if(!imgEl) return;
-  const list = Array.isArray(sources) ? sources.filter(Boolean) : [];
-  imgEl.alt = alt || '';
-  imgEl.style.visibility = 'hidden';
-  let i = 0;
-
-  const tryNext = () => {
-    if(i >= list.length){ console.warn('Nessun logo caricato per', alt, list); return; }
-    const src = list[i++];
-    const probe = new Image();
-    if(isCrossOrigin(src)) probe.crossOrigin = 'anonymous';
-    probe.onload = () => {
-      if(isCrossOrigin(src)) imgEl.crossOrigin = 'anonymous';
-      else imgEl.removeAttribute('crossorigin');
-      imgEl.src = src;
-      imgEl.style.visibility='visible';
-    };
-    probe.onerror = tryNext;
-    probe.src = src;
-  };
-  tryNext();
-}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
 /* ====== RENDER ====== */
 function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
-const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
 function playerNode(obj,x,y){
   const div=document.createElement('div'); div.className='player';
   div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
   if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
   else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
@@ -546,30 +519,14 @@ function playerNode(obj,x,y){
   div.appendChild(badge);
   return div;
 }
-function render(byNum, modulo="3412"){
+function render(byNum){
   const layer=document.getElementById('players'); layer.innerHTML='';
-  const key = canonicalFormation(modulo);
-  if (key === "3-4-1-2"){
-    XI_NUMBERS.forEach((n,i)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const [u,v]=coords3412[i];
-      const world=map(u,v);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  } else {
-    const table = FORMATIONS_UV[key] || {};
-    XI_NUMBERS.forEach(n=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50];
-      const world=map(uv[0], uv[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  }
+  XI_NUMBERS.forEach((n,i)=>{const p=byNum.get(n)||{num:n,name:''}; const [ux,uy]=coords3412[i]; const world=map(ux,uy); layer.appendChild(playerNode(p,world.x,world.y));});
   const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
   document.getElementById('subsList').textContent=subs;
 }
 
-/* ====== POSIZIONAMENTI BADGE ====== */
+/* ====== POSIZIONAMENTI ====== */
 function computeTopForBadges(){
   const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
   if(!stage||!pitch) return 20;
@@ -587,7 +544,20 @@ function placeSubsByPitch(){
   const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
 }
 
-/* ====== FAB auto-avoid ====== */
+/* ====== LOGHI ====== */
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== FAB auto-avoid su telefoni piccoli ====== */
 function layoutFABs(){
   const stage = document.querySelector('.stage');
   const share = document.getElementById('shareFab');
@@ -595,6 +565,7 @@ function layoutFABs(){
   const md    = document.getElementById('matchdayBadge');
   if(!stage || !share || !ig || !md) return;
 
+  // reset a default (CSS) per misurare correttamente
   share.style.top = '';
   ig.style.top = '';
 
@@ -611,6 +582,8 @@ function layoutFABs(){
     const csShare = getComputedStyle(share);
     const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
     const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+
+    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
     const targetTop = Math.round(mdRect.bottom - srect.top + 8);
     share.style.top = targetTop + 'px';
     ig.style.top    = (targetTop + fabSize + gap) + 'px';
@@ -620,39 +593,18 @@ function layoutFABs(){
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const [distRows, metaRows, oppRows] = await Promise.all([
-      fetchCsv(SHEET_FILE_ID, DIST_GID),
-      fetchCsv(SHEET_FILE_ID, META_GID),
-      fetchCsv(SHEET_FILE_ID, OPP_GID)
-    ]);
+    const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
+    const byNum = normalizeDist(distRows); render(byNum);
 
-    const byNum = normalizeDist(distRows);
-    const meta  = normalizeMeta(metaRows);
-    const opp   = normalizeOpp(oppRows);
-
-    // Leggi chiavi dallo sheet (Key/Value) – sono in minuscolo nel Map
+    const meta = normalizeMeta(metaRows); const opp = normalizeOpp(oppRows);
     const giornata = (meta.get('giornata')||'').toString().trim();
-    const squadra1 = (meta.get('squadra1')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
     const squadra2 = (meta.get('squadra2')||'').toString().trim();
-    const modulo   = (meta.get('modulo')  ||'3412').toString().trim();
 
-    console.debug('META letta →', { modulo, giornata, squadra1, squadra2 });
-
-    render(byNum, modulo);
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
-
-    // Loghi: genera candidati e prova in sequenza
-    const c1 = logoCandidates(squadra1, opp);
-    const c2 = logoCandidates(squadra2, opp);
-    console.debug('Logo candidates', { c1, c2 });
-
-    setLogo(document.getElementById('logo1'), c1, squadra1 || 'Squadra 1');
-    setLogo(document.getElementById('logo2'), c2, squadra2 || 'Squadra 2');
-
-  }catch(e){
-    console.error(e);
-    render(new Map(), "3412");
-  }
+    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+  }catch(e){ console.error(e); render(new Map()); }
 
   placeSubsByPitch(); placeMatchday(); placeVersus();
   layoutFABs();
@@ -681,17 +633,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
   async function stageToBlob(){
     const prevVis = fab.style.visibility;
     const prevVisIG = ig ? ig.style.visibility : '';
+
+    // nascondo i FAB durante lo scatto
     fab.style.visibility = 'hidden';
     if(ig) ig.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
+    /* qualità alta + downscale */
     const targetW = 1080, targetH = 1920;
     const rect = stage.getBoundingClientRect();
     const dpr  = Math.max(1, window.devicePixelRatio || 1);
     const need = Math.max(targetW / rect.width, targetH / rect.height);
     const scale = Math.max(3, dpr, need);
 
-    const canvas = await html2canvas(stage, { backgroundColor: '#0b0c11', scale, useCORS: true });
+    const canvas = await html2canvas(stage, {
+      backgroundColor: '#0b0c11',
+      scale,
+      useCORS: true
+    });
 
     const out = document.createElement('canvas');
     out.width = targetW; out.height = targetH;
