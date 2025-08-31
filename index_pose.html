@@ -205,39 +205,35 @@
     }
   }
 
-  /* ===== EXPORT MODE (solo durante lo scatto) ===== */
+  /* ===== EXPORT MODE ===== */
   .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
-  .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; } /* linee campo appena più spesse */
+  .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; }
 
-  /* ======= BOOST MATCHDAY solo su mobile (container ≤ 520px) — versione corretta ======= */
+  /* BOOST MATCHDAY mobile */
   @container (max-width: 520px){
-    .matchday-badge{
-      --md-w: 96cqw;        /* prima 88cqw */
-      --md-splat-bleed: 3.2cqh;
-    }
+    .matchday-badge{ --md-w: 96cqw; --md-splat-bleed: 3.2cqh; }
     .matchday-text{ letter-spacing: .20cqw; }
     .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
     .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
   }
 
-  /* ======= COMPACT VS su mobile (container ≤ 520px) — NUOVO ======= */
+  /* COMPACT VS mobile */
   @container (max-width: 520px){
     .versus-badge{
-      --vs-gap: .8cqw;                              /* loghi più vicini a “VS” */
-      --vs-logo-h: 8.2cqh;                          /* loghi leggermente più piccoli */
-      --vs-font: clamp(22px, 4.2cqw, 36px);         /* “VS” più grande */
-      --vs-letter: .22cqw;                          /* tracking un filo più deciso */
+      --vs-gap: .8cqw;
+      --vs-logo-h: 8.2cqh;
+      --vs-font: clamp(22px, 4.2cqw, 36px);
+      --vs-letter: .22cqw;
     }
   }
 
-  /* Fallback per browser senza container queries */
+  /* Fallback senza container queries */
   @supports not (width: 1cqw){
     @media (max-width: 520px){
       .matchday-badge{ width: min(96vw, 96%); }
       .matchday-text .md-top{ font-size: clamp(20px, 5vw, 34px); }
       .matchday-text .md-sub{ font-size: clamp(14px, 3.2vw, 22px); }
-      /* VS: fallback semplice via font-size */
       .versus-badge .team-logo{ height: 9vh; }
       .versus-badge{ gap: 1.5vw; }
       .versus-badge .vs-text{ font-size: clamp(22px, 4.2vw, 36px); letter-spacing: .22vw; }
@@ -279,31 +275,24 @@
     <div class="pitch-wrap">
       <svg id="pitch" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="false">
         <defs>
-          <!-- Trapezio del campo -->
           <clipPath id="clipPitch" clipPathUnits="userSpaceOnUse">
             <polygon points="120,120 880,120 1000,1000 0,1000"/>
           </clipPath>
-
-          <!-- Gradiente prato -->
           <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"  stop-color="#0d7f26"/>
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
-
-          <!-- Strisce prato -->
           <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="140">
-            <rect x="0" y="0"   width="1000" height="98" fill="#ffffff" opacity="0.12"/>
-            <rect x="0" y="98"  width="1000" height="42" fill="transparent"/>
+            <rect x="0" y="0" width="1000" height="98" fill="#ffffff" opacity="0.12"/>
+            <rect x="0" y="98" width="1000" height="42" fill="transparent"/>
           </pattern>
         </defs>
 
-        <!-- Fondo prato clip-pato -->
         <g clip-path="url(#clipPitch)">
           <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
-        <!-- Linee campo (clip-pate) -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -319,9 +308,8 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share (Material, quadrato, top-left) -->
+    <!-- FAB Share -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
-      <!-- Material 'share' icon -->
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
@@ -331,7 +319,6 @@
 <script>
 /* ====== DISEGNO CAMPO ====== */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
-/* Trapezio coerente con lo SVG: top a 120, lati 120..880 */
 const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
@@ -361,13 +348,11 @@ const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID='116187224';
 const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-/* Fogli */
 const META_GID='254048258';
 const OPP_GID='1284472120';
 const PUBLISHED_META_URL='';
 const PUBLISHED_OPP_URL='';
 
-/* Numeri/squadre */
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
@@ -543,19 +528,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
     fab.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
-    const scale = 2.5; // nitidezza
+    /* ==== QUALITY BOOST ==== */
+    const targetW = 1080, targetH = 1920;                // IG story size
+    const rect = stage.getBoundingClientRect();
+    const dpr  = Math.max(1, window.devicePixelRatio || 1);
+    const need = Math.max(targetW / rect.width, targetH / rect.height);
+    const scale = Math.max(3, dpr, need);                // almeno 3x, o dpr, o quanto serve per 1080x1920
+
     const canvas = await html2canvas(stage, {
       backgroundColor: '#0b0c11',
-      scale,
+      scale,                   // <- dinamico
       useCORS: true
     });
 
-    const targetW = 1080, targetH = 1920; // IG story
     const out = document.createElement('canvas');
     out.width = targetW; out.height = targetH;
     const ctx = out.getContext('2d', { willReadFrequently:true });
-    ctx.fillStyle = '#0b0c11'; ctx.fillRect(0,0,targetW,targetH);
 
+    // sfondo pieno + downscale di qualità
+    ctx.fillStyle = '#0b0c11';
+    ctx.fillRect(0,0,targetW,targetH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // fit contenuto nel 1080x1920 mantenendo proporzioni
     const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
     const w = Math.round(canvas.width * ratio);
     const h = Math.round(canvas.height * ratio);
@@ -565,7 +561,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     stage.classList.remove('is-capturing');
     fab.style.visibility = prevVis || 'visible';
-    return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+
+    return await new Promise(res => out.toBlob(b => res(b), 'image/png', 0.95));
   }
 
   async function shareOrDownload(){
