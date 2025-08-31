@@ -212,15 +212,23 @@
 
   /* ======= BOOST MATCHDAY solo su mobile (container ≤ 520px) — versione corretta ======= */
   @container (max-width: 520px){
-    /* aumenta larghezza badge e “macchia” agendo sul discendente, non sul container */
     .matchday-badge{
       --md-w: 96cqw;        /* prima 88cqw */
       --md-splat-bleed: 3.2cqh;
     }
-    /* testo più grande (override diretto delle dimensioni) */
     .matchday-text{ letter-spacing: .20cqw; }
     .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
     .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
+  }
+
+  /* ======= COMPACT VS su mobile (container ≤ 520px) — NUOVO ======= */
+  @container (max-width: 520px){
+    .versus-badge{
+      --vs-gap: .8cqw;                              /* loghi più vicini a “VS” */
+      --vs-logo-h: 8.2cqh;                          /* loghi leggermente più piccoli */
+      --vs-font: clamp(22px, 4.2cqw, 36px);         /* “VS” più grande */
+      --vs-letter: .22cqw;                          /* tracking un filo più deciso */
+    }
   }
 
   /* Fallback per browser senza container queries */
@@ -229,6 +237,10 @@
       .matchday-badge{ width: min(96vw, 96%); }
       .matchday-text .md-top{ font-size: clamp(20px, 5vw, 34px); }
       .matchday-text .md-sub{ font-size: clamp(14px, 3.2vw, 22px); }
+      /* VS: fallback semplice via font-size */
+      .versus-badge .team-logo{ height: 9vh; }
+      .versus-badge{ gap: 1.5vw; }
+      .versus-badge .vs-text{ font-size: clamp(22px, 4.2vw, 36px); letter-spacing: .22vw; }
     }
   }
 </style>
