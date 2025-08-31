@@ -68,7 +68,7 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;
+    container-type:size; /* abilita cqw/cqh e @container */
   }
 
   /* Fondale stadio */
@@ -169,7 +169,7 @@
     .subs-zone{ padding: 0 .8cqw; }
   }
 
-  /* ===== FAB Share (Material bianco, quadrato) ===== */
+  /* ===== FAB Share ===== */
   .fab-share{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -194,14 +194,14 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ===== FAB Instagram (identico al FAB share) ===== */
+  /* ===== FAB Instagram ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
     --fab-radius: 12px;
 
     position:absolute;
-    top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-g ap));
+    top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap));
     left: var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
     display:grid; place-items:center;
@@ -230,7 +230,7 @@
     pointer-events:none;
   }
 
-  /* FABs più piccoli su mobile */
+  /* Mobile tweaks */
   @container (max-width: 520px){
     .fab-share,
     .fab-ig{
@@ -269,7 +269,7 @@
     }
   }
 
-  /* ===== SUBS badge BOOST su mobile ===== */
+  /* SUBS badge BOOST su mobile */
   @container (max-width: 520px){
     .stage{ --brush-bleed-y: 3.4cqh; }
     .subs-badge{
@@ -319,9 +319,9 @@
 
     <!-- VS -->
     <div id="versusBadge" class="versus-badge">
-      <img id="logo1" class="team-logo" alt="">
+      <img id="logo1" class="team-logo" alt="" crossorigin="anonymous">
       <span class="vs-text">VS</span>
-      <img id="logo2" class="team-logo" alt="">
+      <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
     </div>
 
     <!-- Campo -->
@@ -338,8 +338,11 @@
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
 
-          <!-- Bande 50/50 allineate top e bottom -->
-          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
+          <!-- Bande 50/50 allineate top e bottom (880 = 8 × 110) -->
+          <pattern id="mow"
+                   patternUnits="userSpaceOnUse"
+                   width="1000" height="110"
+                   patternTransform="translate(0,120)">
             <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
             <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
@@ -412,10 +415,11 @@ const eps=0.03, base=Math.acos((areaD-spot)/R);
 addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
 addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
-/* ====== DATI (Google Sheet) ====== */
+/* ====== DATI ====== */
 const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID='116187224';
 const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
+
 const META_GID='254048258';
 const OPP_GID='1284472120';
 const PUBLISHED_META_URL='';
@@ -427,101 +431,7 @@ const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 /* 3412 (metri, già perfetto) — ordine = XI_NUMBERS */
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
-/* ====== FORMAZIONI UV (metri) ======
-   NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
-   GK coerente: [34,107] in tutti i moduli.  */
-const FORMATIONS_UV = {
-  "4-3-3": {
-    1:[34,107], 2:[62,78], 3:[14,78], 4:[44,78], 5:[6,78],
-    6:[34,66], 7:[62,52], 8:[44,57], 9:[34,13], 10:[24,57], 11:[6,52]
-  },
-  "4-2-3-1": {
-    1:[34,107], 2:[62,78], 3:[6,78], 4:[46,82], 5:[22,82],
-    6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
-  }
-};
-/* Aliases dal Meta senza trattini */
-const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
-function canonicalFormation(name){
-  const raw = String(name||"").trim().toLowerCase();
-  const digits = raw.replace(/[^0-9]/g,'');
-  return FORMATION_ALIASES[digits] || "3-4-1-2";
-}
-
-/* ====== LOGHI robusti ====== */
-function normalizeOpp(rows = []) {
-  const out = new Map();
-  rows.forEach(r=>{
-    const name=(''+(r.Squadra||r.squadra||r.Team||r.team||'')).trim();
-    const url =(''+(r.Logo||r.logo||r.URL||r.url||'')).trim();
-    if(name) out.set(name.toLowerCase(), url);
-  });
-  return out;
-}
-function slugify(s){
-  return String(s||'')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/&/g,'and')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-}
-function isCrossOrigin(url){
-  try{ const u = new URL(url, location.href); return u.origin !== location.origin; }
-  catch{ return false; }
-}
-const LOCAL_LOGO_EXTS  = ['webp','png','jpg','jpeg','svg'];
-const LOCAL_LOGO_BASES = ['logos', '../logos', '/logos']; // prova cartella corrente, parent e root
-
-function logoCandidates(teamName, oppMap){
-  const name=(teamName||'').trim();
-  if(!name) return [];
-  const cand = [];
-
-  // URL esplicito dallo sheet (Avversari)
-  const fromSheet = oppMap.get(name.toLowerCase());
-  if(fromSheet) cand.push(fromSheet + (fromSheet.includes('?') ? '' : `?v=${Date.now()}`));
-
-  // fallback locali con tutti i percorsi più comuni
-  const slug = slugify(name);
-  LOCAL_LOGO_EXTS.forEach(ext=>{
-    LOCAL_LOGO_BASES.forEach(base=>{
-      cand.push(new URL(`${base}/${slug}.${ext}?v=${Date.now()}`, document.baseURI).href);
-    });
-  });
-
-  return [...new Set(cand)];
-}
-function setLogo(imgEl, sources, alt){
-  if(!imgEl) return;
-  const list = Array.isArray(sources) ? sources.filter(Boolean) : [];
-  imgEl.alt = alt || '';
-  imgEl.style.visibility = 'hidden';
-
-  let i = 0;
-  const tryNext = () => {
-    if(i >= list.length){
-      console.warn('Nessun logo caricato per', alt, list);
-      return;
-    }
-    const src = list[i++];
-    const probe = new Image();
-    if(isCrossOrigin(src)) probe.crossOrigin = 'anonymous';
-    probe.onload = () => {
-      if(isCrossOrigin(src)) imgEl.crossOrigin = 'anonymous';
-      else imgEl.removeAttribute('crossorigin');
-      imgEl.src = src;
-      imgEl.style.visibility = 'visible';
-      console.debug('Logo caricato per', alt, '->', src);
-    };
-    probe.onerror = () => {
-      console.debug('Logo fallito per', alt, '->', src);
-      tryNext();
-    };
-    probe.src = src;
-  };
-  tryNext();
-}
-
-/* ====== CSV/Sheet helpers ====== */
+/* ===== CSV helpers ===== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
@@ -556,10 +466,34 @@ async function fetchCsvPrefer(fileId,gid,pubUrl){
   }
   return [];
 }
+
+/* ====== GViz JSON helper (robusto per Meta) ====== */
+async function fetchGVizJSONRows(fileId, gid){
+  const url = `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&tqx=out:json`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const txt = await res.text();
+  const json = JSON.parse(txt.replace(/^[^{]+/, '').replace(/\);?\s*$/, ''));
+  const cols = (json.table.cols || []).map(c => (c && c.label) || '');
+  return (json.table.rows || []).map(r => {
+    const obj = {};
+    cols.forEach((label, i) => {
+      const cell = r.c && r.c[i];
+      obj[label || `col${i}`] = cell && cell.v != null ? String(cell.v) : '';
+    });
+    return obj;
+  });
+}
+
+/* ====== Fetchers ====== */
 const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
-const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+/* Meta via GViz JSON (fix definitivo) con fallback al CSV */
+const fetchMetaRows   = async ()=> {
+  try{ return await fetchGVizJSONRows(SHEET_FILE_ID, META_GID); }
+  catch(e){ return await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL); }
+};
 const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
 
+/* ====== Normalizers ====== */
 function normalizeDist(rows){
   if(!rows||!rows.length) return new Map();
   const keys=Object.keys(rows[0]);
@@ -574,6 +508,8 @@ function normalizeDist(rows){
   });
   return map;
 }
+const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
+
 function normalizeMeta(rows){
   const out=new Map();
   rows.forEach(r=>{
@@ -583,8 +519,43 @@ function normalizeMeta(rows){
   });
   return out;
 }
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
-/* ====== POSIZIONAMENTI BADGE & FAB ====== */
+/* ====== RENDER ====== */
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
+  div.appendChild(img);
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
+  div.appendChild(badge);
+  return div;
+}
+function render(byNum){
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  XI_NUMBERS.forEach((n,i)=>{
+    const p=byNum.get(n)||{num:n,name:''};
+    const [ux,uy]=coords3412[i];
+    const world=map(ux,uy);
+    layer.appendChild(playerNode(p,world.x,world.y));
+  });
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
+}
+
+/* ====== POSIZIONAMENTI ====== */
 function computeTopForBadges(){
   const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
   if(!stage||!pitch) return 20;
@@ -601,6 +572,21 @@ function placeSubsByPitch(){
   const A=map(0,H); const B=map(xAreaLeft,H);
   const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
 }
+
+/* ====== LOGHI ====== */
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== FAB auto-avoid su telefoni piccoli ====== */
 function layoutFABs(){
   const stage = document.querySelector('.stage');
   const share = document.getElementById('shareFab');
@@ -608,6 +594,7 @@ function layoutFABs(){
   const md    = document.getElementById('matchdayBadge');
   if(!stage || !share || !ig || !md) return;
 
+  // reset a default (CSS) per misurare correttamente
   share.style.top = '';
   ig.style.top = '';
 
@@ -624,26 +611,25 @@ function layoutFABs(){
     const csShare = getComputedStyle(share);
     const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
     const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+
+    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
     const targetTop = Math.round(mdRect.bottom - srect.top + 8);
     share.style.top = targetTop + 'px';
     ig.style.top    = (targetTop + fabSize + gap) + 'px';
   }
 }
 
-/* ====== GO! ====== */
+/* ==== GO! ==== */
 (async function init(){
   try{
     const [distRows, metaRows, oppRows] = await Promise.all([
       fetchDistRows(), fetchMetaRows(), fetchOppRows()
     ]);
-
     const byNum = normalizeDist(distRows);
     const meta  = normalizeMeta(metaRows);
-    const opp   = normalizeOpp(oppRows || []);
+    const opp   = normalizeOpp(oppRows);
 
-    /* Modulo dal Meta (senza trattini: 3412 / 433 / 4231). Default 3412. */
-    const modulo = (meta.get('modulo')||'3412').toString().trim();
-    render(byNum, modulo);
+    render(byNum); // Il modulo è nel meta ma qui non lo usiamo ancora
 
     const giornata = (meta.get('giornata')||'').toString().trim();
     const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
@@ -651,15 +637,15 @@ function layoutFABs(){
 
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
 
-    // Loghi con fallback multipli
-    setLogo(document.getElementById('logo1'), logoCandidates(squadra1, opp), squadra1);
-    setLogo(document.getElementById('logo2'), logoCandidates(squadra2, opp), squadra2);
+    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
 
-    console.debug('META letti:', { modulo, giornata, squadra1, squadra2 });
-    console.debug('Logo candidates', { c1: logoCandidates(squadra1, opp), c2: logoCandidates(squadra2, opp) });
+    // debug non intrusivo
+    console.debug('meta', Object.fromEntries(meta));
   }catch(e){
     console.error(e);
-    render(new Map(), "3412");
+    // fallback visivo
+    render(new Map());
   }
 
   placeSubsByPitch(); placeMatchday(); placeVersus();
@@ -674,45 +660,6 @@ function layoutFABs(){
     window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
   }
 })();
-
-/* ====== RENDER ====== */
-function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
-function SURNAME(full){ const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase(); }
-function playerNode(obj,x,y){
-  const div=document.createElement('div'); div.className='player';
-  div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
-  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
-  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
-  div.appendChild(img);
-  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
-  div.appendChild(badge);
-  return div;
-}
-function render(byNum, modulo="3412"){
-  const layer=document.getElementById('players'); layer.innerHTML='';
-  const key = canonicalFormation(modulo);
-
-  if (key === "3-4-1-2"){
-    XI_NUMBERS.forEach((n,i)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const [u,v]=coords3412[i];
-      const world=map(u,v);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  } else {
-    const table = FORMATIONS_UV[key] || {};
-    XI_NUMBERS.forEach(n=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50];
-      const world=map(uv[0], uv[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  }
-
-  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
-  document.getElementById('subsList').textContent=subs;
-}
 </script>
 
 <!-- html2canvas -->
@@ -729,10 +676,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const prevVis = fab.style.visibility;
     const prevVisIG = ig ? ig.style.visibility : '';
 
+    // nascondo i FAB durante lo scatto
     fab.style.visibility = 'hidden';
     if(ig) ig.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
+    /* qualità alta + downscale */
     const targetW = 1080, targetH = 1920;
     const rect = stage.getBoundingClientRect();
     const dpr  = Math.max(1, window.devicePixelRatio || 1);
