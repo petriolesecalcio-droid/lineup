@@ -35,10 +35,10 @@
     --brush-bleed-y: 2cqh;
 
     /* === MATCHDAY (macchia) === */
-    --md-w: 88cqw;                          /* larghezza splash */
-    --md-font: 4.6cqw;                      /* testo “grosso ma non enorme” */
-    --md-splat-bleed: 2.2cqh;               /* quanto sborda la macchia in alto/basso */
-    --md-glow: 16px;                        /* bagliore del testo */
+    --md-w: 88cqw;
+    --md-font-top: 3.6cqw;   /* MATCHDAY */
+    --md-font-sub: 2.2cqw;   /* GIORNATA N */
+    --md-splat-bleed: 2.2cqh;
   }
 
   html,body{height:100%}
@@ -123,23 +123,14 @@
 
   /* ====== BADGE GLOBALI ====== */
 
-  /* MATCHDAY: macchia nel ::before, testo HTML sopra */
+  /* MATCHDAY: macchia nel ::before, testo HTML su due righe (senza ombre) */
   .matchday-badge{
     position:absolute;
     transform: translate(-50%, -50%);
     width: var(--md-w);
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-
     background:none; overflow:visible;
-    color:#fff; font-weight:900; text-transform:uppercase;
-    font-size: var(--md-font);
-    letter-spacing:.22cqw;
-    padding: 0 .8cqw;
-    /*text-shadow:
-      0 0 calc(var(--md-glow)*.40) rgba(255,255,255,.35),
-      0 0 var(--md-glow) rgba(0, 128, 255, .30);
-    filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));*/
     pointer-events:none; z-index:3;
   }
   .matchday-badge::before{
@@ -151,8 +142,15 @@
     background: url('md-splat.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
+  .matchday-text{
+    display:flex; flex-direction:column; align-items:center; gap:.35cqh;
+    color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw;
+    line-height:1.05; text-align:center;
+  }
+  .matchday-text .md-top{ font-size: var(--md-font-top); }
+  .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
-  /* SUBS: pennellata con bleed */
+  /* SUBS: pennellata (senza ombre) */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
@@ -163,7 +161,6 @@
     color:#fff; font-weight:900; text-transform:uppercase;
     font-size: min(1.6cqh, 2.1cqw);
     letter-spacing:.18cqw; padding: 0 .8cqw;
-    filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
     pointer-events:none; z-index:3;
   }
   .subs-badge::before{
@@ -191,7 +188,7 @@
     text-transform: var(--subs-transform); color:#fff; opacity:.95;
   }
 
-  /* Mobile tuning SUBS (come da ultimo step) */
+  /* Mobile tuning SUBS */
   @container (max-width: 520px){
     .stage{
       --subs-font: clamp(16px, 3cqh, 4.2cqw);
@@ -206,8 +203,13 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- MATCHDAY (macchia + testo HTML) -->
-    <div id="matchdayBadge" class="matchday-badge">MATCHDAY</div>
+    <!-- MATCHDAY (macchia + testo su due righe) -->
+    <div id="matchdayBadge" class="matchday-badge">
+      <div class="matchday-text">
+        <div class="md-top">MATCHDAY</div>
+        <div class="md-sub" id="mdSub"></div>
+      </div>
+    </div>
 
     <!-- Campo (clip) -->
     <div class="pitch-wrap">
@@ -261,6 +263,10 @@ const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID='116187224';
 const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
+/* Foglio META (Key/Value con chiave "Giornata") */
+const META_GID='254048258';             // <-- GID del foglio "meta"
+const PUBLISHED_META_URL='';            // <-- opzionale: link "pubhtml" del meta se preferisci
+
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
@@ -279,13 +285,14 @@ function parseCSV(text){
   const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
   if(!lines.length) return [];
   const rows=[]; let row=[],cur='',inQ=false;
-  const pushCell=()=>{row.push(cur);cur='';}; const pushRow=()=>{rows.push(row);row=[];};
+  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
   const s=lines.join('\n');
-  for(let i=0;i<s.length;i++){const c=s[i],n=s[i+1];
-    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++;} else if(c=='"'){inQ=false;} else cur+=c; }
-    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow();} else cur+=c; }
+  for(let i=0;i<s.length;i++){
+    const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
   }
-  if(cur!==''||row.length){pushCell();pushRow();}
+  if(cur!==''||row.length){pushCell();pushRow()}
   const header=rows.shift().map(h=>String(h||'').trim());
   return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
@@ -299,6 +306,20 @@ async function fetchDistRows(){
   }catch(e){}
   const res=await fetch(pubCsvURL(PUBLISHED_DIST_URL),{cache:'no-store'});
   const txt=await res.text(); return parseCSV(txt);
+}
+
+async function fetchMetaRows(){
+  if (META_GID){
+    try{
+      const res=await fetch(gvizCsvURL(SHEET_FILE_ID,META_GID),{cache:'no-store'});
+      if(res.ok){ const txt=await res.text(); const rows=parseCSV(txt); if(rows.length) return rows; }
+    }catch(e){}
+  }
+  if (PUBLISHED_META_URL){
+    const res=await fetch(pubCsvURL(PUBLISHED_META_URL),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
 }
 
 function normalizeDist(rows){
@@ -316,6 +337,16 @@ function normalizeDist(rows){
   return map;
 }
 const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
+
+function normalizeMeta(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
+  });
+  return out;
+}
 
 /* ====== RENDER ====== */
 function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
@@ -337,32 +368,40 @@ function render(byNum){
   document.getElementById('subsList').textContent=subs;
 }
 
-/* ====== POSIZIONAMENTO SUBS ====== */
+/* ====== POSIZIONAMENTI ====== */
 function placeSubsByPitch(){
   const el=document.getElementById('subsBadge'); if(!el) return;
   const cx=W/2; const xAreaLeft=cx-areaW/2;
   const A=map(0,H); const B=map(xAreaLeft,H);
   const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
 }
-
-/* ====== POSIZIONAMENTO MATCHDAY ====== */
 function placeMatchdayByQuadrant(){
   const el=document.getElementById('matchdayBadge');
   const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
   if(!el||!stage||!pitch) return;
   const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
-  const topCampo=pRect.top + pRect.height * 0.12;               // bordo superiore del campo (clip 12%)
+  const topCampo=pRect.top + pRect.height * 0.12;
   const spazioSopra=Math.max(0, topCampo - sRect.top);
-  const topPct=((spazioSopra*0.5)/sRect.height)*100;            // metà dello spazio sopra
-  const leftPct=25;                                             // centro quadrante sinistro
+  const topPct=((spazioSopra*0.5)/sRect.height)*100;
+  const leftPct=25;
   el.style.top=topPct.toFixed(3)+'%'; el.style.left=leftPct+'%';
 }
 
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const rows=await fetchDistRows(); const byNum=normalizeDist(rows); render(byNum);
-  }catch(e){ console.error(e); render(new Map()); }
+    const [distRows, metaRows] = await Promise.all([ fetchDistRows(), fetchMetaRows() ]);
+    const byNum = normalizeDist(distRows);
+    render(byNum);
+
+    // GIORNATA N sotto MATCHDAY
+    const meta = normalizeMeta(metaRows);
+    const giornata = (meta.get('giornata') || '').toString().trim();
+    document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
+  }catch(e){
+    console.error(e);
+    render(new Map());
+  }
 
   placeSubsByPitch();
   placeMatchdayByQuadrant();
