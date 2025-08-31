@@ -133,13 +133,13 @@
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
   }
 
-  /* SUBS centrato a cavallo della linea di fondo campo */
+  /* SUBS a cavallo della linea di fondo (posizione orizzontale calcolata via JS) */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
-    left: 50%;
-    transform: translate(-50%, 50%);
-    width: 30cqw;                /* leggermente più largo del matchday */
+    /* left: (impostato via JS) */
+    transform: translate(-50%, 50%); /* metà sopra/metà sotto la linea */
+    width: 30cqw;                
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
     background: url('badge-bg.webp') center / cover no-repeat;
@@ -211,7 +211,7 @@
     <div class="players" id="players"></div>
 
     <!-- SUBS (pennellata) -->
-    <div class="subs-badge">SUBS</div>
+    <div id="subsBadge" class="subs-badge">SUBS</div>
 
     <!-- Elenco panchina -->
     <div class="subs-zone">
@@ -385,6 +385,22 @@ function render(byNum){
   document.getElementById('subsList').textContent = subs;
 }
 
+/* ====== POSIZIONAMENTO SUBS: midpoint tra (angolo basso sx) e (bordo sx area × linea di fondo) ====== */
+function placeSubsByPitch() {
+  const el = document.getElementById('subsBadge');
+  if (!el) return;
+  const cx = W/2;
+  const xAreaLeft = cx - areaW/2;  // bordo sinistro dell'area
+  // punto A = angolo basso sinistro del campo: (u=0, v=H)
+  const A = map(0, H);
+  // punto B = intersezione bordo sx area con linea di fondo: (u=ax1, v=H)
+  const B = map(xAreaLeft, H);
+  // Midpoint fra A e B
+  const Mx = (A.x + B.x) / 2;
+  const leftPct = (Mx / 1000) * 100;
+  el.style.left = leftPct.toFixed(3) + '%';
+}
+
 /* ==== GO! ==== */
 (async function init(){
   try{
@@ -394,6 +410,17 @@ function render(byNum){
   }catch(e){
     console.error(e);
     render(new Map()); // mostra solo numeri
+  }
+
+  // posiziona SUBS e ricalcola al resize
+  placeSubsByPitch();
+  const stage = document.querySelector('.stage');
+  if (window.ResizeObserver && stage) {
+    const ro = new ResizeObserver(placeSubsByPitch);
+    ro.observe(stage);
+  } else {
+    window.addEventListener('resize', placeSubsByPitch);
+    window.addEventListener('orientationchange', placeSubsByPitch);
   }
 })();
 </script>
