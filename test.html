@@ -507,57 +507,47 @@ function normalizeOpp(rows){
 }
 function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
-/* ====== FORMAZIONI (Opzione B) ====== */
-/* Coordinate in % (0–100) del campo “virtuale”: x sinistra→destra, y alto→basso. */
+/* ====== FORMAZIONI (nuove) ====== */
+/* Coordinate in % (0–100) del campo “virtuale”: x sinistra→destra, y alto→basso.
+   Mappate per numero maglia come da tua convenzione. */
 const FORMATIONS = {
   "4-3-3": {
-    1:  [50, 93], // GK
-    2:  [82, 78], // RB
-    3:  [18, 78], // LB
-    4:  [64, 78], // RCB
-    5:  [36, 78], // LCB
-    6:  [50, 66], // MED
-    7:  [82, 42], // RW
-    8:  [62, 58], // mezzala dx
-    9:  [50, 32], // ST
-    10: [38, 58], // mezzala sx
-    11: [18, 42]  // LW
+    1:[50,93],  // GK
+    2:[82,78],  // RB
+    3:[18,78],  // LB
+    4:[64,78],  // RCB
+    5:[36,78],  // LCB
+    6:[50,66],  // MED
+    7:[82,42],  // RW
+    8:[62,58],  // mezzala dx
+    9:[50,32],  // ST
+    10:[38,58], // mezzala sx
+    11:[18,42]  // LW
   },
   "4-2-3-1": {
-    1:  [50, 93], // GK
-    2:  [82, 78], // RB
-    3:  [18, 78], // LB
-    4:  [64, 78], // RCB
-    5:  [36, 78], // LCB
-    6:  [60, 66], // MED dx
-    7:  [82, 44], // RW
-    8:  [40, 66], // MED sx
-    9:  [50, 28], // ST
-    10: [50, 38], // trequartista
-    11: [18, 44]  // LW
+    1:[50,93],  2:[82,78], 3:[18,78], 4:[64,78], 5:[36,78],
+    6:[60,66],  // MED dx
+    7:[82,44],  // RW
+    8:[40,66],  // MED sx
+    9:[50,28],  // ST
+    10:[50,38], // trequartista
+    11:[18,44]  // LW
   }
 };
-
 /* Alias dal Meta senza trattini → chiave canonica */
 const FORMATION_ALIASES = {
   "3412": "3-4-1-2",
   "433":  "4-3-3",
   "4231": "4-2-3-1"
 };
-
-/* Normalizza "3412" / "433" / "4231" (o versioni con spazi/trattini) */
+/* Converte input Meta (es. "3412", "433", "4231") in chiave usabile */
 function canonicalFormation(name){
   const raw = String(name||"").trim().toLowerCase();
-  const norm = raw.replace(/[–—−]/g, "-"); // trattini tipografici → "-"
-  if (FORMATIONS[norm]) return norm;       // già "4-3-3" / "4-2-3-1"
-  const digits = norm.replace(/[^0-9]/g, ""); // prendo solo i numeri
-  const alias = FORMATION_ALIASES[digits];
-  return alias || "3-4-1-2";               // fallback al 3412
+  const norm = raw.replace(/[–—−]/g, "-");
+  if (FORMATIONS[norm]) return norm;            // caso già "4-3-3" / "4-2-3-1"
+  const digits = norm.replace(/[^0-9]/g, "");
+  return FORMATION_ALIASES[digits] || "3-4-1-2"; // fallback 3-4-1-2
 }
-
-/* 3412 legacy — coordinate "in metri" (u,v) per map() */
-let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
-
 /* Converte % → metri di campo → coordinate trapezoidali SVG */
 function relToWorld(xp, yp){
   const u = W * (xp/100);
@@ -578,6 +568,7 @@ function playerNode(obj,x,y){
   div.appendChild(badge);
   return div;
 }
+/* render che supporta 3412 “legacy” e i nuovi moduli */
 function render(byNum, modulo="3412"){
   const layer=document.getElementById('players'); layer.innerHTML='';
   const key = canonicalFormation(modulo);
@@ -592,12 +583,11 @@ function render(byNum, modulo="3412"){
     });
   } else {
     // Mappa numero maglia → coordinate in %
-    const coords = FORMATIONS[key];
+    const coords = FORMATIONS[key] || {};
     XI_NUMBERS.forEach((n)=>{
       const p=byNum.get(n)||{num:n,name:''};
-      const pair = coords && coords[n];
-      const [xp,yp] = Array.isArray(pair) ? pair : [50,50];
-      const world = relToWorld(xp, yp);
+      const pair = coords[n] || [50,50]; // centro sicurezza
+      const world = relToWorld(pair[0], pair[1]);
       layer.appendChild(playerNode(p,world.x,world.y));
     });
   }
@@ -678,7 +668,7 @@ function layoutFABs(){
     const meta  = normalizeMeta(metaRows);
     const opp   = normalizeOpp(oppRows);
 
-    // Meta: Modulo senza trattini (3412 / 433 / 4231). Default "3412".
+    /* Leggo il modulo dal Meta SENZA trattini (3412 / 433 / 4231); default 3412 */
     const modulo = (meta.get('modulo')||'3412').toString().trim();
     render(byNum, modulo);
 
@@ -691,7 +681,7 @@ function layoutFABs(){
     setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
   }catch(e){
     console.error(e);
-    // fallback: 3412
+    // fallback visivo: nessun dato -> mostra qualcosa (3412)
     render(new Map(), "3412");
   }
 
@@ -789,7 +779,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function openInstagram(){
     const username = 'asd_petriolese_calcio';
     const web = 'https://www.instagram.com/asd_petriolese_calcio/';
-    aconst scheme = `instagram://user?username=${username}`;
+    const scheme = `instagram://user?username=${username}`;
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if(isMobile){
