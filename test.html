@@ -161,7 +161,7 @@
     font-family: var(--subs-font-family);
     font-size: var(--subs-font); font-weight: var(--subs-weight);
     letter-spacing: var(--subs-tracking); line-height: var(--subs-line);
-    text-transform: var(--subs-transform); color:#fff; opacity:.95;
+    text-transform: var (--subs-transform); color:#fff; opacity:.95;
   }
 
   @container (max-width: 520px){
@@ -354,7 +354,7 @@
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
-        <!-- Linee campo (clip-pate) -->
+        <!-- Linee campo -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -370,14 +370,14 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share (Condividi storia) -->
+    <!-- FAB Share -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
 
-    <!-- FAB Instagram (apre profilo IG) -->
+    <!-- FAB Instagram -->
     <button id="igFab" class="fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -389,16 +389,7 @@
 
 <script>
 /* ====== DISEGNO CAMPO ====== */
-// Campo 105×68, dimensioni ufficiali
-const W = 68, H = 105;
-const GOAL = 7.32;           // larghezza porta
-const areaD = 16.5;          // profondità area di rigore
-const goalD = 5.5;           // profondità area di porta
-const areaW = GOAL + 2*areaD; // 40.32 m
-const goalW = GOAL + 2*goalD; // 18.32 m
-const spot = 11;             // dischetto del rigore
-const R = 9.15;              // raggio cerchio centrale / archi rigore
-
+const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
 /* Trapezio coerente con lo SVG */
 const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
@@ -437,10 +428,132 @@ const PUBLISHED_OPP_URL='';
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
-/* 3412 legacy (già perfetto) — coordinate "in metri" (u,v) per map() */
+/* 3412 (metri, già perfetto) — ordine = XI_NUMBERS */
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
-/* helpers CSV */
+/* ====== FORMAZIONI UV (metri) ======
+   Mappate per NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
+   GK coerente: [34,107] in tutti i moduli.  */
+const FORMATIONS_UV = {
+  "4-3-3": {
+    1:[34,107], // GK
+    2:[54,78],  // RB
+    3:[14,78],  // LB
+    4:[44,78],  // RCB
+    5:[24,78],  // LCB
+    6:[34,66],  // MED
+    7:[62,52],  // RW
+    8:[44,57],  // mezzala dx
+    9:[34,13],  // ST
+    10:[24,57], // mezzala sx
+    11:[6,52]   // LW
+  },
+  "4-2-3-1": {
+    1:[34,107], // GK
+    2:[54,78],  // RB
+    3:[14,78],  // LB
+    4:[44,78],  // RCB
+    5:[24,78],  // LCB
+    6:[42,66],  // MED destro
+    7:[62,52],  // RW
+    8:[26,66],  // MED sinistro
+    9:[34,13],  // ST
+    10:[34,36], // trequartista
+    11:[6,52]   // LW
+  }
+};
+/* Aliases dal Meta senza trattini */
+const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
+function canonicalFormation(name){
+  const raw = String(name||"").trim().toLowerCase();
+  const digits = raw.replace(/[^0-9]/g,'');
+  return FORMATION_ALIASES[digits] || "3-4-1-2";
+}
+
+/* ====== RENDER ====== */
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+function SURNAME(full){ const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase(); }
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
+  div.appendChild(img);
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
+  div.appendChild(badge);
+  return div;
+}
+
+function render(byNum, modulo="3412"){
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  const key = canonicalFormation(modulo);
+
+  if (key === "3-4-1-2"){
+    // 3412 legacy: usa l'array in ordine XI_NUMBERS
+    XI_NUMBERS.forEach((n,i)=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const [u,v]=coords3412[i];
+      const world=map(u,v);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  } else {
+    // 4-3-3 / 4-2-3-1: UV per numero maglia
+    const table = FORMATIONS_UV[key] || {};
+    XI_NUMBERS.forEach(n=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const uv = table[n] || [34,50]; // default centro sicuro
+      const world=map(uv[0], uv[1]);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  }
+
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
+}
+
+/* ====== POSIZIONAMENTI BADGE ====== */
+function computeTopForBadges(){
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return 20;
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  return ((spazioSopra*0.5)/sRect.height)*100;
+}
+function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
+function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
+function placeSubsByPitch(){
+  const el=document.getElementById('subsBadge'); if(!el) return;
+  const cx=W/2; const xAreaLeft=cx-areaW/2;
+  const A=map(0,H); const B=map(xAreaLeft,H);
+  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
+}
+
+/* ====== LOGHI ====== */
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== CSV/Sheet helpers ====== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
@@ -464,7 +577,6 @@ function parseCSV(text){
   const header=rows.shift().map(h=>String(h||'').trim());
   return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
-
 async function fetchCsvPrefer(fileId,gid,pubUrl){
   try{
     const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
@@ -494,8 +606,6 @@ function normalizeDist(rows){
   });
   return map;
 }
-const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
-
 function normalizeMeta(rows){
   const out=new Map();
   rows.forEach(r=>{
@@ -504,140 +614,6 @@ function normalizeMeta(rows){
     if(k) out.set(k, v);
   });
   return out;
-}
-function normalizeOpp(rows){
-  const out=new Map();
-  rows.forEach(r=>{
-    const name=(''+(r.Squadra||r.squadra||'')).trim();
-    const url =(''+(r.Logo||r.logo||'')).trim();
-    if(name) out.set(name.toLowerCase(), url);
-  });
-  return out;
-}
-function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-
-/* ====== FORMAZIONI (nuove) ====== */
-/* Coordinate in % (0–100) del campo “virtuale”: x sinistra→destra, y alto→basso.
-   Mappate per numero maglia come da tua convenzione. */
-const FORMATIONS = {
-  "4-3-3": {
-    1:[34,107],  // GK
-    2:[82,78],  // RB
-    3:[18,78],  // LB
-    4:[64,78],  // RCB
-    5:[36,78],  // LCB
-    6:[50,66],  // MED
-    7:[82,42],  // RW
-    8:[62,58],  // mezzala dx
-    9:[50,32],  // ST
-    10:[38,58], // mezzala sx
-    11:[18,42]  // LW
-  },
-  "4-2-3-1": {
-    1:[34,107],
-    2:[62,78],
-    3:[6,78],
-    4:[64,78],
-    5:[36,78],
-    6:[60,66],  // MED dx
-    7:[82,44],  // RW
-    8:[40,66],  // MED sx
-    9:[50,28],  // ST
-    10:[50,38], // trequartista
-    11:[18,44]  // LW
-  }
-};
-/* Alias dal Meta senza trattini → chiave canonica */
-const FORMATION_ALIASES = {
-  "3412": "3-4-1-2",
-  "433":  "4-3-3",
-  "4231": "4-2-3-1"
-};
-/* Converte input Meta (es. "3412", "433", "4231") in chiave usabile */
-function canonicalFormation(name){
-  const raw = String(name||"").trim().toLowerCase();
-  const norm = raw.replace(/[–—−]/g, "-");
-  if (FORMATIONS[norm]) return norm;            // caso già "4-3-3" / "4-2-3-1"
-  const digits = norm.replace(/[^0-9]/g, "");
-  return FORMATION_ALIASES[digits] || "3-4-1-2"; // fallback 3-4-1-2
-}
-/* Converte % → metri di campo → coordinate trapezoidali SVG */
-function relToWorld(xp, yp){
-  const u = W * (xp/100);
-  const v = H * (yp/100);
-  return map(u, v);
-}
-
-/* ====== RENDER ====== */
-function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
-function playerNode(obj,x,y){
-  const div=document.createElement('div'); div.className='player';
-  div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
-  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
-  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
-  div.appendChild(img);
-  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
-  div.appendChild(badge);
-  return div;
-}
-/* render che supporta 3412 “legacy” e i nuovi moduli */
-function render(byNum, modulo="3412"){
-  const layer=document.getElementById('players'); layer.innerHTML='';
-  const key = canonicalFormation(modulo);
-
-  if (key === "3-4-1-2"){
-    // Mantengo il pipeline esistente (coords3412 in metri)
-    XI_NUMBERS.forEach((n,i)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const [ux,uy]=coords3412[i];
-      const world=map(ux,uy);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  } else {
-    // Mappa numero maglia → coordinate in %
-    const coords = FORMATIONS[key] || {};
-    XI_NUMBERS.forEach((n)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const pair = coords[n] || [50,50]; // centro sicurezza
-      const world = relToWorld(pair[0], pair[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  }
-
-  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
-  document.getElementById('subsList').textContent=subs;
-}
-
-/* ====== POSIZIONAMENTI ====== */
-function computeTopForBadges(){
-  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
-  if(!stage||!pitch) return 20;
-  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
-  const topCampo=pRect.top + pRect.height * 0.12;
-  const spazioSopra=Math.max(0, topCampo - sRect.top);
-  return ((spazioSopra*0.5)/sRect.height)*100;
-}
-function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
-function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
-function placeSubsByPitch(){
-  const el=document.getElementById('subsBadge'); if(!el) return;
-  const cx=W/2; const xAreaLeft=cx-areaW/2;
-  const A=map(0,H); const B=map(xAreaLeft,H);
-  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
-}
-
-/* ====== LOGHI ====== */
-function resolveLogoSrc(teamName, oppMap){
-  const name=(teamName||'').trim(); if(!name) return '';
-  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
-  return `logos/${slugify(name)}.webp`;
-}
-function setLogo(imgEl, src, alt){
-  if(!src){ imgEl.style.visibility='hidden'; return; }
-  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
-  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
-  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
 }
 
 /* ====== FAB auto-avoid su telefoni piccoli ====== */
@@ -648,7 +624,7 @@ function layoutFABs(){
   const md    = document.getElementById('matchdayBadge');
   if(!stage || !share || !ig || !md) return;
 
-  // reset a default (CSS) per misurare correttamente
+  // reset a default per misurare correttamente
   share.style.top = '';
   ig.style.top = '';
 
@@ -665,9 +641,10 @@ function layoutFABs(){
     const csShare = getComputedStyle(share);
     const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
     const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+    const srectTop = srect.top || 0;
 
-    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
-    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
+    // posiziona i FAB subito sotto alla macchia
+    const targetTop = Math.round(mdRect.bottom - srectTop + 8);
     share.style.top = targetTop + 'px';
     ig.style.top    = (targetTop + fabSize + gap) + 'px';
   }
@@ -679,9 +656,9 @@ function layoutFABs(){
     const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
     const byNum = normalizeDist(distRows);
     const meta  = normalizeMeta(metaRows);
-    const opp   = normalizeOpp(oppRows);
+    const opp   = fetchOppRows ? normalizeOpp(oppRows) : new Map();
 
-    /* Leggo il modulo dal Meta SENZA trattini (3412 / 433 / 4231); default 3412 */
+    /* Modulo dal Meta (senza trattini: 3412 / 433 / 4231). Default 3412. */
     const modulo = (meta.get('modulo')||'3412').toString().trim();
     render(byNum, modulo);
 
@@ -694,7 +671,7 @@ function layoutFABs(){
     setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
   }catch(e){
     console.error(e);
-    // fallback visivo: nessun dato -> mostra qualcosa (3412)
+    // fallback visivo: 3412
     render(new Map(), "3412");
   }
 
