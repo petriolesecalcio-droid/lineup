@@ -71,6 +71,7 @@
     container-type:size;
   }
 
+  /* Fondale stadio */
   .stadium{
     position:absolute; inset:0; z-index:0;
     background:
@@ -78,8 +79,10 @@
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
+  /* Strisce oblique */
   .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
 
+  /* Campo (SVG con clipPath) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -87,6 +90,7 @@
   }
   #pitch{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 
+  /* Giocatori */
   .players{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -106,6 +110,7 @@
     color:#000; white-space:nowrap; line-height:1; pointer-events:none; z-index:2;
   }
 
+  /* MATCHDAY */
   .matchday-badge{
     position:absolute; transform: translate(-50%, -50%);
     width: var(--md-w); aspect-ratio: 5.5/1;
@@ -121,6 +126,7 @@
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
+  /* VS */
   .versus-badge{
     position:absolute; transform: translate(-50%, -50%);
     width: var(--vs-w);
@@ -130,6 +136,7 @@
   .versus-badge .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; image-rendering:auto; display:block; }
   .versus-badge .vs-text{ color:#fff; font-weight:900; text-transform:uppercase; font-size: var(--vs-font); letter-spacing: var(--vs-letter); line-height:1; display:block; }
 
+  /* SUBS */
   .subs-badge{
     position:absolute; bottom: var(--pitch-bottom);
     transform: translate(-50%, calc(50% + var(--subs-drop)));
@@ -162,13 +169,13 @@
     .subs-zone{ padding: 0 .8cqw; }
   }
 
-  .fab-share,
-  .fab-ig{
+  /* ===== FAB Share (Material bianco, quadrato) ===== */
+  .fab-share{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
     --fab-radius: 12px;
 
-    position:absolute; left:var(--fab-edge);
+    position:absolute; top:var(--fab-edge); left:var(--fab-edge);
     width:var(--fab-size); height:var(--fab-size);
     display:grid; place-items:center;
 
@@ -181,15 +188,41 @@
     transition: transform .15s ease, box-shadow .15s ease,
                 background-color .15s ease, opacity .15s ease, border-color .15s ease;
   }
-  .fab-share{ top:var(--fab-edge); }
-  .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
-
-  .fab-share:hover,.fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
-  .fab-share:active,.fab-ig:active{ transform: translateY(0); background:#eceef2; }
-  .fab-share:focus-visible,.fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-share:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab-share:active{ transform: translateY(0); background:#eceef2; }
+  .fab-share:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
-  .fab-ig svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ===== FAB Instagram (identico al FAB share) ===== */
+  .fab-ig{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+
+    position:absolute;
+    top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-g ap));
+    left: var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center;
+
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: var(--fab-radius);
+    background:#fff; color:#111;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
+  .fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab-ig:active{ transform: translateY(0); background:#eceef2; }
+  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-ig svg{
+    width: calc(var(--fab-size) * .56);
+    height: calc(var(--fab-size) * .56);
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
   .fab-ig::after{
     content:"↗"; position:absolute; top:2px; right:2px;
     font-size: calc(var(--fab-size) * .28);
@@ -197,33 +230,57 @@
     pointer-events:none;
   }
 
+  /* FABs più piccoli su mobile */
   @container (max-width: 520px){
-    .fab-share,.fab-ig{
+    .fab-share,
+    .fab-ig{
       --fab-size: clamp(24px, 7cqw, 34px);
       --fab-edge: clamp(8px, 1.6cqw, 12px);
       --fab-radius: 10px;
     }
     .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
-    .fab-share svg,.fab-ig svg{
+    .fab-share svg,
+    .fab-ig   svg{
       width: calc(var(--fab-size) * .50);
       height: calc(var(--fab-size) * .50);
     }
   }
 
+  /* EXPORT MODE */
   .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
   .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; }
 
+  /* BOOST MATCHDAY mobile */
   @container (max-width: 520px){
     .matchday-badge{ --md-w: 96cqw; --md-splat-bleed: 3.2cqh; }
     .matchday-text{ letter-spacing: .20cqw; }
     .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
     .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
-    .versus-badge{ --vs-gap: .8cqw; --vs-logo-h: 8.2cqh; --vs-font: clamp(22px, 4.2cqw, 36px); --vs-letter: .22cqw; }
-    .stage{ --brush-bleed-y: 3.4cqh; }
-    .subs-badge{ width: 40cqw; font-size: clamp(14px, 3.3cqw, 20px); letter-spacing: .22cqw; padding: 0 1cqw; }
   }
 
+  /* COMPACT VS mobile */
+  @container (max-width: 520px){
+    .versus-badge{
+      --vs-gap: .8cqw;
+      --vs-logo-h: 8.2cqh;
+      --vs-font: clamp(22px, 4.2cqw, 36px);
+      --vs-letter: .22cqw;
+    }
+  }
+
+  /* ===== SUBS badge BOOST su mobile ===== */
+  @container (max-width: 520px){
+    .stage{ --brush-bleed-y: 3.4cqh; }
+    .subs-badge{
+      width: 40cqw;
+      font-size: clamp(14px, 3.3cqw, 20px);
+      letter-spacing: .22cqw;
+      padding: 0 1cqw;
+    }
+  }
+
+  /* Fallback senza container queries */
   @supports not (width: 1cqw){
     @media (max-width: 520px){
       .matchday-badge{ width: min(96vw, 96%); }
@@ -241,6 +298,7 @@
   <div class="stage">
     <div class="stadium"></div>
 
+    <!-- Strisce oblique tetto/gradoni -->
     <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
@@ -274,22 +332,26 @@
             <polygon points="120,120 880,120 1000,1000 0,1000"/>
           </clipPath>
 
+          <!-- Gradiente prato -->
           <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"  stop-color="#0d7f26"/>
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
 
+          <!-- Bande 50/50 allineate top e bottom -->
           <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
             <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
             <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
         </defs>
 
+        <!-- Prato con clip trapezoidale -->
         <g clip-path="url(#clipPitch)">
           <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
+        <!-- Linee campo -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -300,6 +362,7 @@
     <!-- SUBS -->
     <div id="subsBadge" class="subs-badge">SUBS</div>
 
+    <!-- Elenco panchina -->
     <div class="subs-zone">
       <div class="subs-list" id="subsList"></div>
     </div>
@@ -349,18 +412,24 @@ const eps=0.03, base=Math.acos((areaD-spot)/R);
 addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
 addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
-/* ====== COSTANTI SHEET ====== */
+/* ====== DATI (Google Sheet) ====== */
 const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID='116187224';
+const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 const META_GID='254048258';
 const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
 
-/* ====== 3412 (metri) ====== */
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
+
+/* 3412 (metri, già perfetto) — ordine = XI_NUMBERS */
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
-/* ====== MODULI in u,v ====== */
+/* ====== FORMAZIONI UV (metri) ======
+   NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
+   GK coerente: [34,107] in tutti i moduli.  */
 const FORMATIONS_UV = {
   "4-3-3": {
     1:[34,107], 2:[62,78], 3:[14,78], 4:[44,78], 5:[6,78],
@@ -371,6 +440,7 @@ const FORMATIONS_UV = {
     6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
   }
 };
+/* Aliases dal Meta senza trattini */
 const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
 function canonicalFormation(name){
   const raw = String(name||"").trim().toLowerCase();
@@ -378,7 +448,7 @@ function canonicalFormation(name){
   return FORMATION_ALIASES[digits] || "3-4-1-2";
 }
 
-/* ====== HELPERS LOGHI ====== */
+/* ====== LOGHI robusti ====== */
 function normalizeOpp(rows = []) {
   const out = new Map();
   rows.forEach(r=>{
@@ -394,46 +464,71 @@ function slugify(s){
     .toLowerCase().replace(/&/g,'and')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
-const LOCAL_LOGO_EXTS = ['webp','png','jpg','jpeg','svg'];
+function isCrossOrigin(url){
+  try{ const u = new URL(url, location.href); return u.origin !== location.origin; }
+  catch{ return false; }
+}
+const LOCAL_LOGO_EXTS  = ['webp','png','jpg','jpeg','svg'];
+const LOCAL_LOGO_BASES = ['logos', '../logos', '/logos']; // prova cartella corrente, parent e root
 
 function logoCandidates(teamName, oppMap){
   const name=(teamName||'').trim();
   if(!name) return [];
-  const c = [];
+  const cand = [];
+
+  // URL esplicito dallo sheet (Avversari)
   const fromSheet = oppMap.get(name.toLowerCase());
-  if(fromSheet) c.push(fromSheet);
-  const base = `logos/${slugify(name)}`;
-  LOCAL_LOGO_EXTS.forEach(ext => c.push(`${base}.${ext}`));
-  return [...new Set(c)];
-}
-function isCrossOrigin(url){
-  try{ const u = new URL(url, location.href); return u.origin !== location.origin; }
-  catch{ return false; }
+  if(fromSheet) cand.push(fromSheet + (fromSheet.includes('?') ? '' : `?v=${Date.now()}`));
+
+  // fallback locali con tutti i percorsi più comuni
+  const slug = slugify(name);
+  LOCAL_LOGO_EXTS.forEach(ext=>{
+    LOCAL_LOGO_BASES.forEach(base=>{
+      cand.push(new URL(`${base}/${slug}.${ext}?v=${Date.now()}`, document.baseURI).href);
+    });
+  });
+
+  return [...new Set(cand)];
 }
 function setLogo(imgEl, sources, alt){
   if(!imgEl) return;
   const list = Array.isArray(sources) ? sources.filter(Boolean) : [];
   imgEl.alt = alt || '';
   imgEl.style.visibility = 'hidden';
+
   let i = 0;
   const tryNext = () => {
-    if(i >= list.length){ console.warn('Nessun logo caricato per', alt, list); return; }
+    if(i >= list.length){
+      console.warn('Nessun logo caricato per', alt, list);
+      return;
+    }
     const src = list[i++];
-    const test = new Image();
-    if(isCrossOrigin(src)) test.crossOrigin = 'anonymous';
-    test.onload  = () => {
-      if(isCrossOrigin(src)) imgEl.crossOrigin = 'anonymous'; else imgEl.removeAttribute('crossorigin');
+    const probe = new Image();
+    if(isCrossOrigin(src)) probe.crossOrigin = 'anonymous';
+    probe.onload = () => {
+      if(isCrossOrigin(src)) imgEl.crossOrigin = 'anonymous';
+      else imgEl.removeAttribute('crossorigin');
       imgEl.src = src;
-      imgEl.style.visibility='visible';
+      imgEl.style.visibility = 'visible';
+      console.debug('Logo caricato per', alt, '->', src);
     };
-    test.onerror = tryNext;
-    test.src = src;
+    probe.onerror = () => {
+      console.debug('Logo fallito per', alt, '->', src);
+      tryNext();
+    };
+    probe.src = src;
   };
   tryNext();
 }
 
-/* ====== CSV/Sheet helpers (con CACHE-BUSTER!) ====== */
-const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv&t=${Date.now()}`;
+/* ====== CSV/Sheet helpers ====== */
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
 function parseCSV(text){
   let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
   const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
@@ -450,19 +545,27 @@ function parseCSV(text){
   const header=rows.shift().map(h=>String(h||'').trim());
   return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
-async function fetchCsv(fileId,gid){
-  const url = gvizCsvURL(fileId,gid);
-  const res = await fetch(url, {cache:'no-store'});
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  const txt = await res.text();
-  return parseCSV(txt);
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
+  }catch(e){}
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
 }
+const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
+
 function normalizeDist(rows){
   if(!rows||!rows.length) return new Map();
   const keys=Object.keys(rows[0]);
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  let kNum = keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
-  let kName= keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
+  let kNum=keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
+  let kName=keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
   let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
   const map=new Map();
   rows.forEach(r=>{
@@ -471,62 +574,17 @@ function normalizeDist(rows){
   });
   return map;
 }
-/* parser Meta robusto: trova colonne 'key' e 'value' a prescindere dal nome */
 function normalizeMeta(rows){
   const out=new Map();
-  if(!rows||!rows.length) return out;
-  const cols = Object.keys(rows[0]);
-  const findCol = want => cols.find(c=>String(c).trim().toLowerCase()===want) || cols[0];
-  const keyCol = findCol('key');
-  const valCol = findCol('value');
   rows.forEach(r=>{
-    const k=(''+(r[keyCol]??'')).trim().toLowerCase();
-    const v=(''+(r[valCol]??'')).trim();
-    if(k) out.set(k,v);
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
   });
   return out;
 }
 
-/* ====== RENDER ====== */
-function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
-function SURNAME(full){ const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase(); }
-function playerNode(obj,x,y){
-  const div=document.createElement('div'); div.className='player';
-  div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
-  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
-  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
-  div.appendChild(img);
-  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
-  div.appendChild(badge);
-  return div;
-}
-function render(byNum, modulo="3412"){
-  const layer=document.getElementById('players'); layer.innerHTML='';
-  const key = canonicalFormation(modulo);
-
-  if (key === "3-4-1-2"){
-    XI_NUMBERS.forEach((n,i)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const [u,v]=coords3412[i];
-      const world=map(u,v);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  } else {
-    const table = FORMATIONS_UV[key] || {};
-    XI_NUMBERS.forEach(n=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50];
-      const world=map(uv[0], uv[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  }
-
-  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
-  document.getElementById('subsList').textContent=subs;
-}
-
-/* ====== POSIZIONAMENTI BADGE ====== */
+/* ====== POSIZIONAMENTI BADGE & FAB ====== */
 function computeTopForBadges(){
   const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
   if(!stage||!pitch) return 20;
@@ -572,36 +630,33 @@ function layoutFABs(){
   }
 }
 
-/* ==== GO! ==== */
+/* ====== GO! ====== */
 (async function init(){
   try{
     const [distRows, metaRows, oppRows] = await Promise.all([
-      fetchCsv(SHEET_FILE_ID, DIST_GID),
-      fetchCsv(SHEET_FILE_ID, META_GID),
-      fetchCsv(SHEET_FILE_ID, OPP_GID)
+      fetchDistRows(), fetchMetaRows(), fetchOppRows()
     ]);
 
     const byNum = normalizeDist(distRows);
     const meta  = normalizeMeta(metaRows);
-    const opp   = normalizeOpp(oppRows);
+    const opp   = normalizeOpp(oppRows || []);
 
-    const modulo   = (meta.get('modulo')||'3412').toString().trim();
+    /* Modulo dal Meta (senza trattini: 3412 / 433 / 4231). Default 3412. */
+    const modulo = (meta.get('modulo')||'3412').toString().trim();
+    render(byNum, modulo);
+
     const giornata = (meta.get('giornata')||'').toString().trim();
-    const squadra1 = (meta.get('squadra1')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
     const squadra2 = (meta.get('squadra2')||'').toString().trim();
 
-    console.debug('META', { modulo, giornata, squadra1, squadra2 });
-
-    render(byNum, modulo);
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
 
+    // Loghi con fallback multipli
     setLogo(document.getElementById('logo1'), logoCandidates(squadra1, opp), squadra1);
     setLogo(document.getElementById('logo2'), logoCandidates(squadra2, opp), squadra2);
 
-    console.debug('Logo candidates', {
-      squadra1, c1: logoCandidates(squadra1, opp),
-      squadra2, c2: logoCandidates(squadra2, opp)
-    });
+    console.debug('META letti:', { modulo, giornata, squadra1, squadra2 });
+    console.debug('Logo candidates', { c1: logoCandidates(squadra1, opp), c2: logoCandidates(squadra2, opp) });
   }catch(e){
     console.error(e);
     render(new Map(), "3412");
@@ -619,6 +674,45 @@ function layoutFABs(){
     window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
   }
 })();
+
+/* ====== RENDER ====== */
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+function SURNAME(full){ const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase(); }
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
+  div.appendChild(img);
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
+  div.appendChild(badge);
+  return div;
+}
+function render(byNum, modulo="3412"){
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  const key = canonicalFormation(modulo);
+
+  if (key === "3-4-1-2"){
+    XI_NUMBERS.forEach((n,i)=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const [u,v]=coords3412[i];
+      const world=map(u,v);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  } else {
+    const table = FORMATIONS_UV[key] || {};
+    XI_NUMBERS.forEach(n=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const uv = table[n] || [34,50];
+      const world=map(uv[0], uv[1]);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  }
+
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
+}
 </script>
 
 <!-- html2canvas -->
