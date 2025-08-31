@@ -194,7 +194,7 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ===== FAB Instagram ===== */
+  /* ===== FAB Instagram (identico al FAB share) ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -230,7 +230,7 @@
     pointer-events:none;
   }
 
-  /* FABs più piccoli su mobile */
+  /* FABs più piccoli su mobile (container) — identici anche qui */
   @container (max-width: 520px){
     .fab-share,
     .fab-ig{
@@ -269,7 +269,7 @@
     }
   }
 
-  /* SUBS badge BOOST su mobile */
+  /* ===== SUBS badge BOOST su mobile ===== */
   @container (max-width: 520px){
     .stage{ --brush-bleed-y: 3.4cqh; }
     .subs-badge{
@@ -354,7 +354,7 @@
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
-        <!-- Linee campo -->
+        <!-- Linee campo (clip-pate) -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -370,14 +370,14 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share -->
+    <!-- FAB Share (Condividi storia) -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
 
-    <!-- FAB Instagram -->
+    <!-- FAB Instagram (apre profilo IG) -->
     <button id="igFab" class="fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -395,4 +395,419 @@ const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
 const G=document.getElementById('lines');
-function addPolyline(p
+function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+  el.setAttribute('stroke','white'); el.setAttribute('fill','none');
+  el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
+  G.appendChild(el);}
+const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
+function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
+function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
+function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
+addPolyline([TL,TR,BR,BL,TL],6);
+addLine(0,H/2,W,H/2,3);
+addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
+const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2;
+const gx1=cx-goalW/2, gx2=cx+goalW/2;
+addRect(ax1,0,ax2,areaD,3); addRect(gx1,0,gx2,goalD,3); addDot(cx,spot);
+addRect(ax1,H-areaD,ax2,H,3); addRect(gx1,H-goalD,gx2,H,3); addDot(cx,H-spot);
+const eps=0.03, base=Math.acos((areaD-spot)/R);
+addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
+addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
+
+/* ====== DATI ====== */
+const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const DIST_GID='116187224';
+const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
+
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
+
+const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
+const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
+
+/* 3412 legacy (già perfetto) — coordinate "in metri" (u,v) per map() */
+let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
+
+/* helpers CSV */
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
+function parseCSV(text){
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+  if(!lines.length) return [];
+  const rows=[]; let row=[],cur='',inQ=false;
+  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
+  const s=lines.join('\n');
+  for(let i=0;i<s.length;i++){
+    const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
+  }
+  if(cur!==''||row.length){pushCell();pushRow()}
+  const header=rows.shift().map(h=>String(h||'').trim());
+  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+}
+
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
+  }catch(e){}
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
+}
+const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
+
+function normalizeDist(rows){
+  if(!rows||!rows.length) return new Map();
+  const keys=Object.keys(rows[0]);
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  let kNum=keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
+  let kName=keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
+  let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
+  const map=new Map();
+  rows.forEach(r=>{
+    const n=Number(String(r[kNum]||'').trim()); if(!(n>0)) return;
+    map.set(n,{num:n,name:String(r[kName]||'').trim(),photo:String(r[kPhoto]||'').trim()});
+  });
+  return map;
+}
+const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
+
+function normalizeMeta(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
+  });
+  return out;
+}
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+
+/* ====== FORMAZIONI (Opzione B) ====== */
+/* Coordinate in % (0–100) del campo “virtuale”: x sinistra→destra, y alto→basso. */
+const FORMATIONS = {
+  "4-3-3": {
+    1:  [50, 93], // GK
+    2:  [82, 78], // RB
+    3:  [18, 78], // LB
+    4:  [64, 78], // RCB
+    5:  [36, 78], // LCB
+    6:  [50, 66], // MED
+    7:  [82, 42], // RW
+    8:  [62, 58], // mezzala dx
+    9:  [50, 32], // ST
+    10: [38, 58], // mezzala sx
+    11: [18, 42]  // LW
+  },
+  "4-2-3-1": {
+    1:  [50, 93], // GK
+    2:  [82, 78], // RB
+    3:  [18, 78], // LB
+    4:  [64, 78], // RCB
+    5:  [36, 78], // LCB
+    6:  [60, 66], // MED dx
+    7:  [82, 44], // RW
+    8:  [40, 66], // MED sx
+    9:  [50, 28], // ST
+    10: [50, 38], // trequartista
+    11: [18, 44]  // LW
+  }
+};
+
+/* Alias dal Meta senza trattini → chiave canonica */
+const FORMATION_ALIASES = {
+  "3412": "3-4-1-2",
+  "433":  "4-3-3",
+  "4231": "4-2-3-1"
+};
+
+/* Normalizza "3412" / "433" / "4231" (o versioni con spazi/trattini) */
+function canonicalFormation(name){
+  const raw = String(name||"").trim().toLowerCase();
+  const norm = raw.replace(/[–—−]/g, "-"); // trattini tipografici → "-"
+  if (FORMATIONS[norm]) return norm;       // già "4-3-3" / "4-2-3-1"
+  const digits = norm.replace(/[^0-9]/g, ""); // prendo solo i numeri
+  const alias = FORMATION_ALIASES[digits];
+  return alias || "3-4-1-2";               // fallback al 3412
+}
+
+/* 3412 legacy — coordinate "in metri" (u,v) per map() */
+let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
+
+/* Converte % → metri di campo → coordinate trapezoidali SVG */
+function relToWorld(xp, yp){
+  const u = W * (xp/100);
+  const v = H * (yp/100);
+  return map(u, v);
+}
+
+/* ====== RENDER ====== */
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
+  div.appendChild(img);
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
+  div.appendChild(badge);
+  return div;
+}
+function render(byNum, modulo="3412"){
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  const key = canonicalFormation(modulo);
+
+  if (key === "3-4-1-2"){
+    // Mantengo il pipeline esistente (coords3412 in metri)
+    XI_NUMBERS.forEach((n,i)=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const [ux,uy]=coords3412[i];
+      const world=map(ux,uy);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  } else {
+    // Mappa numero maglia → coordinate in %
+    const coords = FORMATIONS[key];
+    XI_NUMBERS.forEach((n)=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const pair = coords && coords[n];
+      const [xp,yp] = Array.isArray(pair) ? pair : [50,50];
+      const world = relToWorld(xp, yp);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  }
+
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
+}
+
+/* ====== POSIZIONAMENTI ====== */
+function computeTopForBadges(){
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return 20;
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  return ((spazioSopra*0.5)/sRect.height)*100;
+}
+function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
+function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
+function placeSubsByPitch(){
+  const el=document.getElementById('subsBadge'); if(!el) return;
+  const cx=W/2; const xAreaLeft=cx-areaW/2;
+  const A=map(0,H); const B=map(xAreaLeft,H);
+  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
+}
+
+/* ====== LOGHI ====== */
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== FAB auto-avoid su telefoni piccoli ====== */
+function layoutFABs(){
+  const stage = document.querySelector('.stage');
+  const share = document.getElementById('shareFab');
+  const ig    = document.getElementById('igFab');
+  const md    = document.getElementById('matchdayBadge');
+  if(!stage || !share || !ig || !md) return;
+
+  // reset a default (CSS) per misurare correttamente
+  share.style.top = '';
+  ig.style.top = '';
+
+  const srect = stage.getBoundingClientRect();
+  const mdRect = md.getBoundingClientRect();
+  const fabRect = share.getBoundingClientRect();
+
+  const overlap = !(fabRect.right < mdRect.left ||
+                    fabRect.left  > mdRect.right ||
+                    fabRect.bottom< mdRect.top ||
+                    fabRect.top   > mdRect.bottom);
+
+  if(overlap){
+    const csShare = getComputedStyle(share);
+    const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
+    const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+
+    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
+    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
+    share.style.top = targetTop + 'px';
+    ig.style.top    = (targetTop + fabSize + gap) + 'px';
+  }
+}
+
+/* ==== GO! ==== */
+(async function init(){
+  try{
+    const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
+    const byNum = normalizeDist(distRows);
+    const meta  = normalizeMeta(metaRows);
+    const opp   = normalizeOpp(oppRows);
+
+    // Meta: Modulo senza trattini (3412 / 433 / 4231). Default "3412".
+    const modulo = (meta.get('modulo')||'3412').toString().trim();
+    render(byNum, modulo);
+
+    const giornata = (meta.get('giornata')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
+    const squadra2 = (meta.get('squadra2')||'').toString().trim();
+
+    document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
+    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+  }catch(e){
+    console.error(e);
+    // fallback: 3412
+    render(new Map(), "3412");
+  }
+
+  placeSubsByPitch(); placeMatchday(); placeVersus();
+  layoutFABs();
+
+  const stage=document.querySelector('.stage');
+  if(window.ResizeObserver && stage){
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    ro.observe(stage);
+  }else{
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+  }
+})();
+</script>
+
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+
+<!-- Handlers FAB -->
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const fab = document.getElementById('shareFab');
+  const ig  = document.getElementById('igFab');
+  const stage = document.querySelector('.stage');
+
+  async function stageToBlob(){
+    const prevVis = fab.style.visibility;
+    const prevVisIG = ig ? ig.style.visibility : '';
+
+    // nascondo i FAB durante lo scatto
+    fab.style.visibility = 'hidden';
+    if(ig) ig.style.visibility = 'hidden';
+    stage.classList.add('is-capturing');
+
+    /* qualità alta + downscale */
+    const targetW = 1080, targetH = 1920;
+    const rect = stage.getBoundingClientRect();
+    const dpr  = Math.max(1, window.devicePixelRatio || 1);
+    const need = Math.max(targetW / rect.width, targetH / rect.height);
+    const scale = Math.max(3, dpr, need);
+
+    const canvas = await html2canvas(stage, {
+      backgroundColor: '#0b0c11',
+      scale,
+      useCORS: true
+    });
+
+    const out = document.createElement('canvas');
+    out.width = targetW; out.height = targetH;
+    const ctx = out.getContext('2d', { willReadFrequently:true });
+
+    ctx.fillStyle = '#0b0c11';
+    ctx.fillRect(0,0,targetW,targetH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
+    const w = Math.round(canvas.width * ratio);
+    const h = Math.round(canvas.height * ratio);
+    const x = Math.floor((targetW - w)/2);
+    const y = Math.floor((targetH - h)/2);
+    ctx.drawImage(canvas, x, y, w, h);
+
+    stage.classList.remove('is-capturing');
+    fab.style.visibility = prevVis || 'visible';
+    if(ig) ig.style.visibility = prevVisIG || 'visible';
+
+    return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+  }
+
+  async function shareOrDownload(){
+    try{
+      fab.setAttribute('aria-busy','true');
+      const blob = await stageToBlob();
+      const fileName = `matchday_petriolese_${new Date().toISOString().slice(0,10)}.png`;
+
+      const file = new File([blob], fileName, { type: 'image/png' });
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ title:'Matchday – Petriolese Calcio', text:'Formazione titolari e panchina.', files:[file] });
+        fab.removeAttribute('aria-busy'); return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      fab.removeAttribute('aria-busy');
+    }catch(err){
+      console.error(err);
+      fab.removeAttribute('aria-busy');
+      alert('Impossibile condividere automaticamente.');
+    }
+  }
+
+  function openInstagram(){
+    const username = 'asd_petriolese_calcio';
+    const web = 'https://www.instagram.com/asd_petriolese_calcio/';
+    aconst scheme = `instagram://user?username=${username}`;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if(isMobile){
+      const start = Date.now();
+      window.location.href = scheme;
+      setTimeout(()=>{
+        if(Date.now() - start < 1600){
+          window.open(web, '_blank', 'noopener');
+        }
+      }, 700);
+    }else{
+      window.open(web, '_blank', 'noopener');
+    }
+  }
+
+  fab.addEventListener('click', shareOrDownload, { passive:true });
+  ig.addEventListener('click', openInstagram, { passive:true });
+});
+</script>
+</body>
+</html>
