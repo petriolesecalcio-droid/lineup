@@ -68,7 +68,7 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size; /* abilita cqw/cqh e @container */
+    container-type:size;
   }
 
   /* Fondale stadio */
@@ -217,7 +217,7 @@
   }
   .fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab-ig:active{ transform: translateY(0); background:#eceef2; }
-  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2 px; }
   .fab-ig svg{
     width: calc(var(--fab-size) * .56);
     height: calc(var(--fab-size) * .56);
@@ -230,7 +230,7 @@
     pointer-events:none;
   }
 
-  /* FABs più piccoli su mobile (container) — identici anche qui */
+  /* FABs più piccoli su mobile */
   @container (max-width: 520px){
     .fab-share,
     .fab-ig{
@@ -319,9 +319,9 @@
 
     <!-- VS -->
     <div id="versusBadge" class="versus-badge">
-      <img id="logo1" class="team-logo" alt="" crossorigin="anonymous">
+      <img id="logo1" class="team-logo" alt="">
       <span class="vs-text">VS</span>
-      <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
+      <img id="logo2" class="team-logo" alt="">
     </div>
 
     <!-- Campo -->
@@ -338,11 +338,8 @@
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
 
-          <!-- Bande 50/50 allineate top e bottom (880 = 8 × 110) -->
-          <pattern id="mow"
-                   patternUnits="userSpaceOnUse"
-                   width="1000" height="110"
-                   patternTransform="translate(0,120)">
+          <!-- Bande 50/50 allineate top e bottom -->
+          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
             <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
             <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
@@ -432,34 +429,16 @@ const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
 /* ====== FORMAZIONI UV (metri) ======
-   Mappate per NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
+   NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
    GK coerente: [34,107] in tutti i moduli.  */
 const FORMATIONS_UV = {
   "4-3-3": {
-    1:[34,107], // GK
-    2:[62,78],  // RB
-    3:[14,78],  // LB
-    4:[44,78],  // RCB
-    5:[6,78],  // LCB
-    6:[34,66],  // MED
-    7:[62,52],  // RW
-    8:[44,57],  // mezzala dx
-    9:[34,13],  // ST
-    10:[24,57], // mezzala sx
-    11:[6,52]   // LW
+    1:[34,107], 2:[62,78], 3:[14,78], 4:[44,78], 5:[6,78],
+    6:[34,66], 7:[62,52], 8:[44,57], 9:[34,13], 10:[24,57], 11:[6,52]
   },
   "4-2-3-1": {
-    1:[34,107], // GK
-    2:[62,78],  // RB
-    3:[6,78],  // LB
-    4:[46,82],  // RCB
-    5:[22,82],  // LCB
-    6:[46,57],  // MED destro
-    7:[62,39],  // RW
-    8:[22,57],  // MED sinistro
-    9:[34,13],  // ST
-    10:[34,39], // trequartista
-    11:[6,39]   // LW
+    1:[34,107], 2:[62,78], 3:[6,78], 4:[46,82], 5:[22,82],
+    6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
   }
 };
 /* Aliases dal Meta senza trattini */
@@ -476,7 +455,8 @@ function SURNAME(full){ const t=String(full||'').trim(); if(!t) return ''; const
 function playerNode(obj,x,y){
   const div=document.createElement('div'); div.className='player';
   div.style.left=pct(x); div.style.top=pct(y);
-  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
+  // crossOrigin lo gestiamo solo se remoto in setLogo; per i players non serve
   if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
   else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
@@ -490,7 +470,6 @@ function render(byNum, modulo="3412"){
   const key = canonicalFormation(modulo);
 
   if (key === "3-4-1-2"){
-    // 3412 legacy: usa l'array in ordine XI_NUMBERS
     XI_NUMBERS.forEach((n,i)=>{
       const p=byNum.get(n)||{num:n,name:''};
       const [u,v]=coords3412[i];
@@ -498,11 +477,10 @@ function render(byNum, modulo="3412"){
       layer.appendChild(playerNode(p,world.x,world.y));
     });
   } else {
-    // 4-3-3 / 4-2-3-1: UV per numero maglia
     const table = FORMATIONS_UV[key] || {};
     XI_NUMBERS.forEach(n=>{
       const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50]; // default centro sicuro
+      const uv = table[n] || [34,50];
       const world=map(uv[0], uv[1]);
       layer.appendChild(playerNode(p,world.x,world.y));
     });
@@ -512,45 +490,64 @@ function render(byNum, modulo="3412"){
   document.getElementById('subsList').textContent=subs;
 }
 
-/* ====== POSIZIONAMENTI BADGE ====== */
-function computeTopForBadges(){
-  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
-  if(!stage||!pitch) return 20;
-  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
-  const topCampo=pRect.top + pRect.height * 0.12;
-  const spazioSopra=Math.max(0, topCampo - sRect.top);
-  return ((spazioSopra*0.5)/sRect.height)*100;
-}
-function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
-function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
-function placeSubsByPitch(){
-  const el=document.getElementById('subsBadge'); if(!el) return;
-  const cx=W/2; const xAreaLeft=cx-areaW/2;
-  const A=map(0,H); const B=map(xAreaLeft,H);
-  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
-}
-
-/* ====== LOGHI ====== */
-function normalizeOpp(rows){
-  const out=new Map();
+/* ====== LOGHI (robusti con fallback multipli) ====== */
+function normalizeOpp(rows = []) {
+  const out = new Map();
   rows.forEach(r=>{
-    const name=(''+(r.Squadra||r.squadra||'')).trim();
-    const url =(''+(r.Logo||r.logo||'')).trim();
+    const name=(''+(r.Squadra||r.squadra||r.Team||r.team||'')).trim();
+    const url =(''+(r.Logo||r.logo||r.URL||r.url||'')).trim();
     if(name) out.set(name.toLowerCase(), url);
   });
   return out;
 }
-function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-function resolveLogoSrc(teamName, oppMap){
-  const name=(teamName||'').trim(); if(!name) return '';
-  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
-  return `logos/${slugify(name)}.webp`;
+function slugify(s){
+  return String(s||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/&/g,'and')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
-function setLogo(imgEl, src, alt){
-  if(!src){ imgEl.style.visibility='hidden'; return; }
-  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
-  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
-  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+const LOCAL_LOGO_EXTS = ['webp','png','jpg','jpeg','svg'];
+
+function logoCandidates(teamName, oppMap){
+  const name=(teamName||'').trim();
+  if(!name) return [];
+  const c = [];
+  const fromSheet = oppMap.get(name.toLowerCase());
+  if(fromSheet) c.push(fromSheet);
+  const base = `logos/${slugify(name)}`;
+  LOCAL_LOGO_EXTS.forEach(ext => c.push(`${base}.${ext}`));
+  c.push('logos/_placeholder.svg'); // metti un placeholder opzionale
+  return [...new Set(c)];
+}
+function isCrossOrigin(url){
+  try{
+    const u = new URL(url, location.href);
+    return u.origin !== location.origin;
+  }catch{ return false; }
+}
+function setLogo(imgEl, sources, alt){
+  if(!imgEl) return;
+  const list = Array.isArray(sources) ? sources.filter(Boolean) : [];
+  imgEl.alt = alt || '';
+  imgEl.style.visibility = 'hidden';
+
+  let i = 0;
+  const tryNext = () => {
+    if(i >= list.length){ console.warn('Nessun logo caricato per', alt, list); return; }
+    const src = list[i++];
+    const test = new Image();
+    if(isCrossOrigin(src)) test.crossOrigin = 'anonymous';
+    test.onload  = () => {
+      // assegna al vero <img>; set crossOrigin solo se remoto
+      if(isCrossOrigin(src)) imgEl.crossOrigin = 'anonymous';
+      else imgEl.removeAttribute('crossorigin');
+      imgEl.src = src;
+      imgEl.style.visibility='visible';
+    };
+    test.onerror = tryNext;
+    test.src = src;
+  };
+  tryNext();
 }
 
 /* ====== CSV/Sheet helpers ====== */
@@ -617,6 +614,22 @@ function normalizeMeta(rows){
 }
 
 /* ====== FAB auto-avoid su telefoni piccoli ====== */
+function computeTopForBadges(){
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return 20;
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  return ((spazioSopra*0.5)/sRect.height)*100;
+}
+function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
+function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
+function placeSubsByPitch(){
+  const el=document.getElementById('subsBadge'); if(!el) return;
+  const cx=W/2; const xAreaLeft=cx-areaW/2;
+  const A=map(0,H); const B=map(xAreaLeft,H);
+  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
+}
 function layoutFABs(){
   const stage = document.querySelector('.stage');
   const share = document.getElementById('shareFab');
@@ -624,7 +637,6 @@ function layoutFABs(){
   const md    = document.getElementById('matchdayBadge');
   if(!stage || !share || !ig || !md) return;
 
-  // reset a default per misurare correttamente
   share.style.top = '';
   ig.style.top = '';
 
@@ -641,10 +653,7 @@ function layoutFABs(){
     const csShare = getComputedStyle(share);
     const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
     const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
-    const srectTop = srect.top || 0;
-
-    // posiziona i FAB subito sotto alla macchia
-    const targetTop = Math.round(mdRect.bottom - srectTop + 8);
+    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
     share.style.top = targetTop + 'px';
     ig.style.top    = (targetTop + fabSize + gap) + 'px';
   }
@@ -653,10 +662,13 @@ function layoutFABs(){
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
+    const [distRows, metaRows, oppRows] = await Promise.all([
+      fetchDistRows(), fetchMetaRows(), fetchOppRows()
+    ]);
+
     const byNum = normalizeDist(distRows);
     const meta  = normalizeMeta(metaRows);
-    const opp   = fetchOppRows ? normalizeOpp(oppRows) : new Map();
+    const opp   = normalizeOpp(oppRows || []); // <-- sempre Map()
 
     /* Modulo dal Meta (senza trattini: 3412 / 433 / 4231). Default 3412. */
     const modulo = (meta.get('modulo')||'3412').toString().trim();
@@ -667,11 +679,17 @@ function layoutFABs(){
     const squadra2 = (meta.get('squadra2')||'').toString().trim();
 
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
-    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
-    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+
+    // Loghi con fallback multipli
+    setLogo(document.getElementById('logo1'), logoCandidates(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), logoCandidates(squadra2, opp), squadra2);
+
+    console.debug('Logo candidates', {
+      squadra1, c1: logoCandidates(squadra1, opp),
+      squadra2, c2: logoCandidates(squadra2, opp)
+    });
   }catch(e){
     console.error(e);
-    // fallback visivo: 3412
     render(new Map(), "3412");
   }
 
@@ -703,12 +721,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const prevVis = fab.style.visibility;
     const prevVisIG = ig ? ig.style.visibility : '';
 
-    // nascondo i FAB durante lo scatto
     fab.style.visibility = 'hidden';
     if(ig) ig.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
-    /* qualità alta + downscale */
     const targetW = 1080, targetH = 1920;
     const rect = stage.getBoundingClientRect();
     const dpr  = Math.max(1, window.devicePixelRatio || 1);
