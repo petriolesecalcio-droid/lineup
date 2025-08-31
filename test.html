@@ -389,7 +389,16 @@
 
 <script>
 /* ====== DISEGNO CAMPO ====== */
-const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
+// Campo 105×68, dimensioni ufficiali
+const W = 68, H = 105;
+const GOAL = 7.32;           // larghezza porta
+const areaD = 16.5;          // profondità area di rigore
+const goalD = 5.5;           // profondità area di porta
+const areaW = GOAL + 2*areaD; // 40.32 m
+const goalW = GOAL + 2*goalD; // 18.32 m
+const spot = 11;             // dischetto del rigore
+const R = 9.15;              // raggio cerchio centrale / archi rigore
+
 /* Trapezio coerente con lo SVG */
 const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
@@ -525,7 +534,11 @@ const FORMATIONS = {
     11:[18,42]  // LW
   },
   "4-2-3-1": {
-    1:[50,93],  2:[82,78], 3:[18,78], 4:[64,78], 5:[36,78],
+    1:[50,93],
+    2:[82,78],
+    3:[18,78],
+    4:[64,78],
+    5:[36,78],
     6:[60,66],  // MED dx
     7:[82,44],  // RW
     8:[40,66],  // MED sx
