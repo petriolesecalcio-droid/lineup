@@ -39,6 +39,13 @@
     --md-font-top: 3.6cqw;   /* MATCHDAY */
     --md-font-sub: 2.2cqw;   /* GIORNATA N */
     --md-splat-bleed: 2.2cqh;
+
+    /* === VS (quadrante destro) === */
+    --vs-w: 88cqw;           /* larghezza blocco VS */
+    --vs-logo-h: 10cqh;      /* altezza loghi */
+    --vs-gap: 2cqw;          /* spazio fra logo e VS e logo */
+    --vs-font: 2.2cqw;       /* dimensione “VS” */
+    --vs-letter: .18cqw;     /* tracking “VS” */
   }
 
   html,body{height:100%}
@@ -121,9 +128,7 @@
     pointer-events:none; z-index:2;
   }
 
-  /* ====== BADGE GLOBALI ====== */
-
-  /* MATCHDAY: macchia nel ::before, testo HTML su due righe (senza ombre) */
+  /* ====== MATCHDAY (quadrante sinistro) ====== */
   .matchday-badge{
     position:absolute;
     transform: translate(-50%, -50%);
@@ -150,7 +155,29 @@
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
-  /* SUBS: pennellata (senza ombre) */
+  /* ====== VS (quadrante destro) ====== */
+  .versus-badge{
+    position:absolute;
+    transform: translate(-50%, -50%);
+    width: var(--vs-w);
+    display:flex; align-items:center; justify-content:center;
+    gap: var(--vs-gap);
+    background:none; overflow:visible; pointer-events:none; z-index:3;
+  }
+  .versus-badge .team-logo{
+    height: var(--vs-logo-h);
+    width: auto;
+    object-fit: contain;
+    image-rendering: auto;
+    display:block;
+  }
+  .versus-badge .vs-text{
+    color:#fff; font-weight:900; text-transform:uppercase;
+    font-size: var(--vs-font); letter-spacing: var(--vs-letter);
+    line-height:1; display:block;
+  }
+
+  /* SUBS */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
@@ -211,6 +238,13 @@
       </div>
     </div>
 
+    <!-- VS (logo1 VS logo2) -->
+    <div id="versusBadge" class="versus-badge">
+      <img id="logo1" class="team-logo" alt="">
+      <span class="vs-text">VS</span>
+      <img id="logo2" class="team-logo" alt="">
+    </div>
+
     <!-- Campo (clip) -->
     <div class="pitch-wrap">
       <div class="grass"></div>
@@ -263,10 +297,13 @@ const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const DIST_GID='116187224';
 const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-/* Foglio META (Key/Value con chiave "Giornata") */
-const META_GID='254048258';             // <-- GID del foglio "meta"
-const PUBLISHED_META_URL='';            // <-- opzionale: link "pubhtml" del meta se preferisci
+/* Fogli */
+const META_GID='254048258';        // Meta: Giornata, Squadra1, Squadra2
+const OPP_GID='1284472120';        // Avversari: Squadra, Logo
+const PUBLISHED_META_URL='';       // opzionali se vuoi usare pubhtml
+const PUBLISHED_OPP_URL='';
 
+/* Numeri/squadre */
 const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
 const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
@@ -297,30 +334,21 @@ function parseCSV(text){
   return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
 
-async function fetchDistRows(){
+async function fetchCsvPrefer(fileId,gid,pubUrl){
   try{
-    const res=await fetch(gvizCsvURL(SHEET_FILE_ID,DIST_GID),{cache:'no-store'});
-    if(!res.ok) throw new Error('gviz '+res.status);
-    const txt=await res.text(); const rows=parseCSV(txt);
-    if(rows.length) return rows;
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
   }catch(e){}
-  const res=await fetch(pubCsvURL(PUBLISHED_DIST_URL),{cache:'no-store'});
-  const txt=await res.text(); return parseCSV(txt);
-}
-
-async function fetchMetaRows(){
-  if (META_GID){
-    try{
-      const res=await fetch(gvizCsvURL(SHEET_FILE_ID,META_GID),{cache:'no-store'});
-      if(res.ok){ const txt=await res.text(); const rows=parseCSV(txt); if(rows.length) return rows; }
-    }catch(e){}
-  }
-  if (PUBLISHED_META_URL){
-    const res=await fetch(pubCsvURL(PUBLISHED_META_URL),{cache:'no-store'});
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
     const txt=await res.text(); return parseCSV(txt);
   }
   return [];
 }
+
+const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
 
 function normalizeDist(rows){
   if(!rows||!rows.length) return new Map();
@@ -347,6 +375,26 @@ function normalizeMeta(rows){
   });
   return out;
 }
+function normalizeOpp(rows){
+  // Avversari: Squadra, Logo
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+
+/* slug per fallback filename: "A.C. Moglianese 1905" -> "ac-moglianese-1905" */
+function slugify(s){
+  return String(s||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/&/g,'and')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'');
+}
 
 /* ====== RENDER ====== */
 function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
@@ -369,50 +417,92 @@ function render(byNum){
 }
 
 /* ====== POSIZIONAMENTI ====== */
+function computeTopForBadges(){
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return 20; // fallback %
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  return ((spazioSopra*0.5)/sRect.height)*100;
+}
+function placeMatchday(){
+  const el=document.getElementById('matchdayBadge'); if(!el) return;
+  el.style.top = computeTopForBadges().toFixed(3)+'%';
+  el.style.left = '25%';
+}
+function placeVersus(){
+  const el=document.getElementById('versusBadge'); if(!el) return;
+  el.style.top = computeTopForBadges().toFixed(3)+'%';
+  el.style.left = '75%';
+}
 function placeSubsByPitch(){
   const el=document.getElementById('subsBadge'); if(!el) return;
   const cx=W/2; const xAreaLeft=cx-areaW/2;
   const A=map(0,H); const B=map(xAreaLeft,H);
   const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
 }
-function placeMatchdayByQuadrant(){
-  const el=document.getElementById('matchdayBadge');
-  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
-  if(!el||!stage||!pitch) return;
-  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
-  const topCampo=pRect.top + pRect.height * 0.12;
-  const spazioSopra=Math.max(0, topCampo - sRect.top);
-  const topPct=((spazioSopra*0.5)/sRect.height)*100;
-  const leftPct=25;
-  el.style.top=topPct.toFixed(3)+'%'; el.style.left=leftPct+'%';
+
+/* ====== LOGHI ====== */
+function resolveLogoSrc(teamName, oppMap){
+  const name = (teamName||'').trim();
+  if(!name) return '';
+  const fromSheet = oppMap.get(name.toLowerCase()) || '';
+  if(fromSheet) return fromSheet;                 // URL dal foglio Avversari
+  return `logos/${slugify(name)}.webp`;           // fallback locale
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt = alt || '';
+  imgEl.src = src;
+  imgEl.onload = ()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror = ()=>{ imgEl.style.visibility='hidden'; };
 }
 
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const [distRows, metaRows] = await Promise.all([ fetchDistRows(), fetchMetaRows() ]);
+    const [distRows, metaRows, oppRows] = await Promise.all([
+      fetchDistRows(),
+      fetchMetaRows(),
+      fetchOppRows()
+    ]);
+
     const byNum = normalizeDist(distRows);
     render(byNum);
 
-    // GIORNATA N sotto MATCHDAY
+    // META e AVVERSARI
     const meta = normalizeMeta(metaRows);
+    const opp  = normalizeOpp(oppRows);
+
     const giornata = (meta.get('giornata') || '').toString().trim();
+    const squadra1 = (meta.get('squadra1') || '').toString().trim() || 'Petriolese';
+    const squadra2 = (meta.get('squadra2') || '').toString().trim();
+
+    // Sotto MATCHDAY -> "GIORNATA N"
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
+
+    // Loghi (ordine deciso da Meta → Squadra1, Squadra2)
+    const src1 = resolveLogoSrc(squadra1, opp);
+    const src2 = resolveLogoSrc(squadra2, opp);
+    setLogo(document.getElementById('logo1'), src1, squadra1);
+    setLogo(document.getElementById('logo2'), src2, squadra2);
+
   }catch(e){
     console.error(e);
     render(new Map());
   }
 
   placeSubsByPitch();
-  placeMatchdayByQuadrant();
+  placeMatchday();
+  placeVersus();
 
   const stage=document.querySelector('.stage');
   if(window.ResizeObserver && stage){
-    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
     ro.observe(stage);
   }else{
-    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
-    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
   }
 })();
 </script>
