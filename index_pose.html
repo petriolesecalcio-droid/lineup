@@ -139,7 +139,7 @@
     position:absolute;
     bottom: var(--pitch-bottom);
     /* left: (impostato via JS) */
-    transform: translate(-50%, 50%); /* metà sopra/metà sotto la linea */
+    transform: translate(-50%, calc(50% + var(--subs-drop)));
     width: 30cqw;                
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
