@@ -194,7 +194,7 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ===== FAB Instagram (identico nelle dimensioni al FAB share) ===== */
+  /* ===== FAB Instagram (identico al FAB share) ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -271,13 +271,11 @@
 
   /* ===== SUBS badge BOOST su mobile ===== */
   @container (max-width: 520px){
-    /* aumento pennellata */
     .stage{ --brush-bleed-y: 3.4cqh; }
-    /* badge più grande */
     .subs-badge{
-      width: 40cqw;                          /* prima 30cqw */
-      font-size: clamp(14px, 3.3cqw, 20px);  /* testo più grande */
-      letter-spacing: .22cqw;                 /* tracking un filo più ampio */
+      width: 40cqw;
+      font-size: clamp(14px, 3.3cqw, 20px);
+      letter-spacing: .22cqw;
       padding: 0 1cqw;
     }
   }
@@ -291,8 +289,6 @@
       .versus-badge .team-logo{ height: 9vh; }
       .versus-badge{ gap: 1.5vw; }
       .versus-badge .vs-text{ font-size: clamp(22px, 4.2vw, 36px); letter-spacing: .22vw; }
-
-      /* fallback SUBS mobile */
       .subs-badge{ width: 40vw; font-size: clamp(14px, 3.3vw, 20px); letter-spacing: .22vw; padding: 0 1vw; }
     }
   }
@@ -335,22 +331,30 @@
           <clipPath id="clipPitch" clipPathUnits="userSpaceOnUse">
             <polygon points="120,120 880,120 1000,1000 0,1000"/>
           </clipPath>
+
+          <!-- Gradiente prato -->
           <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"  stop-color="#0d7f26"/>
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
-          <!-- Bande 50/50 -->
-          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="140">
-            <rect x="0" y="0" width="1000" height="70" fill="#ffffff" opacity="0.12"/>
-            <rect x="0" y="70" width="1000" height="70" fill="transparent"/>
+
+          <!-- Bande 50/50 allineate top e bottom (880 = 8 × 110) -->
+          <pattern id="mow"
+                   patternUnits="userSpaceOnUse"
+                   width="1000" height="110"
+                   patternTransform="translate(0,120)">
+            <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
+            <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
         </defs>
 
+        <!-- Prato con clip trapezoidale -->
         <g clip-path="url(#clipPitch)">
           <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
+        <!-- Linee campo (clip-pate) -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -386,6 +390,7 @@
 <script>
 /* ====== DISEGNO CAMPO ====== */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
+/* Trapezio coerente con lo SVG */
 const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
