@@ -17,8 +17,8 @@
     --rossoblu:linear-gradient(90deg,#8b0000,#000080);
 
     /* === Manopole giocatori / badge (in cqh = % altezza campo) === */
-    --photo-h: 20cqh;              /* altezza foto titolari */
-    --badge-w: 16cqh;              /* larghezza badge giocatore */
+    --photo-h: 20cqh;
+    --badge-w: 16cqh;
     --badge-font: min(1.8cqh, 2.3cqw);
     --badge-overlap: 1.4cqh;
 
@@ -30,10 +30,14 @@
     --subs-transform: uppercase;
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
-    --subs-drop: 1cqh;   /* quanto scende SUBS sotto la linea di fondo */
+    --subs-drop: 1cqh;
 
-    /* === Pennellata: quanto deve “sbordare” verticalmente === */
+    /* === Pennellata: bleed verticale per entrambi === */
     --brush-bleed-y: 2cqh;
+
+    /* === MATCHDAY manopole === */
+    --md-w: 28cqw;                          /* larghezza pennellata */
+    --md-font: min(1.9cqh, 2.5cqw);         /* font "grosso ma non enorme" */
   }
 
   html,body{height:100%}
@@ -102,7 +106,7 @@
     z-index: 1;
   }
 
-  /* badge sovrapposto: non aumenta l’ingombro verticale */
+  /* badge giocatore */
   .badge{
     position: absolute;
     left: 50%;
@@ -113,28 +117,43 @@
     aspect-ratio: 5.5/1;
     font-size: var(--badge-font);
     font-weight: 900;
-    background: url('badge.png?v=6') center/100% auto no-repeat; /* badge dei giocatori (resta invariato) */
+    background: url('badge.png?v=6') center/100% auto no-repeat;
     color:#000; white-space: nowrap; line-height: 1;
     pointer-events: none;
     z-index: 2;
   }
 
-  /* ====== BADGE GLOBALI CON PENNELLATA WEBP ====== */
+  /* ====== BADGE GLOBALI (pennellata con bleed) ====== */
 
-  /* MATCHDAY in alto a sinistra (lasciato com'è) */
+  /* MATCHDAY: posizione via JS, pennellata nel ::before */
   .matchday-badge{
     position:absolute;
-    top:2cqh; left:2cqw;
-    width: 26cqw;                /* scala con la larghezza del container */
+    /* left/top impostati via JS per metterlo al centro del quadrante sinistro */
+    transform: translate(-50%, -50%);
+    width: var(--md-w);
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-    background: url('badge-bg.webp') center / cover no-repeat; /* pennellata rossa/blu */
+
+    background: none;             /* pennellata spostata nel ::before */
+    overflow: visible;
+
     color:#fff; font-weight:900;
-    font-size: min(1.8cqh, 2.3cqw);
+    font-size: var(--md-font);
     letter-spacing:.2cqw;
     text-transform: uppercase;
-    padding: 0 .8cqw;            /* un filo di respiro laterale */
+    padding: 0 .8cqw;
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
+    pointer-events:none;
+    z-index: 3;
+  }
+  .matchday-badge::before{
+    content:"";
+    position:absolute; left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width:100%;
+    height: calc(100% + var(--brush-bleed-y) * 2);
+    background: url('badge-bg.webp') center / contain no-repeat;
+    z-index:-1; pointer-events:none;
   }
 
   /* SUBS a cavallo della linea di fondo: pennellata nello ::before con "bleed" */
@@ -147,7 +166,6 @@
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
 
-    /* niente background qui: così il ::before può sbordare senza essere tagliato */
     background: none;
     overflow: visible;
 
@@ -162,11 +180,10 @@
   }
   .subs-badge::before{
     content:"";
-    position:absolute;
-    left:50%; top:50%;
+    position:absolute; left:50%; top:50%;
     transform: translate(-50%,-50%);
-    width: 100%;
-    height: calc(100% + var(--brush-bleed-y) * 2); /* più alta: niente “taglio piatto” */
+    width:100%;
+    height: calc(100% + var(--brush-bleed-y) * 2);
     background: url('badge-bg.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
@@ -199,19 +216,14 @@
     color:#fff; opacity:.95;
   }
 
-  /* === MOBILE TUNING: font più presente, 2 righe, meno padding laterale === */
+  /* MOBILE TUNING SUBS */
   @container (max-width: 520px){
     .stage{
-      /* più grande ma controllato */
       --subs-font: clamp(16px, 3cqh, 4.2cqw);
-      /* tracking non troppo stretto (per non sembrare “smagrito”) */
       --subs-tracking: .10cqw;
-      /* sfrutta tutta la larghezza utile per restare in 2 righe */
       --subs-maxw: 100%;
     }
-    .subs-zone{
-      padding: 0 .8cqw; /* un filo meno padding laterale */
-    }
+    .subs-zone{ padding: 0 .8cqw; }
   }
 </style>
 </head>
@@ -219,8 +231,8 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- MATCHDAY (pennellata) -->
-    <div class="matchday-badge">MATCHDAY</div>
+    <!-- MATCHDAY -->
+    <div id="matchdayBadge" class="matchday-badge">MATCHDAY</div>
 
     <!-- Campo (clip) -->
     <div class="pitch-wrap">
@@ -233,7 +245,7 @@
     <!-- Layer giocatori (NO clip) -->
     <div class="players" id="players"></div>
 
-    <!-- SUBS (pennellata con bleed) -->
+    <!-- SUBS -->
     <div id="subsBadge" class="subs-badge">SUBS</div>
 
     <!-- Elenco panchina -->
@@ -268,7 +280,7 @@ addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
 /* ====== DATI ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const DIST_GID = '116187224';  // distinta
+const DIST_GID = '116187224';
 const PUBLISHED_DIST_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
@@ -276,17 +288,9 @@ const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // 3-4-1-2
 const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
 
 let coords3412 = [
-  [34,107], // GK
-  [54, 78], // RCB
-  [34, 82], // CB
-  [14, 78], // LCB
-  [62, 52], // RWB
-  [44, 57], // RCM
-  [24, 57], // LCM
-  [ 6, 52], // LWB
-  [34, 36], // CAM
-  [44, 13], // ST destro
-  [24, 13]  // ST sinistro
+  [34,107], [54,78], [34,82], [14,78],
+  [62,52], [44,57], [24,57], [6,52],
+  [34,36], [44,13], [24,13]
 ];
 
 /* helpers */
@@ -408,20 +412,41 @@ function render(byNum){
   document.getElementById('subsList').textContent = subs;
 }
 
-/* ====== POSIZIONAMENTO SUBS: midpoint tra (angolo basso sx) e (bordo sx area × linea di fondo) ====== */
+/* ====== POSIZIONAMENTO SUBS ====== */
 function placeSubsByPitch() {
   const el = document.getElementById('subsBadge');
   if (!el) return;
   const cx = W/2;
-  const xAreaLeft = cx - areaW/2;  // bordo sinistro dell'area
-  // punto A = angolo basso sinistro del campo: (u=0, v=H)
-  const A = map(0, H);
-  // punto B = intersezione bordo sx area con linea di fondo: (u=ax1, v=H)
-  const B = map(xAreaLeft, H);
-  // Midpoint fra A e B
+  const xAreaLeft = cx - areaW/2;
+  const A = map(0, H);                 // angolo basso sinistro
+  const B = map(xAreaLeft, H);         // bordo sx area × linea di fondo
   const Mx = (A.x + B.x) / 2;
-  const leftPct = (Mx / 1000) * 100;
-  el.style.left = leftPct.toFixed(3) + '%';
+  el.style.left = ((Mx / 1000) * 100).toFixed(3) + '%';
+}
+
+/* ====== POSIZIONAMENTO MATCHDAY ======
+   Centro del quadrante sinistro dello spazio SOPRA al campo.
+   Calcolo:
+   - topCampo = top della pitch-wrap + 12% dell'altezza (per via della clip-path)
+   - metà di quel spazio in verticale
+   - 25% della larghezza (centro del quadrante sinistro)
+*/
+function placeMatchdayByQuadrant(){
+  const el = document.getElementById('matchdayBadge');
+  const stage = document.querySelector('.stage');
+  const pitch = document.querySelector('.pitch-wrap');
+  if (!el || !stage || !pitch) return;
+
+  const sRect = stage.getBoundingClientRect();
+  const pRect = pitch.getBoundingClientRect();
+
+  const topCampo = pRect.top + pRect.height * 0.12;          // bordo superiore visibile del campo
+  const spazioSopra = Math.max(0, topCampo - sRect.top);      // px
+  const topPct = ( (spazioSopra * 0.5) / sRect.height ) * 100; // metà spazio sopra -> %
+  const leftPct = 25; // centro quadrante sinistro
+
+  el.style.top = topPct.toFixed(3) + '%';
+  el.style.left = leftPct + '%';
 }
 
 /* ==== GO! ==== */
@@ -432,18 +457,29 @@ function placeSubsByPitch() {
     render(byNum);
   }catch(e){
     console.error(e);
-    render(new Map()); // mostra solo numeri
+    render(new Map());
   }
 
-  // posiziona SUBS e ricalcola al resize
+  // posiziona SUBS + MATCHDAY e ricalcola al resize/orientamento
   placeSubsByPitch();
+  placeMatchdayByQuadrant();
+
   const stage = document.querySelector('.stage');
   if (window.ResizeObserver && stage) {
-    const ro = new ResizeObserver(placeSubsByPitch);
+    const ro = new ResizeObserver(()=>{
+      placeSubsByPitch();
+      placeMatchdayByQuadrant();
+    });
     ro.observe(stage);
   } else {
-    window.addEventListener('resize', placeSubsByPitch);
-    window.addEventListener('orientationchange', placeSubsByPitch);
+    window.addEventListener('resize', ()=>{
+      placeSubsByPitch();
+      placeMatchdayByQuadrant();
+    });
+    window.addEventListener('orientationchange', ()=>{
+      placeSubsByPitch();
+      placeMatchdayByQuadrant();
+    });
   }
 })();
 </script>
