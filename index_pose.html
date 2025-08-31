@@ -13,15 +13,16 @@
     --roof-dark:#151923;
     --roof-mid:#1f2531;
     --roof-glow:rgba(255,255,255,.08);
+
     --grass-1:#0a6f20; --grass-2:#0d7f26;
 
-    /* === Giocatori / badge === */
+    /* Giocatori / badge */
     --photo-h: 20cqh;
     --badge-w: 16cqh;
     --badge-font: min(1.8cqh, 2.3cqw);
     --badge-overlap: 1.4cqh;
 
-    /* === SUBS (elenco) === */
+    /* SUBS (elenco) */
     --subs-font:  min(1.6cqh, 2.1cqw);
     --subs-weight: 800;
     --subs-tracking: .18cqw;
@@ -67,42 +68,27 @@
     container-type:size;
   }
 
-  /* Fondale stadio (gradiente + glow) */
+  /* Fondale stadio (gradiente principale) */
   .stadium{
-    position:absolute; inset:0;
+    position:absolute; inset:0; z-index:0;
     background:
       radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
-    z-index:0;
   }
 
-  /* Strisce oblique “tetto/gradoni” via SVG (restano identiche nello screenshot) */
+  /* Strisce oblique del “tetto/gradoni” come SVG separato (resistente allo screenshot) */
   .roof-stripes{
     position:absolute; inset:0; z-index:1; pointer-events:none; display:block;
   }
 
-  /* Campo (clip) */
+  /* Campo (niente clip CSS: ci pensa lo SVG interno) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
-    overflow:hidden; /* anti-sbordo */
-    -webkit-clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
-            clip-path: polygon(12% 12%, 88% 12%, 100% 100%, 0 100%);
-    contain: paint;
-    z-index:2;
+    z-index:2; /* sopra lo sfondo */
   }
-  .grass{
-    position:absolute; inset:0;
-    background:
-      repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,.12) 0 7%,
-        rgba(0,0,0,0)          7% 14%
-      ),
-      linear-gradient(to bottom, var(--grass-2), var(--grass-1));
-    box-shadow: inset 0 -40px 80px rgba(0,0,0,.35);
-  }
-  svg{position:absolute; inset:0; width:100%; height:100%;}
+  /* lo SVG riempie il contenitore */
+  #pitch{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 
   /* Layer giocatori (NO clip) */
   .players{
@@ -111,7 +97,6 @@
     overflow:visible; pointer-events:none;
     container-type:size; z-index:3;
   }
-
   .player{ position:absolute; left:0; top:0; transform:translate(-50%, -100%); display:block; overflow:visible; }
   .player .photo{ height: var(--photo-h); width:auto; position:relative; display:block; z-index:1; }
 
@@ -122,8 +107,7 @@
     width: var(--badge-w); aspect-ratio: 5.5/1;
     font-size: var(--badge-font); font-weight: 900;
     background: url('badge.png?v=6') center/100% auto no-repeat;
-    color:#000; white-space:nowrap; line-height:1;
-    pointer-events:none; z-index:2;
+    color:#000; white-space:nowrap; line-height:1; pointer-events:none; z-index:2;
   }
 
   /* MATCHDAY */
@@ -136,14 +120,9 @@
   .matchday-badge::before{
     content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
     width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
-    background: url('md-splat.webp') center / contain no-repeat;
-    z-index:-1; pointer-events:none;
+    background: url('md-splat.webp') center / contain no-repeat; z-index:-1; pointer-events:none;
   }
-  .matchday-text{
-    display:flex; flex-direction:column; align-items:center; gap:.35cqh;
-    color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw;
-    line-height:1.05; text-align:center;
-  }
+  .matchday-text{ display:flex; flex-direction:column; align-items:center; gap:.35cqh; color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw; line-height:1.05; text-align:center; }
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
 
@@ -170,10 +149,8 @@
   .subs-badge::before{
     content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
     width:100%; height: calc(100% + var(--brush-bleed-y) * 2);
-    background: url('badge-bg.webp') center / contain no-repeat;
-    z-index:-1; pointer-events:none;
+    background: url('badge-bg.webp') center / contain no-repeat; z-index:-1; pointer-events:none;
   }
-
   .subs-zone{
     position:absolute; left:0; right:0; bottom:0; height: var(--pitch-bottom);
     display:flex; align-items:center; justify-content:center; padding: 0 2cqw; pointer-events:none; z-index:4;
@@ -212,10 +189,6 @@
 
   /* ===== EXPORT MODE (solo durante lo scatto) ===== */
   .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
-  .stage.is-capturing .pitch-wrap{
-    -webkit-clip-path: polygon(13% 12%, 87% 12%, 100% 100%, 0 100%);
-            clip-path: polygon(13% 12%, 87% 12%, 100% 100%, 0 100%);
-  }
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
   .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; } /* linee campo appena più spesse */
 </style>
@@ -224,10 +197,9 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- Strisce oblique tetto/gradoni: SVG per resa identica anche nello screenshot -->
+    <!-- Strisce oblique tetto/gradoni -->
     <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <!-- pattern: banda chiara 14px su passo 44px, ruotata -10° -->
         <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
           <rect x="0" y="0" width="44" height="14" fill="#ffffff" opacity="0.06"/>
           <rect x="0" y="14" width="44" height="30" fill="transparent"/>
@@ -251,11 +223,37 @@
       <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
     </div>
 
-    <!-- Campo -->
+    <!-- Campo (SVG con clipPath interno: nessun sbordo, nessuna metà scomparsa) -->
     <div class="pitch-wrap">
-      <div class="grass"></div>
-      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
-        <g id="lines" stroke="white" fill="none"></g>
+      <svg id="pitch" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="false">
+        <defs>
+          <!-- Trapezio del campo -->
+          <clipPath id="clipPitch" clipPathUnits="userSpaceOnUse">
+            <!-- top a 12% (120), lati a 120..880 come in proiezione -->
+            <polygon points="120,120 880,120 1000,1000 0,1000"/>
+          </clipPath>
+
+          <!-- Gradiente prato -->
+          <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#0d7f26"/>
+            <stop offset="100%" stop-color="#0a6f20"/>
+          </linearGradient>
+
+          <!-- Strisce prato -->
+          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="140">
+            <rect x="0" y="0"   width="1000" height="98" fill="#ffffff" opacity="0.12"/>
+            <rect x="0" y="98"  width="1000" height="42" fill="transparent"/>
+          </pattern>
+        </defs>
+
+        <!-- Fondo prato clip-pato -->
+        <g clip-path="url(#clipPitch)">
+          <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
+          <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
+        </g>
+
+        <!-- Linee campo (clip-pate) -->
+        <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
 
@@ -270,7 +268,7 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share (Material) - top-right -->
+    <!-- FAB Share -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
       <!-- Material 'share' icon -->
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -282,7 +280,8 @@
 <script>
 /* ====== DISEGNO CAMPO ====== */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
-const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
+/* Trapezio coerente con lo SVG: top a 120, lati 120..880 */
+const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
 const G=document.getElementById('lines');
@@ -323,7 +322,7 @@ const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
 let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
-/* helpers */
+/* helpers CSV */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
@@ -359,7 +358,6 @@ async function fetchCsvPrefer(fileId,gid,pubUrl){
   }
   return [];
 }
-
 const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
 const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
 const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
@@ -398,15 +396,7 @@ function normalizeOpp(rows){
   });
   return out;
 }
-
-function slugify(s){
-  return String(s||'')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase()
-    .replace(/&/g,'and')
-    .replace(/[^a-z0-9]+/g,'-')
-    .replace(/^-+|-+$/g,'');
-}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
 /* ====== RENDER ====== */
 function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
@@ -448,10 +438,8 @@ function placeSubsByPitch(){
 
 /* ====== LOGHI ====== */
 function resolveLogoSrc(teamName, oppMap){
-  const name=(teamName||'').trim();
-  if(!name) return '';
-  const fromSheet=oppMap.get(name.toLowerCase())||'';
-  if(fromSheet) return fromSheet;
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
   return `logos/${slugify(name)}.webp`;
 }
 function setLogo(imgEl, src, alt){
@@ -504,21 +492,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     fab.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
-    const scale = 2.5; // più nitido
+    const scale = 2.5; // nitidezza
     const canvas = await html2canvas(stage, {
-      backgroundColor: '#0b0c11', // niente alpha
+      backgroundColor: '#0b0c11',
       scale,
       useCORS: true
     });
 
-    // 1080x1920 (puoi alzare a 1440x2560)
-    const targetW = 1080, targetH = 1920;
+    const targetW = 1080, targetH = 1920; // IG story
     const out = document.createElement('canvas');
     out.width = targetW; out.height = targetH;
     const ctx = out.getContext('2d', { willReadFrequently:true });
-
-    ctx.fillStyle = '#0b0c11';
-    ctx.fillRect(0,0,targetW,targetH);
+    ctx.fillStyle = '#0b0c11'; ctx.fillRect(0,0,targetW,targetH);
 
     const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
     const w = Math.round(canvas.width * ratio);
@@ -543,7 +528,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
         await navigator.share({ title:'Matchday – Petriolese Calcio', text:'Formazione titolari e panchina.', files:[file] });
         fab.removeAttribute('aria-busy'); return;
       }
-
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = fileName;
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
