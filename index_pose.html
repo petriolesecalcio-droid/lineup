@@ -216,24 +216,23 @@
       height: calc(var(--fab-size) * .50);
     }
   }
-/* Boost MATCHDAY su mobile (container ≤ 520px) */
-@container (max-width: 520px){
-  /* ingrandisco badge, testo e la “macchia” */
-  .stage{
-    --md-w: 196cqw;                         /* più larga (prima 88cqw) */
-    --md-font-top: clamp(20px, 5cqw, 34px); /* MATCHDAY più grande */
-    --md-font-sub: clamp(14px, 3.2cqw, 22px); /* GIORNATA N più grande */
-    --md-splat-bleed: 13.2cqh;              /* macchia più “larga” in alto/basso */
-  }
 
-  /* leggero aggiustamento tracking per evitare andare a capo su schermi stretti */
-  .matchday-text{ letter-spacing: .20cqw; }
-  .matchday-text .md-sub{ letter-spacing: .16cqw; }
-}
   /* ===== EXPORT MODE (solo durante lo scatto) ===== */
   .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
   .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; } /* linee campo appena più spesse */
+
+  /* ======= BOOST MATCHDAY solo su mobile (container ≤ 520px) ======= */
+  @container (max-width: 520px){
+    .stage{
+      --md-w: 96cqw;                                   /* badge più largo (prima 88cqw) */
+      --md-font-top: clamp(20px, 5cqw, 34px);          /* MATCHDAY più grande */
+      --md-font-sub: clamp(14px, 3.2cqw, 22px);        /* GIORNATA N più grande */
+      --md-splat-bleed: 3.2cqh;                        /* macchia più alta */
+    }
+    .matchday-text{ letter-spacing: .20cqw; }          /* micro tracking fix */
+    .matchday-text .md-sub{ letter-spacing: .16cqw; }
+  }
 </style>
 </head>
 <body>
