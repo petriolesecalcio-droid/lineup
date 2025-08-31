@@ -31,6 +31,9 @@
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
     --subs-drop: 1cqh;   /* quanto scende SUBS sotto la linea di fondo */
+
+    /* === Pennellata: quanto deve “sbordare” verticalmente === */
+    --brush-bleed-y: .9cqh;
   }
 
   html,body{height:100%}
@@ -118,7 +121,7 @@
 
   /* ====== BADGE GLOBALI CON PENNELLATA WEBP ====== */
 
-  /* MATCHDAY in alto a sinistra */
+  /* MATCHDAY in alto a sinistra (lasciato com'è) */
   .matchday-badge{
     position:absolute;
     top:2cqh; left:2cqw;
@@ -134,7 +137,7 @@
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
   }
 
-  /* SUBS a cavallo della linea di fondo (posizione orizzontale calcolata via JS) */
+  /* SUBS a cavallo della linea di fondo: pennellata nello ::before con "bleed" */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
@@ -143,7 +146,11 @@
     width: 30cqw;                
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-    background: url('badge-bg.webp') center / cover no-repeat;
+
+    /* niente background qui: così il ::before può sbordare senza essere tagliato */
+    background: none;
+    overflow: visible;
+
     color:#fff; font-weight:900;
     font-size: min(1.6cqh, 2.1cqw);
     letter-spacing:.18cqw;
@@ -152,6 +159,16 @@
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
     pointer-events:none;
     z-index: 3;
+  }
+  .subs-badge::before{
+    content:"";
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width: 100%;
+    height: calc(100% + var(--brush-bleed-y) * 2); /* più alta: niente “taglio piatto” */
+    background: url('badge-bg.webp') center / contain no-repeat;
+    z-index:-1; pointer-events:none;
   }
 
   /* Zona sotto al campo = tutto lo spazio dal fondo campo al fondo stage */
@@ -201,7 +218,7 @@
     <!-- Layer giocatori (NO clip) -->
     <div class="players" id="players"></div>
 
-    <!-- SUBS (pennellata) -->
+    <!-- SUBS (pennellata con bleed) -->
     <div id="subsBadge" class="subs-badge">SUBS</div>
 
     <!-- Elenco panchina -->
