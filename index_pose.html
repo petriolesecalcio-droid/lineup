@@ -65,7 +65,7 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;
+    container-type:size; /* abilita cqw/cqh e @container */
   }
 
   /* Fondale stadio (gradiente principale) */
@@ -76,7 +76,7 @@
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
-  /* Strisce oblique del tetto/gradoni (SVG: non spariscono nello screenshot) */
+  /* Strisce oblique tetto/gradoni (SVG: non spariscono nello screenshot) */
   .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
 
   /* Campo (SVG con clipPath: niente sbordo) */
@@ -179,32 +179,20 @@
     border: 1px solid rgba(0,0,0,.08);
     border-radius: var(--fab-radius);
 
-    background:#fff;     /* contrasto con lo sfondo scuro */
-    color:#111;          /* icona nera */
+    background:#fff;  color:#111;
     box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
     cursor:pointer; z-index:10;
 
     transition: transform .15s ease, box-shadow .15s ease,
                 background-color .15s ease, opacity .15s ease, border-color .15s ease;
   }
-  .fab-share:hover{
-    transform: translateY(-1px);
-    background:#f5f6f8;
-    box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18);
-  }
+  .fab-share:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab-share:active{ transform: translateY(0); background:#eceef2; }
-  .fab-share:focus-visible{
-    outline: 3px solid rgba(66,133,244,.55);
-    outline-offset: 2px;
-  }
+  .fab-share:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
-  .fab-share svg{
-    width: calc(var(--fab-size) * .56);
-    height: calc(var(--fab-size) * .56);
-    fill: currentColor;
-  }
+  .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ── Opzione B: più piccolo SOLO su container stretti (mobile) ── */
+  /* ── Opzione B: FAB più piccolo SOLO su container stretti (mobile) ── */
   @container (max-width: 520px){
     .fab-share{
       --fab-size: clamp(24px, 7cqw, 34px);
@@ -222,16 +210,26 @@
   .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
   .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; } /* linee campo appena più spesse */
 
-  /* ======= BOOST MATCHDAY solo su mobile (container ≤ 520px) ======= */
+  /* ======= BOOST MATCHDAY solo su mobile (container ≤ 520px) — versione corretta ======= */
   @container (max-width: 520px){
-    .stage{
-      --md-w: 96cqw;                                   /* badge più largo (prima 88cqw) */
-      --md-font-top: clamp(20px, 5cqw, 34px);          /* MATCHDAY più grande */
-      --md-font-sub: clamp(14px, 3.2cqw, 22px);        /* GIORNATA N più grande */
-      --md-splat-bleed: 3.2cqh;                        /* macchia più alta */
+    /* aumenta larghezza badge e “macchia” agendo sul discendente, non sul container */
+    .matchday-badge{
+      --md-w: 96cqw;        /* prima 88cqw */
+      --md-splat-bleed: 3.2cqh;
     }
-    .matchday-text{ letter-spacing: .20cqw; }          /* micro tracking fix */
-    .matchday-text .md-sub{ letter-spacing: .16cqw; }
+    /* testo più grande (override diretto delle dimensioni) */
+    .matchday-text{ letter-spacing: .20cqw; }
+    .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
+    .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
+  }
+
+  /* Fallback per browser senza container queries */
+  @supports not (width: 1cqw){
+    @media (max-width: 520px){
+      .matchday-badge{ width: min(96vw, 96%); }
+      .matchday-text .md-top{ font-size: clamp(20px, 5vw, 34px); }
+      .matchday-text .md-sub{ font-size: clamp(14px, 3.2vw, 22px); }
+    }
   }
 </style>
 </head>
@@ -576,7 +574,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }catch(err){
       console.error(err);
       fab.removeAttribute('aria-busy');
-      alert('Impossibile condividere automaticamente.');
+      alert('Impossibile condividere automaticamente. Ho scaricato l’immagine: caricala nelle Storie.');
     }
   }
 
