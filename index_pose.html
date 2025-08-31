@@ -7,22 +7,21 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
 <style>
   :root{
-    --pitch-bottom: 14%;           /* distanza del trapezio dal fondo */
-    --subs-gap:      8%;           /* spazio tra campo e zona subs */
+    --pitch-bottom: 14%;
+    --subs-gap:      8%;
     --bg:#0b0c11;
     --roof-dark:#151923;
     --roof-mid:#1f2531;
     --roof-glow:rgba(255,255,255,.08);
     --grass-1:#0a6f20; --grass-2:#0d7f26;
-    --rossoblu:linear-gradient(90deg,#8b0000,#000080);
 
-    /* === Manopole giocatori / badge (in cqh = % altezza campo) === */
+    /* === Giocatori / badge === */
     --photo-h: 20cqh;
     --badge-w: 16cqh;
     --badge-font: min(1.8cqh, 2.3cqw);
     --badge-overlap: 1.4cqh;
 
-    /* === Manopole SUBS (testo elenco) === */
+    /* === SUBS (elenco) === */
     --subs-font:  min(1.6cqh, 2.1cqw);
     --subs-weight: 800;
     --subs-tracking: .18cqw;
@@ -32,12 +31,14 @@
     --subs-font-family: system-ui, Arial, sans-serif;
     --subs-drop: 1cqh;
 
-    /* === Pennellata: bleed verticale per entrambi === */
+    /* === “bleed” verticale pennellate === */
     --brush-bleed-y: 2cqh;
 
-    /* === MATCHDAY manopole === */
-    --md-w: 28cqw;                          /* larghezza pennellata */
-    --md-font: min(1.9cqh, 2.5cqw);         /* font "grosso ma non enorme" */
+    /* === MATCHDAY (macchia) === */
+    --md-w: 28cqw;                          /* larghezza splash */
+    --md-font: min(2.0cqh, 2.6cqw);         /* testo “grosso ma non enorme” */
+    --md-splat-bleed: 2.2cqh;               /* quanto sborda la macchia in alto/basso */
+    --md-glow: 16px;                         /* bagliore del testo */
   }
 
   html,body{height:100%}
@@ -56,7 +57,7 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;           /* abilita cqw + cqh */
+    container-type:size;
   }
 
   .stadium{
@@ -67,7 +68,7 @@
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
 
-  /* Campo in clip */
+  /* Campo (clip) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -82,7 +83,7 @@
   }
   svg{position:absolute; inset:0; width:100%; height:100%;}
 
-  /* Layer giocatori (stessa cornice del campo, NO clip) */
+  /* Layer giocatori (NO clip) */
   .players{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
@@ -106,117 +107,91 @@
     z-index: 1;
   }
 
-  /* badge giocatore */
   .badge{
-    position: absolute;
-    left: 50%;
+    position:absolute; left:50%;
     top: calc(100% - var(--badge-overlap));
     transform: translateX(-50%);
-    display: flex; align-items: center; justify-content: center;
+    display:flex; align-items:center; justify-content:center;
     width: var(--badge-w);
     aspect-ratio: 5.5/1;
     font-size: var(--badge-font);
     font-weight: 900;
     background: url('badge.png?v=6') center/100% auto no-repeat;
-    color:#000; white-space: nowrap; line-height: 1;
-    pointer-events: none;
-    z-index: 2;
+    color:#000; white-space:nowrap; line-height:1;
+    pointer-events:none; z-index:2;
   }
 
-  /* ====== BADGE GLOBALI (pennellata con bleed) ====== */
+  /* ====== BADGE GLOBALI ====== */
 
-  /* MATCHDAY: posizione via JS, pennellata nel ::before */
+  /* MATCHDAY: macchia nel ::before, testo HTML sopra */
   .matchday-badge{
     position:absolute;
-    /* left/top impostati via JS per metterlo al centro del quadrante sinistro */
     transform: translate(-50%, -50%);
     width: var(--md-w);
     aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
 
-    background: none;             /* pennellata spostata nel ::before */
-    overflow: visible;
-
-    color:#fff; font-weight:900;
+    background:none; overflow:visible;
+    color:#fff; font-weight:900; text-transform:uppercase;
     font-size: var(--md-font);
-    letter-spacing:.2cqw;
-    text-transform: uppercase;
+    letter-spacing:.22cqw;
     padding: 0 .8cqw;
+    text-shadow:
+      0 0 calc(var(--md-glow)*.40) rgba(255,255,255,.35),
+      0 0 var(--md-glow) rgba(0, 128, 255, .30);
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
-    pointer-events:none;
-    z-index: 3;
+    pointer-events:none; z-index:3;
   }
   .matchday-badge::before{
     content:"";
     position:absolute; left:50%; top:50%;
     transform: translate(-50%,-50%);
     width:100%;
-    height: calc(100% + var(--brush-bleed-y) * 2);
-    background: url('badge-bg.webp') center / contain no-repeat;
+    height: calc(100% + var(--md-splat-bleed) * 2);
+    background: url('md-splat.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
 
-  /* SUBS a cavallo della linea di fondo: pennellata nello ::before con "bleed" */
+  /* SUBS: pennellata con bleed */
   .subs-badge{
     position:absolute;
     bottom: var(--pitch-bottom);
-    /* left: (impostato via JS) */
     transform: translate(-50%, calc(50% + var(--subs-drop)));
-    width: 30cqw;                
-    aspect-ratio: 5.5/1;
+    width: 30cqw; aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
-
-    background: none;
-    overflow: visible;
-
-    color:#fff; font-weight:900;
+    background:none; overflow:visible;
+    color:#fff; font-weight:900; text-transform:uppercase;
     font-size: min(1.6cqh, 2.1cqw);
-    letter-spacing:.18cqw;
-    text-transform: uppercase;
-    padding: 0 .8cqw;
+    letter-spacing:.18cqw; padding: 0 .8cqw;
     filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
-    pointer-events:none;
-    z-index: 3;
+    pointer-events:none; z-index:3;
   }
   .subs-badge::before{
     content:"";
     position:absolute; left:50%; top:50%;
     transform: translate(-50%,-50%);
-    width:100%;
-    height: calc(100% + var(--brush-bleed-y) * 2);
+    width:100%; height: calc(100% + var(--brush-bleed-y) * 2);
     background: url('badge-bg.webp') center / contain no-repeat;
     z-index:-1; pointer-events:none;
   }
 
-  /* Zona sotto al campo = tutto lo spazio dal fondo campo al fondo stage */
+  /* Zona elenco SUBS */
   .subs-zone{
-    position:absolute;
-    left:0; right:0; bottom:0;
+    position:absolute; left:0; right:0; bottom:0;
     height: var(--pitch-bottom);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding: 0 2cqw;
-    pointer-events:none;
+    display:flex; align-items:center; justify-content:center;
+    padding: 0 2cqw; pointer-events:none;
   }
-
   .subs-zone .subs-list{
-    position: static;
-    margin: 0 auto;
-    max-width: var(--subs-maxw);
-    text-align:center;
-    white-space: normal;
-    overflow-wrap:anywhere;
+    margin:0 auto; max-width: var(--subs-maxw);
+    text-align:center; white-space:normal; overflow-wrap:anywhere;
     font-family: var(--subs-font-family);
-    font-size: var(--subs-font);
-    font-weight: var(--subs-weight);
-    letter-spacing: var(--subs-tracking);
-    line-height: var(--subs-line);
-    text-transform: var(--subs-transform);
-    color:#fff; opacity:.95;
+    font-size: var(--subs-font); font-weight: var(--subs-weight);
+    letter-spacing: var(--subs-tracking); line-height: var(--subs-line);
+    text-transform: var(--subs-transform); color:#fff; opacity:.95;
   }
 
-  /* MOBILE TUNING SUBS */
+  /* Mobile tuning SUBS (come da ultimo step) */
   @container (max-width: 520px){
     .stage{
       --subs-font: clamp(16px, 3cqh, 4.2cqw);
@@ -231,7 +206,7 @@
   <div class="stage">
     <div class="stadium"></div>
 
-    <!-- MATCHDAY -->
+    <!-- MATCHDAY (macchia + testo HTML) -->
     <div id="matchdayBadge" class="matchday-badge">MATCHDAY</div>
 
     <!-- Campo (clip) -->
@@ -242,7 +217,7 @@
       </svg>
     </div>
 
-    <!-- Layer giocatori (NO clip) -->
+    <!-- Layer giocatori -->
     <div class="players" id="players"></div>
 
     <!-- SUBS -->
@@ -261,7 +236,11 @@ const TL={x:120,y:130}, TR={x:880,y:130}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
 const G=document.getElementById('lines');
-function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline'); el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')); el.setAttribute('stroke','white'); el.setAttribute('fill','none'); el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round'); G.appendChild(el);}
+function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+  el.setAttribute('stroke','white'); el.setAttribute('fill','none');
+  el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
+  G.appendChild(el);}
 const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
 function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
 function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
@@ -269,217 +248,132 @@ function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('h
 addPolyline([TL,TR,BR,BL,TL],6);
 addLine(0,H/2,W,H/2,3);
 addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
-const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2, ay2=areaD;
-const gx1=cx-goalW/2, gx2=cx+goalW/2, gy2=goalD;
-addRect(ax1,0,ax2,ay2,3); addRect(gx1,0,gx2,gy2,3); addDot(cx,spot);
-const ay1b=H-areaD, gy1b=H-goalD;
-addRect(ax1,ay1b,ax2,H,3); addRect(gx1,gy1b,gx2,H,3); addDot(cx,H-spot);
+const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2;
+const gx1=cx-goalW/2, gx2=cx+goalW/2;
+addRect(ax1,0,ax2,areaD,3); addRect(gx1,0,gx2,goalD,3); addDot(cx,spot);
+addRect(ax1,H-areaD,ax2,H,3); addRect(gx1,H-goalD,gx2,H,3); addDot(cx,H-spot);
 const eps=0.03, base=Math.acos((areaD-spot)/R);
 addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
 addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
 /* ====== DATI ====== */
-const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const DIST_GID = '116187224';
-const PUBLISHED_DIST_URL =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
+const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const DIST_GID='116187224';
+const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-const XI_NUMBERS   = [1,2,5,3,7,6,4,11,10,9,8];   // 3-4-1-2
-const BENCH_NUMBERS= [12,13,14,15,16,17,18,19,20];
+const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
+const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
 
-let coords3412 = [
-  [34,107], [54,78], [34,82], [14,78],
-  [62,52], [44,57], [24,57], [6,52],
-  [34,36], [44,13], [24,13]
-];
+let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
 
 /* helpers */
-const gvizCsvURL  = (fileId, gid) => `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
-  const u = new URL(pubhtmlUrl);
-  const parts = u.pathname.split('/');
-  const idIdx = parts.findIndex(p=>p==='e')+1;
-  const id = parts[idIdx] || '';
-  const root = `${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
   return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
 }
 function parseCSV(text){
-  let t = String(text||'').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
-  const lines = t.split('\n').filter((ln,i)=> i===0 || ln.trim().length>0);
-  if (!lines.length) return [];
-  const rows=[]; let row=[], cur='', inQ=false;
-  const pushCell=()=>{ row.push(cur); cur=''; };
-  const pushRow =()=>{ rows.push(row); row=[]; };
-  const s = lines.join('\n');
-  for (let i=0;i<s.length;i++){
-    const c=s[i], n=s[i+1];
-    if (inQ){
-      if (c === '"' && n === '"'){ cur+='"'; i++; }
-      else if (c === '"'){ inQ=false; }
-      else { cur += c; }
-    }else{
-      if (c === '"'){ inQ=true; }
-      else if (c === ','){ pushCell(); }
-      else if (c === '\n'){ pushCell(); pushRow(); }
-      else { cur += c; }
-    }
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+  if(!lines.length) return [];
+  const rows=[]; let row=[],cur='',inQ=false;
+  const pushCell=()=>{row.push(cur);cur='';}; const pushRow=()=>{rows.push(row);row=[];};
+  const s=lines.join('\n');
+  for(let i=0;i<s.length;i++){const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++;} else if(c=='"'){inQ=false;} else cur+=c; }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow();} else cur+=c; }
   }
-  if (cur!=='' || row.length) { pushCell(); pushRow(); }
-  const header = rows.shift().map(h=>String(h||'').trim());
-  return rows.map(r => Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined ? r[i] : '' ])));
+  if(cur!==''||row.length){pushCell();pushRow();}
+  const header=rows.shift().map(h=>String(h||'').trim());
+  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
 }
 
 async function fetchDistRows(){
   try{
-    const res = await fetch(gvizCsvURL(SHEET_FILE_ID, DIST_GID), {cache:'no-store'});
-    if (!res.ok) throw new Error('gviz '+res.status);
-    const txt = await res.text();
-    const rows = parseCSV(txt);
-    if (rows.length) return rows;
+    const res=await fetch(gvizCsvURL(SHEET_FILE_ID,DIST_GID),{cache:'no-store'});
+    if(!res.ok) throw new Error('gviz '+res.status);
+    const txt=await res.text(); const rows=parseCSV(txt);
+    if(rows.length) return rows;
   }catch(e){}
-  const res = await fetch(pubCsvURL(PUBLISHED_DIST_URL), {cache:'no-store'});
-  const txt = await res.text();
-  return parseCSV(txt);
+  const res=await fetch(pubCsvURL(PUBLISHED_DIST_URL),{cache:'no-store'});
+  const txt=await res.text(); return parseCSV(txt);
 }
 
 function normalizeDist(rows){
-  if (!rows || !rows.length) return new Map();
-  const keys = Object.keys(rows[0]);
-  const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  let kNum = keys.find(k=>/#|num|numero|maglia/.test(norm(k))) || keys[0];
-  let kName= keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k))) || keys[1];
+  if(!rows||!rows.length) return new Map();
+  const keys=Object.keys(rows[0]);
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  let kNum=keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
+  let kName=keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
   let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
-  const map = new Map();
+  const map=new Map();
   rows.forEach(r=>{
-    const n = Number(String(r[kNum]||'').trim());
-    if(!(n>0)) return;
-    map.set(n, { num:n, name: String(r[kName]||'').trim(), photo: String(r[kPhoto]||'').trim() });
+    const n=Number(String(r[kNum]||'').trim()); if(!(n>0)) return;
+    map.set(n,{num:n,name:String(r[kName]||'').trim(),photo:String(r[kPhoto]||'').trim()});
   });
   return map;
 }
-const SURNAME = full => {
-  const t=String(full||'').trim();
-  if(!t) return '';
-  const p=t.split(/\s+/);
-  return p[p.length-1].toUpperCase();
-};
+const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
 
 /* ====== RENDER ====== */
 function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
-
-function playerNode(obj, x, y){
-  const div = document.createElement('div');
-  div.className='player';
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
   div.style.left=pct(x); div.style.top=pct(y);
-
-  const img = document.createElement('img');
-  img.className='photo';
-  img.alt = obj.name || '';
-  if (obj.photo) {
-    img.src = obj.photo;
-    img.onerror = () => { img.onerror=null; img.src = `img/players/${obj.num}.png`; };
-  } else {
-    img.src = `img/players/${obj.num}.png`;
-    img.onerror = () => img.remove();
-  }
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||'';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
-
-  const badge = document.createElement('span');
-  badge.className='badge';
-  badge.textContent = `${obj.num}.${SURNAME(obj.name)}`;
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
   div.appendChild(badge);
-
   return div;
 }
-
 function render(byNum){
-  const layer = document.getElementById('players');
-  layer.innerHTML = '';
-
-  XI_NUMBERS.forEach((n,i)=>{
-    const p = byNum.get(n) || {num:n, name:''};
-    const [ux,uy] = coords3412[i];
-    const world = map( ux, uy );
-    layer.appendChild( playerNode(p, world.x, world.y) );
-  });
-
-  const subs = BENCH_NUMBERS
-    .map(n => {
-      const p = byNum.get(n) || {num:n, name:''};
-      return `${p.num}.${SURNAME(p.name)}`;
-    })
-    .join('  ');
-  document.getElementById('subsList').textContent = subs;
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  XI_NUMBERS.forEach((n,i)=>{const p=byNum.get(n)||{num:n,name:''}; const [ux,uy]=coords3412[i]; const world=map(ux,uy); layer.appendChild(playerNode(p,world.x,world.y));});
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
 }
 
 /* ====== POSIZIONAMENTO SUBS ====== */
-function placeSubsByPitch() {
-  const el = document.getElementById('subsBadge');
-  if (!el) return;
-  const cx = W/2;
-  const xAreaLeft = cx - areaW/2;
-  const A = map(0, H);                 // angolo basso sinistro
-  const B = map(xAreaLeft, H);         // bordo sx area × linea di fondo
-  const Mx = (A.x + B.x) / 2;
-  el.style.left = ((Mx / 1000) * 100).toFixed(3) + '%';
+function placeSubsByPitch(){
+  const el=document.getElementById('subsBadge'); if(!el) return;
+  const cx=W/2; const xAreaLeft=cx-areaW/2;
+  const A=map(0,H); const B=map(xAreaLeft,H);
+  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
 }
 
-/* ====== POSIZIONAMENTO MATCHDAY ======
-   Centro del quadrante sinistro dello spazio SOPRA al campo.
-   Calcolo:
-   - topCampo = top della pitch-wrap + 12% dell'altezza (per via della clip-path)
-   - metà di quel spazio in verticale
-   - 25% della larghezza (centro del quadrante sinistro)
-*/
+/* ====== POSIZIONAMENTO MATCHDAY ====== */
 function placeMatchdayByQuadrant(){
-  const el = document.getElementById('matchdayBadge');
-  const stage = document.querySelector('.stage');
-  const pitch = document.querySelector('.pitch-wrap');
-  if (!el || !stage || !pitch) return;
-
-  const sRect = stage.getBoundingClientRect();
-  const pRect = pitch.getBoundingClientRect();
-
-  const topCampo = pRect.top + pRect.height * 0.12;          // bordo superiore visibile del campo
-  const spazioSopra = Math.max(0, topCampo - sRect.top);      // px
-  const topPct = ( (spazioSopra * 0.5) / sRect.height ) * 100; // metà spazio sopra -> %
-  const leftPct = 25; // centro quadrante sinistro
-
-  el.style.top = topPct.toFixed(3) + '%';
-  el.style.left = leftPct + '%';
+  const el=document.getElementById('matchdayBadge');
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!el||!stage||!pitch) return;
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;               // bordo superiore del campo (clip 12%)
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  const topPct=((spazioSopra*0.5)/sRect.height)*100;            // metà dello spazio sopra
+  const leftPct=25;                                             // centro quadrante sinistro
+  el.style.top=topPct.toFixed(3)+'%'; el.style.left=leftPct+'%';
 }
 
 /* ==== GO! ==== */
 (async function init(){
   try{
-    const rows = await fetchDistRows();
-    const byNum = normalizeDist(rows);
-    render(byNum);
-  }catch(e){
-    console.error(e);
-    render(new Map());
-  }
+    const rows=await fetchDistRows(); const byNum=normalizeDist(rows); render(byNum);
+  }catch(e){ console.error(e); render(new Map()); }
 
-  // posiziona SUBS + MATCHDAY e ricalcola al resize/orientamento
   placeSubsByPitch();
   placeMatchdayByQuadrant();
 
-  const stage = document.querySelector('.stage');
-  if (window.ResizeObserver && stage) {
-    const ro = new ResizeObserver(()=>{
-      placeSubsByPitch();
-      placeMatchdayByQuadrant();
-    });
+  const stage=document.querySelector('.stage');
+  if(window.ResizeObserver && stage){
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
     ro.observe(stage);
-  } else {
-    window.addEventListener('resize', ()=>{
-      placeSubsByPitch();
-      placeMatchdayByQuadrant();
-    });
-    window.addEventListener('orientationchange', ()=>{
-      placeSubsByPitch();
-      placeMatchdayByQuadrant();
-    });
+  }else{
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchdayByQuadrant(); });
   }
 })();
 </script>
