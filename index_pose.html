@@ -30,6 +30,7 @@
     --subs-transform: uppercase;
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
+    --subs-drop: 2cqh;   /* quanto scende SUBS sotto la linea di fondo */
   }
 
   html,body{height:100%}
@@ -179,16 +180,6 @@
     line-height: var(--subs-line);
     text-transform: var(--subs-transform);
     color:#fff; opacity:.95;
-  }
-
-  /* Pixel/telefoni: SUBS più grandi, meno tracking, riga più larga */
-  @container (max-width: 520px){
-    .stage{
-      --subs-font: clamp(15px, 2.6cqh, 3.8cqw);
-      --subs-tracking: .06cqw;
-      --subs-maxw: calc(100% - 1cqw);
-    }
-    .subs-zone{ padding: 0 1cqw; }
   }
 </style>
 </head>
