@@ -557,6 +557,39 @@ function setLogo(imgEl, src, alt){
   imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
 }
 
+/* ====== FAB auto-avoid su telefoni piccoli ====== */
+function layoutFABs(){
+  const stage = document.querySelector('.stage');
+  const share = document.getElementById('shareFab');
+  const ig    = document.getElementById('igFab');
+  const md    = document.getElementById('matchdayBadge');
+  if(!stage || !share || !ig || !md) return;
+
+  // reset a default (CSS) per misurare correttamente
+  share.style.top = '';
+  ig.style.top = '';
+
+  const srect = stage.getBoundingClientRect();
+  const mdRect = md.getBoundingClientRect();
+  const fabRect = share.getBoundingClientRect();
+
+  const overlap = !(fabRect.right < mdRect.left ||
+                    fabRect.left  > mdRect.right ||
+                    fabRect.bottom< mdRect.top ||
+                    fabRect.top   > mdRect.bottom);
+
+  if(overlap){
+    const csShare = getComputedStyle(share);
+    const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
+    const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+
+    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
+    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
+    share.style.top = targetTop + 'px';
+    ig.style.top    = (targetTop + fabSize + gap) + 'px';
+  }
+}
+
 /* ==== GO! ==== */
 (async function init(){
   try{
@@ -574,14 +607,15 @@ function setLogo(imgEl, src, alt){
   }catch(e){ console.error(e); render(new Map()); }
 
   placeSubsByPitch(); placeMatchday(); placeVersus();
+  layoutFABs();
 
   const stage=document.querySelector('.stage');
   if(window.ResizeObserver && stage){
-    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
     ro.observe(stage);
   }else{
-    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
-    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); });
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
   }
 })();
 </script>
