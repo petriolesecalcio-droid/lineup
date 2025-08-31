@@ -203,11 +203,17 @@
     height: calc(var(--fab-size) * .56);
     fill: currentColor;
   }
-  @container (max-width:520px){
+
+  /* ── Opzione B: più piccolo SOLO su container stretti (mobile) ── */
+  @container (max-width: 520px){
     .fab-share{
-      --fab-size: clamp(34px, 12cqw, 44px);
-      --fab-edge: clamp(8px, 2.2cqw, 12px);
+      --fab-size: clamp(24px, 7cqw, 34px);
+      --fab-edge: clamp(8px, 1.6cqw, 12px);
       --fab-radius: 10px;
+    }
+    .fab-share svg{
+      width: calc(var(--fab-size) * .50);
+      height: calc(var(--fab-size) * .50);
     }
   }
 
@@ -558,7 +564,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }catch(err){
       console.error(err);
       fab.removeAttribute('aria-busy');
-      alert('Impossibile condividere automaticamente.');
+      alert('Impossibile condividere automaticamente. Ho scaricato l’immagine: caricala nelle Storie.');
     }
   }
 
