@@ -160,13 +160,13 @@
     text-align:center; white-space:normal; overflow-wrap:anywhere;
     font-family: var(--subs-font-family);
     font-size: var(--subs-font); font-weight: var(--subs-weight);
-    letter-spacing: var(--subs-tracking); /* ← fix */
+    letter-spacing: var(--subs-tracking); /* fix */
     line-height: var(--subs-line);
     text-transform: var(--subs-transform);
     color:#fff; opacity:.95;
   }
 
-  /* ===== FAB Share (Material bianco, quadrato) ===== */
+  /* ===== FAB Share ===== */
   .fab-share{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -191,7 +191,7 @@
   .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
 
-  /* ===== FAB Instagram (identico al FAB share) ===== */
+  /* ===== FAB Instagram ===== */
   .fab-ig{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -220,14 +220,9 @@
     height: calc(var(--fab-size) * .56);
     fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
-  .fab-ig::after{
-    content:"↗"; position:absolute; top:2px; right:2px;
-    font-size: calc(var(--fab-size) * .28);
-    color: currentColor; opacity:.55; line-height:1;
-    pointer-events:none;
-  }
+  /* (freccetta rimossa) */
 
-  /* ===== FAB WhatsApp (identico a IG; terza posizione nello stack) ===== */
+  /* ===== FAB WhatsApp ===== */
   .fab-wa{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -254,7 +249,7 @@
   .fab-wa svg{
     width: calc(var(--fab-size) * .56);
     height: calc(var(--fab-size) * .56);
-    fill: currentColor;
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
   /* ===== FABs più piccoli su mobile (container) ===== */
@@ -368,11 +363,8 @@
             <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
 
-          <!-- Bande 50/50 allineate top e bottom (880 = 8 × 110) -->
-          <pattern id="mow"
-                   patternUnits="userSpaceOnUse"
-                   width="1000" height="110"
-                   patternTransform="translate(0,120)">
+          <!-- Bande 50/50 allineate top e bottom -->
+          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
             <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
             <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
           </pattern>
@@ -384,7 +376,7 @@
           <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
 
-        <!-- Linee campo (clip-pate) -->
+        <!-- Linee campo -->
         <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
@@ -400,14 +392,14 @@
       <div class="subs-list" id="subsList"></div>
     </div>
 
-    <!-- FAB Share (Condividi storia) -->
+    <!-- FAB Share -->
     <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
 
-    <!-- FAB Instagram (apre profilo IG) -->
+    <!-- FAB Instagram -->
     <button id="igFab" class="fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -416,11 +408,13 @@
       </svg>
     </button>
 
-    <!-- FAB WhatsApp (apre canale WA) -->
+    <!-- FAB WhatsApp -->
     <button id="waFab" class="fab-wa" title="Apri Canale WhatsApp" aria-label="Apri Canale WhatsApp">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <!-- icona WhatsApp semplificata -->
-        <path d="M20 12.04c0 4.42-3.58 8-8 8-1.4 0-2.71-.36-3.85-.99L4 20l.98-4.07A7.95 7.95 0 0 1 4 12.04c0-4.42 3.58-8 8-8s8 3.58 8 8zm-4.53-1.24c-.08-.17-.29-.27-.6-.47s-1.85-.91-2.14-1.01-.5-.15-.71.15-.82 1.01-1.01 1.22-.37.23-.68.08c-.31-.15-1.3-.48-2.48-1.53-.92-.82-1.54-1.83-1.72-2.14-.18-.31 0-.48.14-.63.14-.14.31-.37.46-.55.15-.18.2-.31.31-.52.1-.21.05-.39-.02-.55-.08-.17-.71-1.71-.97-2.34-.25-.6-.5-.52-.71-.53l-.6-.01c-.2 0-.52.08-.79.39-.27.31-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.27.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.85-.76 2.12-1.49.26-.73.26-1.36.18-1.49z"/>
+        <!-- cerchio esterno -->
+        <circle cx="12" cy="12" r="9"></circle>
+        <!-- cornetta classica -->
+        <path d="M15.6 14.2c-.2.6-1.1 1.3-1.8 1.3-.7 0-1.8-.4-3.1-1.1-1.3-.7-2.4-2.1-2.8-2.6-.4-.5-1.1-1.6-1.1-2.3s.4-1.1.6-1.3c.2-.2.5-.4.8-.4.3 0 .5.1.7.2.2.1.4 1 .7 1.5.2.4.1.6 0 .8-.1.2-.4.5-.5.6-.1.1-.2.3 0 .6.2.3 1 1.5 2.2 2.1 1.2.6 1.5.6 1.9.4.3-.2.8-.9 1-1.1.2-.2.4-.2.6-.1.2.1 1.5.7 1.8.9.2.1.3.2.3.3 0 .3-.1.7-.3 1z"></path>
       </svg>
     </button>
   </div>
@@ -606,7 +600,7 @@ function layoutFABs(){
   const md    = document.getElementById('matchdayBadge');
   if(!stage || !share || !ig || !wa || !md) return;
 
-  // reset a default (CSS) per misurare correttamente
+  // reset a default (CSS)
   share.style.top = '';
   ig.style.top = '';
   wa.style.top = '';
@@ -625,7 +619,6 @@ function layoutFABs(){
     const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
     const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
 
-    // posiziona i FAB subito sotto alla macchia, con un piccolo margine
     const targetTop = Math.round(mdRect.bottom - srect.top + 8);
     share.style.top = targetTop + 'px';
     ig.style.top    = (targetTop + (fabSize + gap) * 1) + 'px';
@@ -646,19 +639,11 @@ function playerNode(obj,x,y){
   div.appendChild(badge);
   return div;
 }
-function canonicalFormation(name){
-  const raw = String(name||"").trim().toLowerCase().replace(/^['’]/,'');
-  const norm = raw.replace(/[–—−]/g, "-");
-  if (FORMATIONS_UV[norm]) return norm;
-  const digits = norm.replace(/[^0-9]/g, "");
-  return FORMATION_ALIASES[digits] || "3-4-1-2";
-}
 function render(byNum, modulo="3412"){
   const layer=document.getElementById('players'); layer.innerHTML='';
   const key = canonicalFormation(modulo);
 
   if (key === "3-4-1-2"){
-    // 3412 legacy: usa l'array in ordine XI_NUMBERS
     XI_NUMBERS.forEach((n,i)=>{
       const p=byNum.get(n)||{num:n,name:''};
       const [u,v]=coords3412[i];
@@ -666,11 +651,10 @@ function render(byNum, modulo="3412"){
       layer.appendChild(playerNode(p,world.x,world.y));
     });
   } else {
-    // 4-3-3 / 4-2-3-1: UV per numero maglia
     const table = FORMATIONS_UV[key] || {};
     XI_NUMBERS.forEach(n=>{
       const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50]; // default centro
+      const uv = table[n] || [34,50];
       const world=map(uv[0], uv[1]);
       layer.appendChild(playerNode(p,world.x,world.y));
     });
@@ -689,7 +673,6 @@ function render(byNum, modulo="3412"){
     const meta  = normalizeMeta(metaRows);
     const opp   = normalizeOpp(oppRows);
 
-    /* Modulo dal Meta (gestisce anche '433 con apostrofo iniziale) */
     const moduloRaw = (meta.get('modulo')||'3412').toString().trim();
     render(byNum, moduloRaw);
 
@@ -699,12 +682,10 @@ function render(byNum, modulo="3412"){
 
     document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
 
-    // Loghi
     setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
     setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
   }catch(e){
     console.error(e);
-    // fallback visivo: 3412
     render(new Map(), "3412");
   }
 
@@ -738,13 +719,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const prevVisIG = ig ? ig.style.visibility : '';
     const prevVisWA = wa ? wa.style.visibility : '';
 
-    // nascondo i FAB durante lo scatto
     fab.style.visibility = 'hidden';
     if(ig) ig.style.visibility = 'hidden';
     if(wa) wa.style.visibility = 'hidden';
     stage.classList.add('is-capturing');
 
-    /* qualità alta + downscale */
     const targetW = 1080, targetH = 1920;
     const rect = stage.getBoundingClientRect();
     const dpr  = Math.max(1, window.devicePixelRatio || 1);
@@ -804,19 +783,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function openInstagram(){
-    const username = 'asd_petriolese_calcio';
     const web = 'https://www.instagram.com/asd_petriolese_calcio/';
-    const scheme = `instagram://user?username=${username}`;
+    const scheme = 'instagram://user?username=asd_petriolese_calcio';
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if(isMobile){
       const start = Date.now();
       window.location.href = scheme;
-      setTimeout(()=>{
-        if(Date.now() - start < 1600){
-          window.open(web, '_blank', 'noopener');
-        }
-      }, 700);
+      setTimeout(()=>{ if(Date.now() - start < 1600){ window.open(web, '_blank', 'noopener'); } }, 700);
     }else{
       window.open(web, '_blank', 'noopener');
     }
