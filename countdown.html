@@ -122,6 +122,7 @@
   <div class="stage">
     <div class="stadium"></div>
 
+    <!-- Strisce diagonali -->
     <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
@@ -161,8 +162,208 @@
       <div class="meta" id="metaLine">In attesa di data/ora…</div>
     </div>
 
-    <!-- FABs (restano identici) -->
-    ...
+    <!-- FABs -->
+    <button id="shareFab" class="fab fab-share" title="Condividi" aria-label="Condividi">
+      <!-- Share icon -->
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
+      </svg>
+    </button>
+
+    <button id="igFab" class="fab fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
+      <!-- Instagram glyph -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <circle cx="17.5" cy="6.5" r="1.2"></circle>
+      </svg>
+    </button>
+
+    <button id="waFab" class="fab fab-wa" title="Apri canale WhatsApp" aria-label="Apri canale WhatsApp">
+      <!-- WhatsApp glyph -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M20.5 11.9c0 4.73-3.86 8.56-8.62 8.56a8.6 8.6 0 0 1-4.46-1.26L3.5 20.5l1.37-3.8a8.52 8.52 0 0 1-1.0-3.8C3.87 8.18 7.73 4.35 12.49 4.35c4.76 0 8.02 3.83 8.02 7.55Z"/>
+        <path d="M9.3 8.9c-.24.12-.8.59-.8 1.39 0 .8.5 1.58.57 1.68.09.12 1.57 2.52 4.02 3.48 2.46.96 2.46.64 2.91.62.45-.02 1.44-.59 1.64-1.16.2-.57.2-1.07.14-1.18-.06-.11-.22-.17-.47-.3-.25-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.25-.12-1.05-.39-2.0-1.24-.74-.64-1.23-1.43-1.38-1.67-.14-.24-.01-.37.11-.49.11-.11.25-.3.37-.45.12-.16.16-.24.24-.41.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.77-.2-.46-.4-.39-.54-.39-.14 0-.3 0-.54.12Z"/>
+      </svg>
+    </button>
   </div>
+
+<script>
+/* ====== SHEET CONFIG ====== */
+const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
+
+/* ====== HELPERS ====== */
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
+function parseCSV(text){
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+  if(!lines.length) return [];
+  const rows=[]; let row=[],cur='',inQ=false;
+  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
+  const s=lines.join('\n');
+  for(let i=0;i<s.length;i++){
+    const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
+  }
+  if(cur!==''||row.length){pushCell();pushRow()}
+  const header=(rows.shift()||[]).map(h=>String(h||'').trim());
+  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+}
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{ const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(res.ok){ return parseCSV(await res.text()); } }catch(e){}
+  if(pubUrl){ const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'}); return parseCSV(await res.text()); }
+  return [];
+}
+function normalizeMeta(rows){
+  const m=new Map();
+  rows.forEach(r=>{
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) m.set(k,v);
+  });
+  return m;
+}
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+function fmt2(n){ return String(Math.floor(Math.max(0,n))).padStart(2,'0'); }
+function formatOneLine(ms){
+  if(ms<=0) return 'LIVE';
+  const sec = Math.floor(ms/1000);
+  const d = Math.floor(sec/86400);
+  const h = Math.floor((sec%86400)/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  return `${fmt2(d)}g ${fmt2(h)}h ${fmt2(m)}m ${fmt2(s)}s`;
+}
+function formatWhen(dt){
+  try{
+    return dt.toLocaleString('it-IT', { weekday:'long', day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }catch{ return dt.toString(); }
+}
+function parseDateTimeIT(dateStr, timeStr){
+  const s = String(dateStr||'').trim();
+  const t = String(timeStr||'').trim();
+  if(!s) return null;
+  const combined = s.includes(':') ? s : (t ? `${s} ${t}` : s);
+  const m1 = combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
+  const m2 = combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
+  let y,M,d,h=15,min=0;
+  if(m1){ d=+m1[1]; M=+m1[2]-1; y=+m1[3]; if(m1[4]){h=+m1[4]; min=+m1[5];} }
+  else if(m2){ y=+m2[1]; M=+m2[2]-1; d=+m2[3]; if(m2[4]){h=+m2[4]; min=+m2[5];} }
+  else return new Date(s);
+  return new Date(y,M,d,h,min,0,0);
+}
+
+/* ====== INIT ====== */
+(async function init(){
+  // Pulsanti
+  document.getElementById('igFab').addEventListener('click', ()=>{
+    const username='asd_petriolese_calcio';
+    const web='https://www.instagram.com/asd_petriolese_calcio/';
+    const scheme=`instagram://user?username=${username}`;
+    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(isMobile){ const start=Date.now(); location.href=scheme; setTimeout(()=>{ if(Date.now()-start<1600) window.open(web,'_blank','noopener'); },700); }
+    else{ window.open(web,'_blank','noopener'); }
+  }, {passive:true});
+
+  document.getElementById('waFab').addEventListener('click', ()=>{
+    const url='https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
+    window.open(url, '_blank', 'noopener');
+  }, {passive:true});
+
+  const shareBtn=document.getElementById('shareFab');
+  shareBtn.addEventListener('click', async()=>{
+    try{
+      shareBtn.setAttribute('aria-busy','true');
+      const stage=document.querySelector('.stage'); const prev = shareBtn.style.visibility; shareBtn.style.visibility='hidden';
+      const scale=Math.max(3, window.devicePixelRatio||1);
+      const canvas=await html2canvas(stage,{backgroundColor:'#0b0c11',scale});
+      shareBtn.style.visibility=prev||'visible';
+      const out=document.createElement('canvas'); out.width=1080; out.height=1920;
+      const ctx=out.getContext('2d'); ctx.fillStyle='#0b0c11'; ctx.fillRect(0,0,out.width,out.height);
+      const ratio=Math.min(out.width/canvas.width, out.height/canvas.height);
+      const w=Math.round(canvas.width*ratio), h=Math.round(canvas.height*ratio);
+      const x=Math.floor((out.width-w)/2), y=Math.floor((out.height-h)/2);
+      ctx.drawImage(canvas,x,y,w,h);
+      const blob=await new Promise(r=>out.toBlob(r,'image/png',0.95));
+      const file=new File([blob], `countdown_petriolese_${new Date().toISOString().slice(0,10)}.png`, {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({title:'Countdown – Petriolese', files:[file]}); }
+      else{ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+    }catch(e){ console.error(e); alert('Condivisione non disponibile.'); }
+    finally{ shareBtn.removeAttribute('aria-busy'); }
+  });
+
+  // Dati dallo Sheet
+  const [metaRows, oppRows] = await Promise.all([
+    fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
+    fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL)
+  ]);
+  const meta = normalizeMeta(metaRows);
+  const opp  = normalizeOpp(oppRows);
+
+  const squadra1 = (meta.get('squadra1')||'Petriolese').toString().trim() || 'Petriolese';
+  const squadra2 = (meta.get('squadra2')||'').toString().trim();
+  const dateStr  = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
+  const timeStr  = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
+  const venue    = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
+
+  // VS + loghi
+  document.getElementById('t1').textContent = squadra1 || '—';
+  document.getElementById('t2').textContent = squadra2 || '—';
+  setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+  setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+
+  // Countdown
+  const dt = parseDateTimeIT(dateStr, timeStr);
+  const line = document.getElementById('countdownLine');
+  const metaLine = document.getElementById('metaLine');
+
+  if(dt && !isNaN(+dt)){
+    metaLine.textContent = (venue ? `${formatWhen(dt)} • ${venue}` : `${formatWhen(dt)}`);
+    const tick = ()=>{
+      const ms = +dt - Date.now();
+      line.textContent = formatOneLine(ms);
+      if(ms<=0){ clearInterval(t); line.textContent='LIVE'; }
+    };
+    tick();
+    const t=setInterval(tick, 1000);
+  }else{
+    line.textContent = '—';
+    metaLine.textContent = 'Imposta Data e Ora nella scheda Meta.';
+  }
+})();
+</script>
+
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 </body>
 </html>
