@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Countdown – Petriolese Calcio</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<style>
+  :root{
+    --pitch-bottom: 14%;
+    --bg:#0b0c11;
+    --roof-dark:#151923;
+    --roof-mid:#1f2531;
+    --roof-glow:rgba(255,255,255,.08);
+
+    /* badge “splat” */
+    --md-w: 88cqw;
+    --md-font-top: 3.6cqw;
+    --md-font-sub: 2.2cqw;
+    --md-splat-bleed: 2.2cqh;
+
+    /* VS */
+    --vs-w: 88cqw;
+    --vs-logo-h: 10cqh;
+    --vs-gap: 2cqw;
+    --vs-font: 2.2cqw;
+    --vs-letter: .18cqw;
+
+    /* Countdown */
+    --cd-font-big: clamp(26px, 6.4cqw, 64px);
+    --cd-font-small: clamp(14px, 2cqw, 20px);
+
+    /* Standings */
+    --tbl-font: clamp(12px, 1.8cqw, 16px);
+
+    /* FABs */
+    --fab-stack-gap: clamp(8px, 1.6cqw, 12px);
+  }
+
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg);
+    display:grid; place-items:center;
+    font-family:system-ui,Arial,sans-serif;
+  }
+  .stage{
+    position:relative;
+    width:min(1200px,96vw);
+    aspect-ratio:9/16;
+    max-height:96vh;
+    overflow:hidden;
+    border-radius:18px;
+    background:#0b0c11;
+    box-shadow:0 25px 80px rgba(0,0,0,.6);
+    container-type:size;
+  }
+  .stadium{
+    position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
+      linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
+  }
+  .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
+
+  /* Header “PROSSIMA” */
+  .matchday-badge{
+    position:absolute; transform: translate(-50%, -50%);
+    left: 25%; top: 12%;
+    width: var(--md-w); aspect-ratio: 5.5/1;
+    display:flex; align-items:center; justify-content:center;
+    background:none; overflow:visible; pointer-events:none; z-index:4;
+  }
+  .matchday-badge::before{
+    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
+    width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
+    background: url('md-splat.webp') center / contain no-repeat; z-index:-1; pointer-events:none;
+  }
+  .matchday-text{ display:flex; flex-direction:column; align-items:center; gap:.35cqh; color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw; line-height:1.05; text-align:center; }
+  .matchday-text .md-top{ font-size: var(--md-font-top); }
+  .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
+
+  /* VS top */
+  .versus-badge{
+    position:absolute; transform: translate(-50%, -50%);
+    left: 75%; top: 12%;
+    width: var(--vs-w);
+    display:flex; align-items:center; justify-content:center; gap: var(--vs-gap);
+    background:none; overflow:visible; pointer-events:none; z-index:4;
+  }
+  .versus-badge .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; display:block; }
+  .versus-badge .vs-text{ color:#fff; font-weight:900; text-transform:uppercase; font-size: var(--vs-font); letter-spacing: var(--vs-letter); line-height:1; display:block; }
+
+  /* Countdown card */
+  .card{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%);
+    width:86cqw; border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+    border: 1px solid rgba(255,255,255,.10);
+    padding: 2.2cqh 2.2cqw; color:#fff; z-index:3;
+    backdrop-filter: blur(2px);
+  }
+  .cd-time{
+    display:flex; gap:2cqw; align-items:baseline; justify-content:center; flex-wrap:wrap;
+    font-weight:900; letter-spacing: .04em;
+  }
+  .cd-time .num{ font-size: var(--cd-font-big); line-height:1; min-width: 7ch; text-align:center; }
+  .cd-time .lab{ font-size: var(--cd-font-small); opacity:.85; display:block; margin-top:.4cqh; }
+
+  .cd-meta{
+    margin-top: 1.6cqh; display:flex; gap:1.6cqw; flex-wrap:wrap; justify-content:center;
+    font-weight:700; letter-spacing:.03em; opacity:.95;
+  }
+  .cd-meta .pill{
+    display:inline-flex; align-items:center; gap:.6cqw;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius:999px; padding:.6cqh 1cqw; font-size: clamp(12px, 1.8cqw, 16px);
+  }
+  .cd-meta svg{ width:1.2em; height:1.2em; opacity:.9 }
+
+  /* Standings */
+  .standings{
+    position:absolute; left:50%; bottom: 6%; transform:translateX(-50%);
+    width: 92cqw; z-index:3;
+  }
+  .standings h3{
+    margin:.6cqh 0 .8cqh; color:#fff; font-size: clamp(16px, 2.6cqw, 22px);
+    font-weight:900; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .tbl{
+    width:100%; border-collapse:collapse; color:#fff; font-size: var(--tbl-font);
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.10); border-radius:12px; overflow:hidden;
+  }
+  .tbl th, .tbl td{ padding:.8cqh .9cqw; text-align:center; }
+  .tbl th{ background: rgba(255,255,255,.08); font-weight:800; }
+  .tbl td:first-child, .tbl th:first-child{ text-align:left; }
+  .tbl tr:nth-child(even) td{ background: rgba(255,255,255,.04); }
+
+  /* FABs */
+  .fab{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+
+    position:absolute; left:var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center;
+
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: var(--fab-radius);
+    background:#fff; color:#111;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
+  .fab:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab:active{ transform: translateY(0); background:#eceef2; }
+  .fab:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab[aria-busy="true"]{ pointer-events:none; opacity:.7 }
+  .fab svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); }
+
+  #shareFab{ top:var(--fab-edge); }
+  #igFab{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
+  #waFab{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
+
+  /* IG icon (stroke) */
+  #igFab svg{ fill:none; stroke: currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* WA icon (classic mark) */
+  #waFab svg{ fill: currentColor; }
+
+  /* FABs piccoli su mobile */
+  @container (max-width: 520px){
+    .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius:10px; }
+    .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
+  }
+
+  /* Export mode */
+  .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="stadium"></div>
+
+    <!-- Strisce oblique -->
+    <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
+          <rect x="0" y="0" width="44" height="14" fill="#ffffff" opacity="0.06"/>
+          <rect x="0" y="14" width="44" height="30" fill="transparent"/>
+        </pattern>
+      </defs>
+      <rect x="0" y="0" width="1000" height="1778" fill="url(#diag)"/>
+    </svg>
+
+    <!-- Header -->
+    <div id="hdr" class="matchday-badge">
+      <div class="matchday-text">
+        <div class="md-top">PROSSIMA</div>
+        <div class="md-sub" id="hdrSub"></div>
+      </div>
+    </div>
+
+    <!-- VS -->
+    <div id="versusBadge" class="versus-badge">
+      <img id="logo1" class="team-logo" alt="">
+      <span class="vs-text">VS</span>
+      <img id="logo2" class="team-logo" alt="">
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="card" id="countdownCard">
+      <div class="cd-time" id="cdTime"><!-- injected --></div>
+      <div class="cd-meta" id="cdMeta"><!-- injected --></div>
+    </div>
+
+    <!-- CLASSIFICA -->
+    <div class="standings" id="standings" hidden>
+      <h3>Classifica</h3>
+      <table class="tbl" id="tbl"></table>
+    </div>
+
+    <!-- FABs -->
+    <button id="shareFab" class="fab" title="Condividi" aria-label="Condividi">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
+      </svg>
+    </button>
+
+    <button id="igFab" class="fab" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
+      <!-- IG outline -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <circle cx="17.5" cy="6.5" r="1.2"></circle>
+      </svg>
+    </button>
+
+    <button id="waFab" class="fab" title="Apri canale WhatsApp" aria-label="Apri canale WhatsApp">
+      <!-- WA classic: chat bubble + handset (semplificato) -->
+      <svg viewBox="0 0 256 256" aria-hidden="true">
+        <path d="M128 24c-57.35 0-104 43.7-104 97.6 0 18.1 5.44 35.1 15.45 49.9L32 232l62.3-25c10.5 3.5 21.7 5.3 33.7 5.3 57.3 0 104-43.7 104-97.6S185.3 24 128 24Zm0 176c-11.5 0-22.3-2-32.2-5.8l-2.9-1.1-36.7 14.8 7.4-35.2-1.9-2.5C52.4 154 48 138.7 48 121.6 48 78.2 83.9 43 128 43s80 35.2 80 78.6-35.9 78.4-80 78.4Zm33.7-49.1c-1.8-.9-10.6-5.2-12.3-5.8-1.7-.6-3-.9-4.4.9s-5 5.8-6.1 7c-1.1 1.2-2.3 1.3-4.1.4-1.8-.9-7.5-2.7-14.3-8.6-5.3-4.5-8.9-10-10-11.7-1.1-1.7-.1-2.7.8-3.6.8-.8 1.8-2.1 2.7-3.1.9-1.1 1.2-1.8 1.8-3s.3-2.3-.1-3.2c-.4-.9-4.4-10.6-6.1-14.5-1.6-3.9-3.3-3.4-4.4-3.4-1.1 0-2.4-.1-3.7-.1s-3.4.5-5.2 2.3c-1.8 1.8-6.8 6.6-6.8 16.1s7 18.7 8 20c1.1 1.5 13.8 21.5 33.4 29.3 4.7 2 8.4 3.1 11.3 3.9 4.7 1.5 9 .1 12.4-2.7 3.9-3.3 5.6-8.1 6.2-9.5.6-1.4.6-2.6.4-2.9-.1-.4-1.6-.9-3.4-1.8Z"/>
+      </svg>
+    </button>
+  </div>
+
+<script>
+/* ====== CONFIG SHEET ====== */
+const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const CLASSIFICA_GID=''; // <- metti il gid del tab “Classifica” se/quando lo hai
+
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
+const PUBLISHED_CLASS_URL='';
+
+/* ====== HELPERS CSV ====== */
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+}
+function parseCSV(text){
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+  if(!lines.length) return [];
+  const rows=[]; let row=[],cur='',inQ=false;
+  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
+  const s=lines.join('\n');
+  for(let i=0;i<s.length;i++){
+    const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
+  }
+  if(cur!==''||row.length){pushCell();pushRow()}
+  const header=rows.shift().map(h=>String(h||'').trim());
+  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+}
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
+  }catch(e){}
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
+}
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
+const fetchClassRows  = ()=> CLASSIFICA_GID ? fetchCsvPrefer(SHEET_FILE_ID, CLASSIFICA_GID, PUBLISHED_CLASS_URL) : Promise.resolve([]);
+
+/* ====== NORMALIZZAZIONI ====== */
+function normalizeMeta(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
+  });
+  return out;
+}
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== COUNTDOWN ====== */
+function parseDateTimeIT(dateStr, timeStr){
+  const s = String(dateStr||'').trim();
+  const t = String(timeStr||'').trim();
+  if(!s) return null;
+  // try combined first
+  const combined = s.includes(':') ? s : (t ? `${s} ${t}` : s);
+  // DD/MM/YYYY HH:mm or YYYY-MM-DD HH:mm
+  const m1 = combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
+  const m2 = combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
+  let y,M,d,h=15,min=0;
+  if(m1){ d=+m1[1]; M=+m1[2]-1; y=+m1[3]; if(m1[4]){h=+m1[4]; min=+m1[5];} }
+  else if(m2){ y=+m2[1]; M=+m2[2]-1; d=+m2[3]; if(m2[4]){h=+m2[4]; min=+m2[5];} }
+  else return new Date(s); // let Date parse ISO if possible
+  return new Date(y,M,d,h,min,0,0);
+}
+function formatItalianDate(dt){
+  try{
+    return dt.toLocaleString('it-IT',{ weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }catch{ return dt.toString(); }
+}
+function startCountdown(target, onTick){
+  function tick(){
+    const now = Date.now();
+    const ms  = target - now;
+    const sign = ms<0 ? -1 : 1;
+    const abs = Math.abs(ms);
+    const sec = Math.floor(abs/1000)%60;
+    const min = Math.floor(abs/60000)%60;
+    const hr  = Math.floor(abs/3600000)%24;
+    const day = Math.floor(abs/86400000);
+    onTick({ms, day, hr, min, sec, sign});
+  }
+  tick();
+  return setInterval(tick, 1000);
+}
+
+/* ====== RENDER UTILS ====== */
+function cdRow(n,label){ return `<div class="num">${n}</div><div class="lab">${label}</div>`; }
+function updateCountdownView(state){
+  const el = document.getElementById('cdTime');
+  if(!el) return;
+  if(state.ms <= 0){
+    el.innerHTML = `<div class="num">IN CORSO</div>`;
+  }else{
+    el.innerHTML = `
+      <div>${cdRow(state.day, 'giorni')}</div>
+      <div>${cdRow(state.hr.toString().padStart(2,'0'), 'ore')}</div>
+      <div>${cdRow(state.min.toString().padStart(2,'0'), 'min')}</div>
+      <div>${cdRow(state.sec.toString().padStart(2,'0'), 'sec')}</div>`;
+  }
+}
+function setMetaPills(texts){
+  const wrap=document.getElementById('cdMeta'); if(!wrap) return;
+  wrap.innerHTML = texts.filter(Boolean).map(t=>`<span class="pill">${t}</span>`).join(' ');
+}
+function iconCal(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3V2Zm14 8H3v10h18V10Z"/></svg>`;}
+function iconPin(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7Zm0 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>`;}
+function pill(inner){ return `<span class="pill">${inner}</span>`; }
+
+/* ====== FAB behavior ====== */
+function layoutFABs(){
+  const stage = document.querySelector('.stage');
+  const share = document.getElementById('shareFab');
+  const ig    = document.getElementById('igFab');
+  const wa    = document.getElementById('waFab');
+  const md    = document.getElementById('hdr');
+  if(!stage || !share || !ig || !wa || !md) return;
+
+  // Desktop: fissi in alto a sinistra
+  if (stage.offsetWidth > 520) { share.style.top=''; ig.style.top=''; wa.style.top=''; return; }
+
+  // Mobile: auto-avoid se si sovrappongono alla macchia
+  share.style.top = ''; ig.style.top = ''; wa.style.top = '';
+  const srect = stage.getBoundingClientRect();
+  const mdRect = md.getBoundingClientRect();
+  const fabRect = share.getBoundingClientRect();
+  const overlap = !(fabRect.right < mdRect.left || fabRect.left > mdRect.right || fabRect.bottom < mdRect.top || fabRect.top > mdRect.bottom);
+  if(overlap){
+    const cs = getComputedStyle(share);
+    const size = parseFloat(cs.getPropertyValue('--fab-size')) || share.offsetWidth;
+    const gap  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
+    share.style.top = targetTop + 'px';
+    ig.style.top    = (targetTop + size + gap) + 'px';
+    wa.style.top    = (targetTop + (size + gap) * 2) + 'px';
+  }
+}
+
+async function stageToBlob(){
+  const stage=document.querySelector('.stage');
+  const fab1=document.getElementById('shareFab');
+  const fab2=document.getElementById('igFab');
+  const fab3=document.getElementById('waFab');
+  const v1=fab1.style.visibility, v2=fab2.style.visibility, v3=fab3.style.visibility;
+  fab1.style.visibility='hidden'; fab2.style.visibility='hidden'; fab3.style.visibility='hidden';
+  stage.classList.add('is-capturing');
+
+  const targetW=1080, targetH=1920;
+  const rect = stage.getBoundingClientRect();
+  const dpr  = Math.max(1, window.devicePixelRatio||1);
+  const need = Math.max(targetW/rect.width, targetH/rect.height);
+  const scale= Math.max(3, dpr, need);
+
+  const canvas = await html2canvas(stage,{ backgroundColor:'#0b0c11', scale, useCORS:true });
+  const out = document.createElement('canvas'); out.width=targetW; out.height=targetH;
+  const ctx=out.getContext('2d',{willReadFrequently:true});
+  ctx.fillStyle='#0b0c11'; ctx.fillRect(0,0,targetW,targetH);
+  const ratio=Math.min(targetW/canvas.width, targetH/canvas.height);
+  const w=Math.round(canvas.width*ratio), h=Math.round(canvas.height*ratio);
+  const x=Math.floor((targetW-w)/2), y=Math.floor((targetH-h)/2);
+  ctx.drawImage(canvas,x,y,w,h);
+
+  stage.classList.remove('is-capturing');
+  fab1.style.visibility=v1||'visible'; fab2.style.visibility=v2||'visible'; fab3.style.visibility=v3||'visible';
+  return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+}
+
+async function shareOrDownload(){
+  try{
+    const btn=document.getElementById('shareFab'); btn.setAttribute('aria-busy','true');
+    const blob=await stageToBlob();
+    const fileName=`countdown_petriolese_${new Date().toISOString().slice(0,10)}.png`;
+    const file = new File([blob], fileName, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ title:'Countdown – Petriolese', text:'Info prossima partita.', files:[file] });
+      btn.removeAttribute('aria-busy'); return;
+    }
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    btn.removeAttribute('aria-busy');
+  }catch(e){ console.error(e); document.getElementById('shareFab').removeAttribute('aria-busy'); alert('Condivisione non disponibile.'); }
+}
+function openInstagram(){
+  const username='asd_petriolese_calcio';
+  const web='https://www.instagram.com/asd_petriolese_calcio/';
+  const scheme=`instagram://user?username=${username}`;
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){
+    const start=Date.now(); window.location.href=scheme;
+    setTimeout(()=>{ if(Date.now()-start<1600) window.open(web,'_blank','noopener'); },700);
+  }else{ window.open(web,'_blank','noopener'); }
+}
+function openWhatsApp(){
+  const web='https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E'; // il tuo canale
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){ window.location.href=web; } else { window.open(web,'_blank','noopener'); }
+}
+
+/* ====== GO! ====== */
+(async function init(){
+  try{
+    const [metaRows, oppRows, classRows] = await Promise.all([ fetchMetaRows(), fetchOppRows(), fetchClassRows() ]);
+    const meta = normalizeMeta(metaRows);
+    const opp  = normalizeOpp(oppRows);
+
+    const giornata = (meta.get('giornata')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'Petriolese').toString().trim();
+    const squadra2 = (meta.get('squadra2')||'').toString().trim();
+
+    // Header
+    document.getElementById('hdrSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
+
+    // Loghi
+    setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
+    setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+
+    // Data / luogo
+    const data = meta.get('data') || meta.get('prossimadata') || meta.get('prossima_data') || '';
+    const ora  = meta.get('ora')  || meta.get('prossimaora')  || meta.get('prossima_ora')  || '';
+    const luogo= meta.get('luogo')|| meta.get('stadio') || '';
+    const comp = meta.get('competizione') || '';
+
+    const dt = parseDateTimeIT(data, ora);
+    if(dt){
+      const pretty = formatItalianDate(dt);
+      setMetaPills([
+        pill(iconCal()+pretty),
+        luogo ? pill(iconPin()+luogo) : '',
+        comp  ? pill(comp) : ''
+      ]);
+      const timer = startCountdown(+dt, updateCountdownView);
+      // salvati se vuoi cancellare in futuro: window.__cd = timer;
+    }else{
+      document.getElementById('cdTime').innerHTML = `<div class="num">DATA DA DEFINIRE</div>`;
+      setMetaPills([ luogo ? pill(iconPin()+luogo) : '', comp ? pill(comp) : '' ]);
+    }
+
+    // Classifica
+    renderStandings(classRows);
+
+  }catch(e){ console.error(e); }
+
+  layoutFABs();
+  const stage=document.querySelector('.stage');
+  if(window.ResizeObserver && stage){
+    const ro=new ResizeObserver(layoutFABs); ro.observe(stage);
+  }else{
+    window.addEventListener('resize', layoutFABs);
+    window.addEventListener('orientationchange', layoutFABs);
+  }
+
+  // FAB handlers
+  document.getElementById('shareFab').addEventListener('click', shareOrDownload, {passive:true});
+  document.getElementById('igFab').addEventListener('click', openInstagram, {passive:true});
+  document.getElementById('waFab').addEventListener('click', openWhatsApp, {passive:true});
+})();
+
+/* ====== CLASSIFICA ====== */
+function normalizeStandings(rows){
+  if(!rows || !rows.length) return [];
+  const key=(s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const cols=Object.keys(rows[0]);
+  const kTeam = cols.find(c=>/squadra|team|club/.test(key(c)));
+  const kPt   = cols.find(c=>/pt|punti/.test(key(c)));
+  const kG    = cols.find(c=>/g(?!f)|giocate|pg/.test(key(c)));
+  const kV    = cols.find(c=>/^v(ittorie)?$/i.test(c) || /vitt/.test(key(c)));
+  const kN    = cols.find(c=>/^n(pareggi)?$/i.test(c) || /par/i.test(key(c)));
+  const kP    = cols.find(c=>/^p(sconfitte)?$/i.test(c) || /sconf/i.test(key(c)));
+  const kGF   = cols.find(c=>/gf|gol fatti|rete fatte/.test(key(c)));
+  const kGS   = cols.find(c=>/gs|gol subiti|rete subite/.test(key(c)));
+  const kDR   = cols.find(c=>/diff|dr/.test(key(c)));
+  return rows.map(r=>({
+    team: r[kTeam]||'',
+    pt: Number(r[kPt]||0),
+    g:  Number(r[kG]||0),
+    v:  Number(r[kV]||0),
+    n:  Number(r[kN]||0),
+    p:  Number(r[kP]||0),
+    gf: Number(r[kGF]||0),
+    gs: Number(r[kGS]||0),
+    dr: (r[kDR]!==undefined && r[kDR]!=='' ) ? Number(r[kDR]) : (Number(r[kGF]||0)-Number(r[kGS]||0))
+  })).filter(r=>r.team);
+}
+function renderStandings(rows){
+  const box=document.getElementById('standings');
+  const tbl=document.getElementById('tbl');
+  const data=normalizeStandings(rows);
+  if(!data.length){ box.hidden = true; return; }
+  box.hidden=false;
+
+  // sort by points, then diff, then gf
+  data.sort((a,b)=> b.pt - a.pt || b.dr - a.dr || b.gf - a.gf);
+
+  const has = (k)=> data.some(r=>r[k]!==undefined && r[k]!==null);
+  const cols = [
+    {k:'team', label:'Squadra'},
+    {k:'pt',   label:'Pt'},
+    ...(has('g')  ? [{k:'g',label:'G'}]  : []),
+    ...(has('v')  ? [{k:'v',label:'V'}]  : []),
+    ...(has('n')  ? [{k:'n',label:'N'}]  : []),
+    ...(has('p')  ? [{k:'p',label:'P'}]  : []),
+    ...(has('gf') ? [{k:'gf',label:'GF'}]: []),
+    ...(has('gs') ? [{k:'gs',label:'GS'}]: []),
+    ...(has('dr') ? [{k:'dr',label:'DR'}]: []),
+  ];
+
+  tbl.innerHTML =
+    `<thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead>`+
+    `<tbody>${data.map(r=>`<tr>${cols.map(c=>`<td>${c.k==='team'? r[c.k] : (isFinite(r[c.k])? r[c.k]: '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+</script>
+
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+</body>
+</html>
