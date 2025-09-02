@@ -8,8 +8,8 @@
 <style>
   :root{
     --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
-    --md-w:88cqw; --fab-stack-gap: clamp(8px, 1.6cqw, 12px);
-    --vs-logo-h: 9cqh; --vs-gap: 1.6cqw;
+    --fab-stack-gap: clamp(8px, 1.6cqw, 12px);
+    --vs-gap: 1.4cqw;
   }
   html,body{height:100%}
   body{margin:0;background:var(--bg);display:grid;place-items:center;font-family:system-ui,Arial,sans-serif}
@@ -27,7 +27,7 @@
   }
   .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
 
-  /* Contenuti */
+  /* Layout centrale */
   .wrap{
     position:absolute; inset:0; z-index:4;
     display:grid; grid-template-rows:auto 1fr auto; align-items:center; justify-items:center;
@@ -38,21 +38,41 @@
     font-size: clamp(18px, 3.8cqw, 34px); text-align:center;
   }
 
-  .vs{
+  .vs-block{
     margin-top: 2cqh;
-    display:flex; align-items:center; gap: var(--vs-gap); color:#fff; font-weight:900;
-    text-transform:uppercase; letter-spacing:.18cqw; font-size: clamp(18px, 2.6cqw, 26px);
+    display:grid; grid-auto-rows: min-content; row-gap: 1.2cqh;
+    width: 100%;
   }
-  .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; display:block; }
-  .vs .sep{ opacity:.9; }
 
-  /* COUNTDOWN riga singola */
+  .team-row{
+    display:flex; align-items:center; gap: var(--vs-gap);
+    color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.18cqw;
+    font-size: clamp(18px, 2.8cqw, 28px);
+  }
+  .team-row .team-logo{ height: 8.6cqh; width:auto; object-fit:contain; display:block; }
+  .team-row.top{ justify-self:start; margin-left: 6cqw; }
+  .team-row.bottom{ justify-self:end; margin-right: 6cqw; }
+
+  .vs-center{
+    justify-self:center;
+    font-weight:900; line-height:1;
+    font-size: clamp(42px, 8.4cqw, 92px);
+    letter-spacing: .22cqw;
+    display:inline-flex; gap:.3cqw;
+  }
+  .vs-letter{
+    display:inline-block;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)) drop-shadow(0 8px 16px rgba(0,0,0,.16));
+  }
+  .vs-v{ color:#e53935; transform: translateY(-1px) rotate(-2deg); }
+  .vs-s{ color:#1e88e5; transform: translateY(1px) rotate(1.5deg); }
+
+  /* Countdown riga singola */
   .countdown{
-    margin-top: 2.6cqh;
+    margin-top: 2.8cqh;
     color:#fff; font-weight:900; letter-spacing:.22cqw; line-height:1;
-    font-size: clamp(24px, 5.8cqw, 54px);
-    white-space: nowrap; /* <<< una sola riga */
-    text-align:center;
+    font-size: clamp(24px, 5.6cqw, 54px);
+    white-space: nowrap; text-align:center;
   }
 
   .meta{
@@ -60,7 +80,7 @@
     font-size: clamp(14px, 2.2cqw, 18px); letter-spacing:.06cqw;
   }
 
-  /* FABs */
+  /* FABs (desktop fissi in alto-sx; mobile più piccoli) */
   .fab{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -87,15 +107,9 @@
   .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
   .fab-wa{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
 
-  /* Mobile: FAB più piccoli */
   @container (max-width: 520px){
     .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius: 10px; }
     .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
-  }
-
-  /* Desktop: icone fisse in alto-sinistra */
-  @media (min-width: 760px){
-    .fab{ position:absolute; }
   }
 </style>
 </head>
@@ -117,12 +131,24 @@
     <div class="wrap">
       <div class="title">Prossima partita</div>
 
-      <div class="vs" id="vsLine">
-        <img id="logo1" class="team-logo" alt="" />
-        <span id="t1">Petriolese</span>
-        <span class="sep">VS</span>
-        <span id="t2">—</span>
-        <img id="logo2" class="team-logo" alt="" />
+      <div class="vs-block">
+        <!-- Riga 1: LOGO + NOME (a sinistra) -->
+        <div class="team-row top">
+          <img id="logo1" class="team-logo" alt="" />
+          <span id="t1">Petriolese</span>
+        </div>
+
+        <!-- Riga 2: VS al centro (V rossa, S blu) -->
+        <div class="vs-center" aria-label="VS">
+          <span class="vs-letter vs-v">V</span>
+          <span class="vs-letter vs-s">S</span>
+        </div>
+
+        <!-- Riga 3: NOME + LOGO (a destra) -->
+        <div class="team-row bottom">
+          <span id="t2">—</span>
+          <img id="logo2" class="team-logo" alt="" />
+        </div>
       </div>
 
       <div class="countdown" id="countdownLine">—</div>
@@ -138,7 +164,7 @@
     </button>
 
     <button id="igFab" class="fab fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
-      <!-- Instagram glyph (stroke, senza freccetta) -->
+      <!-- Instagram glyph (stroke) -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -229,8 +255,8 @@ function formatOneLine(ms){
   const h = Math.floor((sec%86400)/3600);
   const m = Math.floor((sec%3600)/60);
   const s = sec%60;
-  // una sola riga, con giorni se >0
-  return (d>0 ? `${d}g ` : '') + `${fmt2(h)}h ${fmt2(m)}m ${fmt2(s)}s`;
+  // giorni sempre visibili
+  return `${fmt2(d)}g ${fmt2(h)}h ${fmt2(m)}m ${fmt2(s)}s`;
 }
 function formatWhen(dt){
   try{
@@ -253,7 +279,7 @@ function parseDateTimeIT(dateStr, timeStr){
 
 /* ====== INIT ====== */
 (async function init(){
-  // Open links
+  // Pulsanti
   document.getElementById('igFab').addEventListener('click', ()=>{
     const username='asd_petriolese_calcio';
     const web='https://www.instagram.com/asd_petriolese_calcio/';
@@ -268,13 +294,11 @@ function parseDateTimeIT(dateStr, timeStr){
     window.open(url, '_blank', 'noopener');
   }, {passive:true});
 
-  // Share (screenshot)
   const shareBtn=document.getElementById('shareFab');
   shareBtn.addEventListener('click', async()=>{
     try{
       shareBtn.setAttribute('aria-busy','true');
       const stage=document.querySelector('.stage'); const prev = shareBtn.style.visibility; shareBtn.style.visibility='hidden';
-      const {width,height} = stage.getBoundingClientRect();
       const scale=Math.max(3, window.devicePixelRatio||1);
       const canvas=await html2canvas(stage,{backgroundColor:'#0b0c11',scale});
       shareBtn.style.visibility=prev||'visible';
@@ -292,7 +316,7 @@ function parseDateTimeIT(dateStr, timeStr){
     finally{ shareBtn.removeAttribute('aria-busy'); }
   });
 
-  // Load data
+  // Dati
   const [metaRows, oppRows] = await Promise.all([
     fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
     fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL)
@@ -322,7 +346,7 @@ function parseDateTimeIT(dateStr, timeStr){
     const tick = ()=>{
       const ms = +dt - Date.now();
       line.textContent = formatOneLine(ms);
-      if(ms<=0){ clearInterval(t); }
+      if(ms<=0){ clearInterval(t); line.textContent='LIVE'; }
     };
     tick();
     const t=setInterval(tick, 1000);
