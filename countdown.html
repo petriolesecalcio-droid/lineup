@@ -96,7 +96,7 @@
     font-size: clamp(14px, 2.2cqw, 18px); letter-spacing:.06cqw;
   }
 
-  /* NEW: pill posizione */
+  /* Pill posizione: sempre una riga */
   .venue{
     margin-top: 1.0cqh;
     display: inline-flex;
@@ -106,11 +106,17 @@
     border-radius: 999px;
     background: rgba(255,255,255,.08);
     box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+    white-space: nowrap;                 /* no wrap */
+    max-width: 92cqw;                    /* limita la larghezza per evitare a-capo */
+    overflow: hidden;                    /* taglia l'eccesso */
   }
-  .venue .pin{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
+  .venue .pin{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); flex: 0 0 auto; }
   .venue a{
     color:#e6ebf2; text-decoration:none; font-weight:700;
     letter-spacing:.04cqw; font-size: clamp(13px, 2.2cqw, 16px);
+    display:inline-block;                /* per ellissi */
+    overflow:hidden; text-overflow:ellipsis;
+    max-width: calc(92cqw - 4cqw);       /* lascia spazio alla pin e ai padding */
   }
   .venue a:hover{ text-decoration:underline; }
 
@@ -196,7 +202,7 @@
       <div class="countdown" id="countdownLine">—</div>
       <div class="meta" id="metaLine">In attesa di data/ora…</div>
 
-      <!-- NEW: pill posizione -->
+      <!-- Pill posizione -->
       <div class="venue" id="venueBox" hidden>
         <span class="pin" aria-hidden="true">📍</span>
         <a id="venueLink" target="_blank" rel="noopener">Campo da definire</a>
@@ -284,7 +290,7 @@ function normalizeOpp(rows){
   return out;
 }
 
-/* NEW: venue & coordinate helpers */
+/* Venue & Maps helpers */
 function parseCoords(s){
   if(!s) return null;
   const m = String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
@@ -293,25 +299,41 @@ function parseCoords(s){
   const lon = parseFloat(m[2].replace(',', '.'));
   return (isFinite(lat) && isFinite(lon)) ? {lat, lon} : null;
 }
+function isGoodMapsLink(url){
+  try{
+    const u = new URL(url);
+    const h = u.hostname.toLowerCase();
+    const p = u.pathname.toLowerCase();
+    // consentiti: maps.app.goo.gl, *.google.com con path /maps..., goo.gl/maps...
+    if (h === 'maps.app.goo.gl') return true;
+    if (h.endsWith('.google.com') && p.startsWith('/maps')) return true;
+    if (h === 'goo.gl' && p.startsWith('/maps')) return true;
+    return false;
+  }catch{ return false; }
+}
 function normalizeVenues(rows){
   const out = new Map();
   rows.forEach(r=>{
     const name  = String(r.Squadra || r.squadra || '').trim();
     const campo = String(r.Campo   || r.campo   || r.Venue || r.venue || r.Stadio || '').trim();
     const coord = String(r.Coordinate || r.coordinate || r.Coords || r.coords || r.GPS || '').trim();
+    const link  = String(r.Link || r.link || r.Maps || r.maps || r.URL || r.url || '').trim();
     if(!name) return;
     const coords = parseCoords(coord);
     out.set(name.toLowerCase(), {
       venue: campo || '',
       lat: coords?.lat ?? null,
-      lon: coords?.lon ?? null
+      lon: coords?.lon ?? null,
+      link: isGoodMapsLink(link) ? link : ''
     });
   });
   return out;
 }
-function buildMapsLink({venue, lat, lon}) {
-  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
+function buildMapsLink({venue, lat, lon, link}) {
+  if (link) return link;                                    // 1) usa link condivisibile
+  if (venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`; // 2) ricerca per nome
+  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`; // 3) fallback
+  return '#';
 }
 
 function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
@@ -401,7 +423,7 @@ function parseDateTimeIT(dateStr, timeStr){
   ]);
   const meta     = normalizeMeta(metaRows);
   const opp      = normalizeOpp(oppRows);      // loghi
-  const venuesM  = normalizeVenues(oppRows);   // NEW: campo+coordinate
+  const venuesM  = normalizeVenues(oppRows);   // campo + coords + link
 
   const squadra1 = (meta.get('squadra1')||'Petriolese').toString().trim() || 'Petriolese';
   const squadra2 = (meta.get('squadra2')||'').toString().trim();
@@ -410,9 +432,9 @@ function parseDateTimeIT(dateStr, timeStr){
 
   // Venue: precedenza AVVERSARI (squadra1) → fallback Meta
   let venueMeta = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
-  let venue = ''; let lat = null, lon = null;
+  let venue = ''; let lat = null, lon = null; let link = '';
   const vRec = venuesM.get((squadra1||'').toLowerCase());
-  if (vRec) { venue = vRec.venue || ''; lat = vRec.lat; lon = vRec.lon; }
+  if (vRec) { venue = vRec.venue || ''; lat = vRec.lat; lon = vRec.lon; link = vRec.link || ''; }
   if (!venue) venue = venueMeta;
 
   // VS + loghi
@@ -427,7 +449,7 @@ function parseDateTimeIT(dateStr, timeStr){
   const metaLine = document.getElementById('metaLine');
 
   if(dt && !isNaN(+dt)){
-    metaLine.textContent = formatWhen(dt); // SOLO data/ora (il campo sta nella pill qui sotto)
+    metaLine.textContent = formatWhen(dt); // SOLO data/ora
     const tick = ()=>{
       const ms = +dt - Date.now();
       line.textContent = formatOneLine(ms);
@@ -440,12 +462,13 @@ function parseDateTimeIT(dateStr, timeStr){
     metaLine.textContent = 'Imposta Data e Ora nella scheda Meta.';
   }
 
-  // NEW: Venue UI (pill + link Google Maps)
+  // Venue UI (sempre una riga + link condivisibile se presente)
   if (venue) {
     const box = document.getElementById('venueBox');
     const a   = document.getElementById('venueLink');
     a.textContent = venue;
-    a.href = buildMapsLink({venue, lat, lon});
+    a.href = buildMapsLink({venue, lat, lon, link});
+    a.title = venue; // mostra il nome completo al passaggio del mouse
     box.hidden = false;
   }
 })();
