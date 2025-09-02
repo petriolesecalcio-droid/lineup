@@ -10,6 +10,10 @@
     --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
     --fab-stack-gap: clamp(8px, 1.6cqw, 12px);
     --vs-gap: 1.4cqw;
+
+    /* badge “splat” dietro al titolo */
+    --md-w: 72cqw;
+    --md-splat-bleed: 2.2cqh;
   }
   html,body{height:100%}
   body{margin:0;background:var(--bg);display:grid;place-items:center;font-family:system-ui,Arial,sans-serif}
@@ -33,6 +37,19 @@
     display:grid; grid-template-rows:auto 1fr auto; align-items:center; justify-items:center;
     padding: 4cqh 3cqw;
   }
+
+  /* Badge titolo con macchia */
+  .title-badge{
+    position:relative; width: var(--md-w); aspect-ratio: 5.5/1;
+    display:grid; place-items:center; overflow:visible; pointer-events:none;
+  }
+  .title-badge::before{
+    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
+    width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
+    background: url('md-splat.webp') center / contain no-repeat;
+    z-index:-1; pointer-events:none;
+    filter: drop-shadow(0 16px 40px rgba(0,0,0,.35));
+  }
   .title{
     color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw;
     font-size: clamp(18px, 3.8cqw, 34px); text-align:center;
@@ -53,19 +70,16 @@
   .team-row.top{ justify-self:start; margin-left: 6cqw; }
   .team-row.bottom{ justify-self:end; margin-right: 6cqw; }
 
-  .vs-center{
-    justify-self:center;
-    font-weight:900; line-height:1;
-    font-size: clamp(42px, 8.4cqw, 92px);
-    letter-spacing: .22cqw;
-    display:inline-flex; gap:.3cqw;
+  /* VS “vernice” */
+  .vs-center{ justify-self:center; display:grid; place-items:center; }
+  .vs-paint{ height: clamp(54px, 12cqh, 140px); width:auto; display:block; filter: drop-shadow(0 8px 18px rgba(0,0,0,.35)); }
+  .vs-paint text{
+    font-weight: 1000;
+    font-family: Impact, Anton, Haettenschweiler, 'Arial Black', system-ui, sans-serif;
+    dominant-baseline: middle; text-anchor: middle;
   }
-  .vs-letter{
-    display:inline-block;
-    filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)) drop-shadow(0 8px 16px rgba(0,0,0,.16));
-  }
-  .vs-v{ color:#e53935; transform: translateY(-1px) rotate(-2deg); }
-  .vs-s{ color:#1e88e5; transform: translateY(1px) rotate(1.5deg); }
+  .vs-paint .v{ fill:#e53935; }
+  .vs-paint .s{ fill:#1e88e5; }
 
   /* Countdown riga singola */
   .countdown{
@@ -129,7 +143,10 @@
     </svg>
 
     <div class="wrap">
-      <div class="title">Prossima partita</div>
+      <!-- Titolo con macchia -->
+      <div class="title-badge">
+        <div class="title">Prossima partita</div>
+      </div>
 
       <div class="vs-block">
         <!-- Riga 1: LOGO + NOME (a sinistra) -->
@@ -138,10 +155,33 @@
           <span id="t1">Petriolese</span>
         </div>
 
-        <!-- Riga 2: VS al centro (V rossa, S blu) -->
+        <!-- Riga 2: VS al centro (V rossa, S blu, pennellata) -->
         <div class="vs-center" aria-label="VS">
-          <span class="vs-letter vs-v">V</span>
-          <span class="vs-letter vs-s">S</span>
+          <svg class="vs-paint" viewBox="0 0 600 200" role="img" aria-labelledby="vstitle">
+            <title id="vstitle">VS</title>
+            <defs>
+              <!-- Filtro “vernice”: bordi irregolari + lieve sbavatura -->
+              <filter id="painty" x="-20%" y="-20%" width="140%" height="140%">
+                <!-- Rumore per lo sbrindellato -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed="8" stitchTiles="stitch" result="noise"/>
+                <!-- Dilata i bordi (un filo di spessore in più) -->
+                <feMorphology in="SourceGraphic" operator="dilate" radius="0.6" result="morph"/>
+                <!-- Deforma i bordi con il rumore -->
+                <feDisplacementMap in="morph" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+                <!-- Leggera sfocatura per l’effetto “vernice bagnata” -->
+                <feGaussianBlur in="disp" stdDeviation="0.35" result="blur"/>
+                <!-- Un filo di contrasto per non perdere definizione -->
+                <feBlend in="disp" in2="blur" mode="multiply" result="paint"/>
+                <feComponentTransfer in="paint">
+                  <feFuncA type="linear" slope="1.05"/>
+                </feComponentTransfer>
+              </filter>
+            </defs>
+
+            <!-- Le due lettere, ciascuna con il filtro -->
+            <text class="v" x="270" y="110" font-size="150" filter="url(#painty)">V</text>
+            <text class="s" x="330" y="110" font-size="150" filter="url(#painty)">S</text>
+          </svg>
         </div>
 
         <!-- Riga 3: NOME + LOGO (a destra) -->
@@ -255,8 +295,7 @@ function formatOneLine(ms){
   const h = Math.floor((sec%86400)/3600);
   const m = Math.floor((sec%3600)/60);
   const s = sec%60;
-  // giorni sempre visibili
-  return `${fmt2(d)}g ${fmt2(h)}h ${fmt2(m)}m ${fmt2(s)}s`;
+  return `${fmt2(d)}g ${fmt2(h)}h ${fmt2(m)}m ${fmt2(s)}s`; // giorni sempre
 }
 function formatWhen(dt){
   try{
