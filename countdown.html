@@ -28,9 +28,9 @@
   #bg-video{
     position:absolute; inset:0;
     width:100%; height:100%; object-fit:cover;
-    z-index:0;                          /* sotto a tutto il resto */
+    z-index:0;
     filter:brightness(.32) contrast(1.05) saturate(1.05);
-    background:#0b0c11;                 /* fallback quando il video non è ancora carico */
+    background:#0b0c11;
   }
 
   /* Overlay/atmosfera sopra al video (semi-trasparente) */
@@ -96,6 +96,24 @@
     font-size: clamp(14px, 2.2cqw, 18px); letter-spacing:.06cqw;
   }
 
+  /* NEW: pill posizione */
+  .venue{
+    margin-top: 1.0cqh;
+    display: inline-flex;
+    align-items: center;
+    gap: .6cqw;
+    padding: .7cqh 1.2cqw;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+  }
+  .venue .pin{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
+  .venue a{
+    color:#e6ebf2; text-decoration:none; font-weight:700;
+    letter-spacing:.04cqw; font-size: clamp(13px, 2.2cqw, 16px);
+  }
+  .venue a:hover{ text-decoration:underline; }
+
   /* FABs */
   .fab{
     --fab-size: clamp(36px, 10cqw, 48px);
@@ -134,7 +152,6 @@
     <!-- 🎥 Video di sfondo -->
     <video id="bg-video" autoplay muted loop playsinline preload="metadata">
       <source src="video_2025-09-02_23-14-49.mp4" type="video/mp4">
-      <!-- Fallback semplice per browser molto vecchi -->
     </video>
 
     <!-- Overlay/atmosfera -->
@@ -178,6 +195,12 @@
 
       <div class="countdown" id="countdownLine">—</div>
       <div class="meta" id="metaLine">In attesa di data/ora…</div>
+
+      <!-- NEW: pill posizione -->
+      <div class="venue" id="venueBox" hidden>
+        <span class="pin" aria-hidden="true">📍</span>
+        <a id="venueLink" target="_blank" rel="noopener">Campo da definire</a>
+      </div>
     </div>
 
     <!-- FABs -->
@@ -260,6 +283,37 @@ function normalizeOpp(rows){
   });
   return out;
 }
+
+/* NEW: venue & coordinate helpers */
+function parseCoords(s){
+  if(!s) return null;
+  const m = String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
+  if(!m) return null;
+  const lat = parseFloat(m[1].replace(',', '.'));
+  const lon = parseFloat(m[2].replace(',', '.'));
+  return (isFinite(lat) && isFinite(lon)) ? {lat, lon} : null;
+}
+function normalizeVenues(rows){
+  const out = new Map();
+  rows.forEach(r=>{
+    const name  = String(r.Squadra || r.squadra || '').trim();
+    const campo = String(r.Campo   || r.campo   || r.Venue || r.venue || r.Stadio || '').trim();
+    const coord = String(r.Coordinate || r.coordinate || r.Coords || r.coords || r.GPS || '').trim();
+    if(!name) return;
+    const coords = parseCoords(coord);
+    out.set(name.toLowerCase(), {
+      venue: campo || '',
+      lat: coords?.lat ?? null,
+      lon: coords?.lon ?? null
+    });
+  });
+  return out;
+}
+function buildMapsLink({venue, lat, lon}) {
+  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
+}
+
 function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 function resolveLogoSrc(teamName, oppMap){
   const name=(teamName||'').trim(); if(!name) return '';
@@ -345,14 +399,21 @@ function parseDateTimeIT(dateStr, timeStr){
     fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
     fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL)
   ]);
-  const meta = normalizeMeta(metaRows);
-  const opp  = normalizeOpp(oppRows);
+  const meta     = normalizeMeta(metaRows);
+  const opp      = normalizeOpp(oppRows);      // loghi
+  const venuesM  = normalizeVenues(oppRows);   // NEW: campo+coordinate
 
   const squadra1 = (meta.get('squadra1')||'Petriolese').toString().trim() || 'Petriolese';
   const squadra2 = (meta.get('squadra2')||'').toString().trim();
   const dateStr  = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
   const timeStr  = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
-  const venue    = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
+
+  // Venue: precedenza AVVERSARI (squadra1) → fallback Meta
+  let venueMeta = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
+  let venue = ''; let lat = null, lon = null;
+  const vRec = venuesM.get((squadra1||'').toLowerCase());
+  if (vRec) { venue = vRec.venue || ''; lat = vRec.lat; lon = vRec.lon; }
+  if (!venue) venue = venueMeta;
 
   // VS + loghi
   document.getElementById('t1').textContent = squadra1 || '—';
@@ -366,7 +427,7 @@ function parseDateTimeIT(dateStr, timeStr){
   const metaLine = document.getElementById('metaLine');
 
   if(dt && !isNaN(+dt)){
-    metaLine.textContent = (venue ? `${formatWhen(dt)} • ${venue}` : `${formatWhen(dt)}`);
+    metaLine.textContent = formatWhen(dt); // SOLO data/ora (il campo sta nella pill qui sotto)
     const tick = ()=>{
       const ms = +dt - Date.now();
       line.textContent = formatOneLine(ms);
@@ -377,6 +438,15 @@ function parseDateTimeIT(dateStr, timeStr){
   }else{
     line.textContent = '—';
     metaLine.textContent = 'Imposta Data e Ora nella scheda Meta.';
+  }
+
+  // NEW: Venue UI (pill + link Google Maps)
+  if (venue) {
+    const box = document.getElementById('venueBox');
+    const a   = document.getElementById('venueLink');
+    a.textContent = venue;
+    a.href = buildMapsLink({venue, lat, lon});
+    box.hidden = false;
   }
 })();
 </script>
