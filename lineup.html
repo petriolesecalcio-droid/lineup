@@ -317,14 +317,14 @@
     }
   }
 
-  /* ===== Giocatori e badge più piccoli su mobile (nuovo) ===== */
-  @container (max-width: 520px){
-    :root{
-      --photo-h: 14cqh;
-      --badge-w: 12cqh;
-      --badge-font: min(1.5cqh, 2cqw);
-    }
+/* Giocatori e badge più piccoli su mobile (container query CORRETTA) */
+@container (max-width: 520px){
+  .player .photo{ height: 14cqh; }                 /* prima era 20cqh */
+  .badge{
+    width: 12cqh;
+    font-size: min(1.5cqh, 2cqw);
   }
+}
 </style>
 </head>
 <body>
