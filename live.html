@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="it">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matchday live</title>
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex,nofollow">
 <script>
-  // Costruisce un URL cache-busting verso index.html
+  // Vai alla root (router) con cache-busting e tag "cb=live"
   const ts = Date.now();
-  const target = `index.html?nocache=${ts}`;
-  // Evita di sporcare la cronologia
-  location.replace(target);
+  const target = new URL('../?cb=live&nocache=' + ts, location.href); // ../ dalla cartella /lineup/
+  // No history pollution
+  location.replace(target.href);
 </script>
 <noscript>
-  <meta http-equiv="refresh" content="0; url=index.html?nocache=1">
+  <meta http-equiv="refresh" content="0; url=../?cb=live&nocache=1">
 </noscript>
+<body></body>
+</html>
