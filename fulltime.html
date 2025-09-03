@@ -113,10 +113,41 @@
   .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
   .fab-wa{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
 
-  @container (max-width:520px){
-    .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius: 10px; }
-    .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
+@container (max-width: 520px){
+  /* FAB scaling (già presente) */
+  .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius: 10px; }
+  .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
+
+  /* 🔽 Marcatori impilati su mobile */
+  /* i drawer diventano colonne: un marcatore per riga */
+  .wing{
+    display: grid;                /* da flex -> grid per stack verticale */
+    grid-auto-rows: min-content;
+    gap: .6cqh;                   /* spazio verticale tra marcatori */
+    max-width: calc(100% - 12cqw);/* lascia respiro ai bordi */
+    padding-block: .9cqh;
   }
+  .wing .scorer{
+    display: flex;
+    align-items: center;
+    gap: .6cqw;
+    white-space: normal;          /* consenti a nomi lunghi di andare a capo */
+  }
+
+  /* allineamenti rispetto ai team */
+  /* drawer sopra = marcatori squadra1 -> allineati al logo S1 */
+  #wingTop .wing{
+    justify-self: start;
+    margin-left: 6cqw;            /* stessa indentazione del blocco team-left */
+    text-align: left;
+  }
+  /* drawer sotto = marcatori squadra2 -> allineati al blocco team-right */
+  #wingBottom .wing{
+    justify-self: end;
+    margin-right: 6cqw;           /* stessa indentazione del blocco team-right */
+    text-align: right;
+  }
+}
 </style>
 </head>
 <body>
