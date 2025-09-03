@@ -7,8 +7,7 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
 <style>
   :root{ --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
-         --vs-gap:1.4cqw; --md-w:72cqw; --md-splat-bleed:2.2cqh;
-         --fab-stack-gap: clamp(8px, 1.6cqw, 12px); }
+         --vs-gap:1.4cqw; --md-w:72cqw; --md-splat-bleed:2.2cqh; --fab-stack-gap:clamp(8px,1.6cqw,12px); }
   html,body{height:100%}
   body{margin:0;background:var(--bg);display:grid;place-items:center;font-family:system-ui,Arial,sans-serif}
 
@@ -40,36 +39,29 @@
   .team-row.bottom{ justify-self:end; margin-right:6cqw; }
   .team-row.win{ filter:drop-shadow(0 6px 16px rgba(0,0,0,.35)); }
 
-  /* ===== SCORE INLINE + COLLASSO ===== */
-  .scoreline{
-    margin-top:.4cqh;
+  /* ===== score + drawer sopra/sotto ===== */
+  .score-stack{
     display:grid;
-    grid-template-columns:minmax(0,1fr) auto auto auto minmax(0,1fr); /* SC1 | s1 | – | s2 | SC2 */
-    align-items:center; gap:clamp(8px,1.8cqw,14px); color:#fff;
+    grid-template-columns: 1fr auto 1fr;          /* sinistra | SCORE | destra */
+    grid-template-rows: auto auto auto;           /* drawer1 | SCORE | drawer2 */
+    align-items:center; justify-items:center; gap:.8cqh 1.2cqw;
+    width:100%;
   }
+  .score-center{ grid-column:2; grid-row:2; display:flex; align-items:center; gap:clamp(10px,2.2cqw,18px); color:#fff; }
   .score-num{ font-weight:900; letter-spacing:.18cqw; line-height:1; font-size:clamp(42px,10cqw,96px);
               filter:drop-shadow(0 8px 18px rgba(0,0,0,.35)); }
   .dash{ font-weight:900; font-size:clamp(24px,5cqw,48px); opacity:.9; }
-  .scorers-inline{
-    color:#cfd3dc; font-weight:600; letter-spacing:.02cqw; font-size:clamp(12px,2.1cqw,16px); line-height:1.35;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
-    max-width: clamp(120px, 28cqw, 360px);
-  }
-  .scorers-inline.left{ text-align:right; }
-  .scorers-inline.right{ text-align:left; }
-  .scorers-inline .more{ opacity:.85; font-weight:700; }
 
-  /* Drawer completo */
-  .scorers-drawer{
-    margin-top:.8cqh; padding:.9cqh 1.2cqw;
-    background:rgba(255,255,255,.08); border-radius:14px;
-    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
-    display:grid; grid-template-columns:1fr 1fr; gap:1.4cqw; align-items:start;
-    color:#e6ebf2; font-weight:600; font-size:clamp(12px,2.1cqw,16px); line-height:1.35;
-  }
-  .scorers-drawer .col.left{ text-align:right; }
-  .scorers-drawer .col.right{ text-align:left; }
-  .scorers-drawer[hidden]{ display:none; }
+  .wing{ background:rgba(255,255,255,.08); border-radius:14px;
+         box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
+         color:#e6ebf2; font-weight:600; font-size:clamp(12px,2.1cqw,16px); line-height:1.5;
+         padding:.8cqh 1.1cqw; display:flex; flex-wrap:wrap; gap:.6cqw .9cqw; max-width:min(48cqw, 520px); }
+  .wing .scorer{ display:inline-flex; align-items:center; gap:.35cqw; white-space:nowrap; }
+  .wing .ball{ transform:translateY(.02em); }
+
+  /* posizionamento */
+  #wing1{ grid-column:1; grid-row:1; justify-self:end; }     /* sopra, a sinistra */
+  #wing2{ grid-column:3; grid-row:3; justify-self:start; }   /* sotto, a destra  */
 
   .meta{ margin-top:1.0cqh; color:#cfd3dc; text-align:center; opacity:.95; font-size:clamp(13px,2.1cqw,16px); letter-spacing:.06cqw; }
 
@@ -80,7 +72,7 @@
             display:inline-block; overflow:hidden; text-overflow:ellipsis; max-width:calc(92cqw - 4cqw); }
   .venue a:hover{ text-decoration:underline; }
 
-  /* FABs (share, IG, WA) */
+  /* FABs */
   .fab{
     --fab-size: clamp(36px, 10cqw, 48px);
     --fab-edge: clamp(10px, 2cqw, 16px);
@@ -102,7 +94,7 @@
   .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
   .fab-wa{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
 
-  @container (max-width: 520px){
+  @container (max-width:520px){
     .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius: 10px; }
     .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
   }
@@ -115,7 +107,6 @@
     </video>
 
     <div class="stadium"></div>
-
     <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
@@ -135,19 +126,17 @@
           <span id="t1">—</span>
         </div>
 
-        <!-- SCORE + MARCATORI AI LATI (collassabili) -->
-        <div class="scoreline" id="scoreline">
-          <div class="scorers-inline left" id="sc1i" hidden></div>
-          <div class="score-num" id="s1">0</div>
-          <div class="dash">–</div>
-          <div class="score-num" id="s2">0</div>
-          <div class="scorers-inline right" id="sc2i" hidden></div>
-        </div>
+        <!-- score + drawers -->
+        <div class="score-stack">
+          <div class="wing" id="wing1" hidden></div>
 
-        <!-- Drawer con elenco completo -->
-        <div class="scorers-drawer" id="drawer" hidden>
-          <div class="col left" id="sc1full"></div>
-          <div class="col right" id="sc2full"></div>
+          <div class="score-center">
+            <div class="score-num" id="s1">0</div>
+            <div class="dash">–</div>
+            <div class="score-num" id="s2">0</div>
+          </div>
+
+          <div class="wing" id="wing2" hidden></div>
         </div>
 
         <div class="team-row bottom">
@@ -170,7 +159,6 @@
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
       </svg>
     </button>
-
     <button id="igFab" class="fab fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
@@ -178,7 +166,6 @@
         <circle cx="17.5" cy="6.5" r="1.2"></circle>
       </svg>
     </button>
-
     <button id="waFab" class="fab fab-wa" title="Apri canale WhatsApp" aria-label="Apri canale WhatsApp">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M20.5 11.9c0 4.73-3.86 8.56-8.62 8.56a8.6 8.6 0 0 1-4.46-1.26L3.5 20.5l1.37-3.8a8.52 8.52 0 0 1-1.0-3.8C3.87 8.18 7.73 4.35 12.49 4.35c4.76 0 8.02 3.83 8.02 7.55Z"/>
@@ -195,114 +182,35 @@ const OPP_GID='1284472120';
 const PUBLISHED_META_URL='';
 const PUBLISHED_OPP_URL='';
 
-/* ====== HELPERS (csv + mappe + utility) ====== */
+/* ====== CSV + UTILS ====== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
-function pubCsvURL(pubhtmlUrl){
-  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
-  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
-  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
-}
-function parseCSV(text){
-  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
-  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
-  if(!lines.length) return [];
-  const rows=[]; let row=[],cur='',inQ=false;
-  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
-  const s=lines.join('\n');
-  for(let i=0;i<s.length;i++){
-    const c=s[i],n=s[i+1];
-    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
-    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
-  }
-  if(cur!==''||row.length){pushCell();pushRow()}
-  const header=(rows.shift()||[]).map(h=>String(h||'').trim());
-  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
-}
-async function fetchCsvPrefer(fileId,gid,pubUrl){
-  try{ const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(res.ok){ return parseCSV(await res.text()); } }catch(e){}
-  if(pubUrl){ const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'}); return parseCSV(await res.text()); }
-  return [];
-}
-function normalizeMeta(rows){
-  const m=new Map();
-  rows.forEach(r=>{
-    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
-    const v=(''+(r.Value||r.VALORE||'')).trim();
-    if(k) m.set(k,v);
-  });
-  return m;
-}
-function normalizeOpp(rows){
-  const out=new Map();
-  rows.forEach(r=>{
-    const name=(''+(r.Squadra||r.squadra||'')).trim();
-    const url =(''+(r.Logo||r.logo||'')).trim();
-    if(name) out.set(name.toLowerCase(), url);
-  });
-  return out;
-}
+function pubCsvURL(pubhtmlUrl){ const u=new URL(pubhtmlUrl); const p=u.pathname.split('/'); const idIdx=p.findIndex(x=>x==='e')+1; const id=p[idIdx]||''; const root=`${u.protocol}//${u.host}${p.slice(0,idIdx).join('/')}/${id}`; return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`; }
+function parseCSV(text){ let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n'); const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0); if(!lines.length) return []; const rows=[]; let row=[],cur='',inQ=false; const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]}; const s=lines.join('\n'); for(let i=0;i<s.length;i++){ const c=s[i],n=s[i+1]; if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c } else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c } } if(cur!==''||row.length){pushCell();pushRow()} const header=(rows.shift()||[]).map(h=>String(h||'').trim()); return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ]))); }
+async function fetchCsvPrefer(fileId,gid,pubUrl){ try{ const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(res.ok){ return parseCSV(await res.text()); } }catch(e){} if(pubUrl){ const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'}); return parseCSV(await res.text()); } return []; }
+function normalizeMeta(rows){ const m=new Map(); rows.forEach(r=>{ const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase(); const v=(''+(r.Value||r.VALORE||'')).trim(); if(k) m.set(k,v); }); return m; }
+function normalizeOpp(rows){ const out=new Map(); rows.forEach(r=>{ const name=(''+(r.Squadra||r.squadra||'')).trim(); const url=(''+(r.Logo||r.logo||'')).trim(); if(name) out.set(name.toLowerCase(),url); }); return out; }
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function resolveLogoSrc(teamName,oppMap){ const name=(teamName||'').trim(); if(!name) return ''; const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet; return `logos/${slugify(name)}.webp`; }
+function setLogo(imgEl,src,alt){ if(!src){ imgEl.style.visibility='hidden'; return; } imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src; imgEl.onload=()=>{ imgEl.style.visibility='visible'; }; imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; }; }
+function formatWhen(dt){ try{ return dt.toLocaleString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch{ return dt.toString(); } }
 
 /* Venue & Maps */
-function parseCoords(s){
-  if(!s) return null;
-  const m=String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
-  if(!m) return null;
-  const lat=parseFloat(m[1].replace(',','.'));
-  const lon=parseFloat(m[2].replace(',','.'));
-  return (isFinite(lat)&&isFinite(lon))?{lat,lon}:null;
-}
-function isGoodMapsLink(url){
-  try{
-    const u=new URL(url), h=u.hostname.toLowerCase(), p=u.pathname.toLowerCase();
-    if(h==='maps.app.goo.gl') return true;
-    if(h.endsWith('.google.com')&&p.startsWith('/maps')) return true;
-    if(h==='goo.gl'&&p.startsWith('/maps')) return true;
-    return false;
-  }catch{ return false; }
-}
-function normalizeVenues(rows){
-  const out=new Map();
-  rows.forEach(r=>{
-    const name=String(r.Squadra||r.squadra||'').trim();
-    const campo=String(r.Campo||r.campo||r.Venue||r.venue||r.Stadio||'').trim();
-    const coord=String(r.Coordinate||r.coordinate||r.Coords||r.coords||r.GPS||'').trim();
-    const link =String(r.Link||r.link||r.Maps||r.maps||r.URL||r.url||'').trim();
-    if(!name) return;
-    const coords=parseCoords(coord);
-    out.set(name.toLowerCase(),{
-      venue:campo||'',
-      lat:coords?.lat??null, lon:coords?.lon??null,
-      link:isGoodMapsLink(link)?link:''
-    });
-  });
-  return out;
-}
-function buildMapsLink({venue,lat,lon,link}){
-  if(link) return link;
-  if(venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
-  if(lat!=null&&lon!=null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-  return '#';
-}
+function parseCoords(s){ if(!s) return null; const m=String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/); if(!m) return null; const lat=parseFloat(m[1].replace(',','.')); const lon=parseFloat(m[2].replace(',','.')); return (isFinite(lat)&&isFinite(lon))?{lat,lon}:null; }
+function isGoodMapsLink(url){ try{ const u=new URL(url),h=u.hostname.toLowerCase(),p=u.pathname.toLowerCase(); if(h==='maps.app.goo.gl') return true; if(h.endsWith('.google.com')&&p.startsWith('/maps')) return true; if(h==='goo.gl'&&p.startsWith('/maps')) return true; return false; }catch{ return false; } }
+function normalizeVenues(rows){ const out=new Map(); rows.forEach(r=>{ const name=String(r.Squadra||r.squadra||'').trim(); const campo=String(r.Campo||r.campo||r.Venue||r.venue||r.Stadio||'').trim(); const coord=String(r.Coordinate||r.coordinate||r.Coords||r.coords||r.GPS||'').trim(); const link=String(r.Link||r.link||r.Maps||r.maps||r.URL||r.url||'').trim(); if(!name) return; const coords=parseCoords(coord); out.set(name.toLowerCase(),{venue:campo||'', lat:coords?.lat??null, lon:coords?.lon??null, link:isGoodMapsLink(link)?link:''}); }); return out; }
+function buildMapsLink({venue,lat,lon,link}){ if(link) return link; if(venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`; if(lat!=null&&lon!=null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`; return '#'; }
 
-/* Varie */
-function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-function resolveLogoSrc(teamName,oppMap){
-  const name=(teamName||'').trim(); if(!name) return '';
-  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
-  return `logos/${slugify(name)}.webp`;
+/* Scorers helpers */
+function splitScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['marcatori2','scorer2','marcatori_ospiti']){
+  const pick=(keys)=>{ for(const k of keys){ const v=(meta.get(k)||'').toString().trim(); if(v) return v; } return ''; };
+  const s1=pick(k1), s2=pick(k2);
+  const split=s=> s? s.split(/[;,|]\s*|\s{2,}/).map(x=>x.trim()).filter(Boolean) : [];
+  return {list1:split(s1), list2:split(s2)};
 }
-function setLogo(imgEl,src,alt){
-  if(!src){ imgEl.style.visibility='hidden'; return; }
-  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
-  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
-  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
-}
-function formatWhen(dt){
-  try{ return dt.toLocaleString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
-  catch{ return dt.toString(); }
-}
+function esc(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function renderWing(list){ if(!list.length) return ''; return list.map(n=>`<span class="scorer"><span class="ball" aria-hidden="true">⚽</span>${esc(n)}</span>`).join(''); }
 
-/* Score & Scorers */
+/* Score parsing */
 function readScore(meta){
   const raw=(meta.get('finale')||meta.get('risultato')||meta.get('ft')||meta.get('score')||'').toString().trim();
   const m=raw.match(/(\d+)\s*[-:–]\s*(\d+)/);
@@ -312,16 +220,10 @@ function readScore(meta){
   if(a1!==''&&a2!=='') return {s1:+a1, s2:+a2};
   return {s1:null,s2:null};
 }
-function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['marcatori2','scorer2','marcatori_ospiti']){
-  const pick=(keys)=>{ for(const k of keys){ const v=(meta.get(k)||'').toString().trim(); if(v) return v; } return ''; };
-  const s1=pick(k1), s2=pick(k2);
-  const split = s => s ? s.split(/[;,|]\s*|\s{2,}/).map(x=>x.trim()).filter(Boolean) : [];
-  return {list1:split(s1), list2:split(s2)};
-}
 
 /* ====== INIT ====== */
 (async function init(){
-  // FAB socials
+  // socials
   document.getElementById('igFab').addEventListener('click', ()=>{
     const username='asd_petriolese_calcio';
     const web='https://www.instagram.com/asd_petriolese_calcio/';
@@ -330,12 +232,9 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
     if(isMobile){ const start=Date.now(); location.href=scheme; setTimeout(()=>{ if(Date.now()-start<1600) window.open(web,'_blank','noopener'); },700); }
     else{ window.open(web,'_blank','noopener'); }
   }, {passive:true});
-  document.getElementById('waFab').addEventListener('click', ()=>{
-    const url='https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
-    window.open(url,'_blank','noopener');
-  }, {passive:true});
+  document.getElementById('waFab').addEventListener('click', ()=>{ window.open('https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E','_blank','noopener'); }, {passive:true});
 
-  // FAB share -> immagine
+  // share immagine
   const shareBtn=document.getElementById('shareFab');
   shareBtn.addEventListener('click', async()=>{
     try{
@@ -359,7 +258,7 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
     finally{ shareBtn.removeAttribute('aria-busy'); }
   });
 
-  // Sheet
+  // sheet
   const [metaRows, oppRows] = await Promise.all([
     fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
     fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL)
@@ -373,20 +272,20 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
   const dateStr =(meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
   const timeStr =(meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
 
-  // Venue (squadra1) → AVVERSARI, poi Meta
+  // venue
   let venueMeta=(meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
   let venue=''; let lat=null, lon=null; let link='';
   const vRec=venuesM.get((squadra1||'').toLowerCase());
   if(vRec){ venue=vRec.venue||''; lat=vRec.lat; lon=vRec.lon; link=vRec.link||''; }
   if(!venue) venue=venueMeta;
 
-  // Loghi + nomi
+  // nomi/loghi
   document.getElementById('t1').textContent=squadra1||'—';
   document.getElementById('t2').textContent=squadra2||'—';
   setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1,opp), squadra1);
   setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2,opp), squadra2);
 
-  // Score + marcatori
+  // risultato
   const {s1,s2}=readScore(meta);
   const s1El=document.getElementById('s1');
   const s2El=document.getElementById('s2');
@@ -394,54 +293,22 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
     s1El.textContent=s1; s2El.textContent=s2;
     if(s1>s2) document.querySelector('.team-row.top').classList.add('win');
     else if(s2>s1) document.querySelector('.team-row.bottom').classList.add('win');
-  }else{
-    s1El.textContent='—'; s2El.textContent='—';
-  }
+  }else{ s1El.textContent='—'; s2El.textContent='—'; }
 
-  const {list1,list2}=readScorers(meta);
+  // drawers marcatori
+  const {list1,list2}=splitScorers(meta);
+  const w1=document.getElementById('wing1');
+  const w2=document.getElementById('wing2');
+  if(list1.length){ w1.innerHTML=renderWing(list1); w1.hidden=false; }
+  if(list2.length){ w2.innerHTML=renderWing(list2); w2.hidden=false; }
 
-  // inline (max 2) + badge "+N"
-  const sc1i=document.getElementById('sc1i');
-  const sc2i=document.getElementById('sc2i');
-  const drawer=document.getElementById('drawer');
-  const sc1full=document.getElementById('sc1full');
-  const sc2full=document.getElementById('sc2full');
-
-  function inlineText(list){
-    const MAX=2;
-    if(!list.length) return {text:'', more:0};
-    if(list.length<=MAX) return {text:'⚽ '+list.join(' · '), more:0};
-    return {text:'⚽ '+list.slice(0,MAX).join(' · '), more:list.length-MAX};
-  }
-  const c1=inlineText(list1), c2=inlineText(list2);
-
-  if(list1.length){
-    sc1i.innerHTML = c1.text + (c1.more?` <span class="more">· +${c1.more}</span>`:'');
-    sc1i.hidden=false;
-  }
-  if(list2.length){
-    sc2i.innerHTML = c2.text + (c2.more?` <span class="more">+${c2.more} ·</span>`:'');
-    sc2i.hidden=false;
-  }
-
-  // drawer completo (se serve o se si clicca)
-  if(list1.length || list2.length){
-    sc1full.textContent = list1.length ? ('⚽ '+list1.join(' · ')) : '';
-    sc2full.textContent = list2.length ? ('⚽ '+list2.join(' · ')) : '';
-  }
-  function toggleDrawer(){ drawer.hidden = !drawer.hidden; }
-  if((c1.more||c2.more)){
-    sc1i.addEventListener('click', toggleDrawer, {passive:true});
-    sc2i.addEventListener('click', toggleDrawer, {passive:true});
-  }
-
-  // Meta data/ora
+  // meta data/ora
   const dt=(function(dateStr,timeStr){
     const s=String(dateStr||'').trim(), t=String(timeStr||'').trim();
     if(!s) return null;
-    const combined = s.includes(':') ? s : (t ? `${s} ${t}` : s);
-    const m1=combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
-    const m2=combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
+    const c = s.includes(':') ? s : (t ? `${s} ${t}` : s);
+    const m1=c.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
+    const m2=c.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
     let y,M,d,h=15,min=0;
     if(m1){ d=+m1[1]; M=+m1[2]-1; y=+m1[3]; if(m1[4]){h=+m1[4]; min=+m1[5];} }
     else if(m2){ y=+m2[1]; M=+m2[2]-1; d=+m2[3]; if(m2[4]){h=+m2[4]; min=+m2[5];} }
@@ -452,14 +319,11 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
   const metaLine=document.getElementById('metaLine');
   if(dt && !isNaN(+dt)) metaLine.textContent=formatWhen(dt); else metaLine.textContent='';
 
-  // Venue pill
+  // venue pill
   if(venue){
     const box=document.getElementById('venueBox');
     const a=document.getElementById('venueLink');
-    a.textContent=venue;
-    a.href=buildMapsLink({venue,lat,lon,link});
-    a.title=venue;
-    box.hidden=false;
+    a.textContent=venue; a.href=buildMapsLink({venue,lat,lon,link}); a.title=venue; box.hidden=false;
   }
 })();
 </script>
