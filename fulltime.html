@@ -6,141 +6,83 @@
 <title>Full Time – Petriolese Calcio</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
 <style>
-  :root{
-    --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
-    --vs-gap: 1.4cqw; --md-w: 72cqw; --md-splat-bleed: 2.2cqh;
-  }
+  :root{ --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
+         --vs-gap:1.4cqw; --md-w:72cqw; --md-splat-bleed:2.2cqh; }
   html,body{height:100%}
   body{margin:0;background:var(--bg);display:grid;place-items:center;font-family:system-ui,Arial,sans-serif}
 
-  .stage{
-    position:relative; width:min(1200px,96vw); aspect-ratio:9/16; max-height:96vh;
-    overflow:hidden; border-radius:18px; background:#0b0c11; box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;
-  }
+  .stage{ position:relative; width:min(1200px,96vw); aspect-ratio:9/16; max-height:96vh;
+          overflow:hidden; border-radius:18px; background:#0b0c11; box-shadow:0 25px 80px rgba(0,0,0,.6);
+          container-type:size; }
 
-  /* Bg video */
-  #bg-video{
-    position:absolute; inset:0;
-    width:100%; height:100%; object-fit:cover; z-index:0;
-    filter:brightness(.32) contrast(1.05) saturate(1.05);
-    background:#0b0c11;
-  }
+  #bg-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
+             filter:brightness(.32) contrast(1.05) saturate(1.05); background:#0b0c11; }
 
-  /* Overlay */
-  .stadium{
-    position:absolute; inset:0; z-index:1; pointer-events:none;
-    background:
-      radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), rgba(0,0,0,0) 60%),
-      linear-gradient(to bottom, rgba(31,37,49,.66) 0%, rgba(21,25,35,.78) 48%, rgba(6,16,7,.92) 100%);
-  }
+  .stadium{ position:absolute; inset:0; z-index:1; pointer-events:none;
+            background: radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
+                        linear-gradient(to bottom, rgba(31,37,49,.66), rgba(21,25,35,.78) 48%, rgba(6,16,7,.92)); }
   .roof-stripes{ position:absolute; inset:0; z-index:2; pointer-events:none; display:block; }
 
-  .wrap{
-    position:absolute; inset:0; z-index:4;
-    display:grid; grid-template-rows:auto 1fr auto; align-items:center; justify-items:center;
-    padding: 4cqh 3cqw;
-  }
+  .wrap{ position:absolute; inset:0; z-index:4; display:grid; grid-template-rows:auto 1fr auto; align-items:center; justify-items:center; padding:4cqh 3cqw; }
 
-  /* Titolo */
-  .title-badge{
-    position:relative; width: var(--md-w); aspect-ratio: 5.5/1;
-    display:grid; place-items:center; overflow:visible; pointer-events:none;
-  }
-  .title-badge::before{
-    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
-    width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
-    background: url('md-splat.webp') center / contain no-repeat;
-    z-index:-1; filter: drop-shadow(0 16px 40px rgba(0,0,0,.35));
-  }
-  .title{
-    color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw;
-    font-size: clamp(18px, 3.8cqw, 34px); text-align:center;
-  }
+  .title-badge{ position:relative; width:var(--md-w); aspect-ratio:5.5/1; display:grid; place-items:center; overflow:visible; pointer-events:none; }
+  .title-badge::before{ content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+                        width:100%; height:calc(100% + var(--md-splat-bleed)*2);
+                        background:url('md-splat.webp') center/contain no-repeat;
+                        filter:drop-shadow(0 16px 40px rgba(0,0,0,.35)); z-index:-1; }
+  .title{ color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw; font-size:clamp(18px,3.8cqw,34px); text-align:center; }
 
-  /* Blocchi squadre + punteggio */
-  .vs-block{
-    margin-top: 2cqh;
-    display:grid; grid-auto-rows:min-content; row-gap:1.2cqh; width:100%;
-  }
-  .team-row{
-    display:flex; align-items:center; gap: var(--vs-gap);
-    color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.18cqw;
-    font-size: clamp(18px, 2.8cqw, 28px);
-  }
-  .team-row .team-logo{ height: 8.6cqh; width:auto; object-fit:contain; display:block; }
-  .team-row.top{ justify-self:start; margin-left: 6cqw; }
-  .team-row.bottom{ justify-self:end; margin-right: 6cqw; }
-  .team-row.win{ filter: drop-shadow(0 6px 16px rgba(0,0,0,.35)); transform: translateZ(0); }
+  .vs-block{ margin-top:2cqh; display:grid; grid-auto-rows:min-content; row-gap:1.2cqh; width:100%; }
+  .team-row{ display:flex; align-items:center; gap:var(--vs-gap); color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.18cqw; font-size:clamp(18px,2.8cqw,28px); }
+  .team-row .team-logo{ height:8.6cqh; width:auto; object-fit:contain; display:block; }
+  .team-row.top{ justify-self:start; margin-left:6cqw; }
+  .team-row.bottom{ justify-self:end; margin-right:6cqw; }
+  .team-row.win{ filter:drop-shadow(0 6px 16px rgba(0,0,0,.35)); }
 
-  .center{
-    justify-self:center; display:grid; place-items:center; text-align:center;
+  /* ===== SCORE INLINE CON MARCATORI AI LATI ===== */
+  .scoreline{
+    margin-top:.4cqh;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto auto minmax(0,1fr); /* SC1 | s1 | – | s2 | SC2 */
+    align-items:center;
+    gap:clamp(8px,1.8cqw,14px);
     color:#fff;
   }
-  .ft-label{
-    font-weight:900; text-transform:uppercase; letter-spacing:.28cqw;
-    font-size: clamp(14px, 2.2cqw, 18px); opacity:.95;
-  }
-  .score{
-    margin-top:.6cqh;
-    font-weight:900; letter-spacing:.18cqw; line-height:1;
-    font-size: clamp(42px, 10cqw, 96px);
-    filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
-  }
+  .score-num{ font-weight:900; letter-spacing:.18cqw; line-height:1; font-size:clamp(42px,10cqw,96px);
+              filter:drop-shadow(0 8px 18px rgba(0,0,0,.35)); }
+  .dash{ font-weight:900; font-size:clamp(24px,5cqw,48px); opacity:.9; }
+  .scorers-inline{ color:#cfd3dc; font-weight:600; letter-spacing:.02cqw; font-size:clamp(12px,2.1cqw,16px); line-height:1.35; }
+  .scorers-inline.left{ text-align:right; }
+  .scorers-inline.right{ text-align:left; }
 
-  .scorers{
-    margin-top:.6cqh; color:#cfd3dc; font-weight:600; letter-spacing:.04cqw;
-    font-size: clamp(12px, 2.1cqw, 16px); line-height:1.35; max-width: 72cqw;
-  }
-  .scorers.left { justify-self:start; margin-left: 6cqw; }
-  .scorers.right{ justify-self:end;   margin-right: 6cqw; text-align:right; }
+  /* Collassa le colonne quando mancano marcatori */
+  .scoreline.no-scorers{ grid-template-columns:auto auto auto; }
+  .scoreline.only-left{ grid-template-columns:minmax(0,1fr) auto auto auto; }
+  .scoreline.only-right{ grid-template-columns:auto auto auto minmax(0,1fr); }
 
-  .meta{
-    margin-top: 1.2cqh; color:#cfd3dc; text-align:center; opacity:.95;
-    font-size: clamp(13px, 2.1cqw, 16px); letter-spacing:.06cqw;
-  }
+  .meta{ margin-top:1.0cqh; color:#cfd3dc; text-align:center; opacity:.95; font-size:clamp(13px,2.1cqw,16px); letter-spacing:.06cqw; }
 
-  /* Venue pill (una riga) */
-  .venue{
-    margin-top: 1.0cqh;
-    display: inline-flex; align-items:center; gap:.6cqw;
-    padding:.7cqh 1.2cqw; border-radius:999px;
-    background: rgba(255,255,255,.08);
-    box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
-    white-space:nowrap; max-width:92cqw; overflow:hidden;
-  }
-  .venue .pin{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); flex:0 0 auto; }
-  .venue a{
-    color:#e6ebf2; text-decoration:none; font-weight:700;
-    letter-spacing:.04cqw; font-size:clamp(13px,2.2cqw,16px);
-    display:inline-block; overflow:hidden; text-overflow:ellipsis;
-    max-width: calc(92cqw - 4cqw);
-  }
+  .venue{ margin-top:1.0cqh; display:inline-flex; align-items:center; gap:.6cqw; padding:.7cqh 1.2cqw; border-radius:999px;
+          background:rgba(255,255,255,.08); box-shadow:0 0 0 1px rgba(255,255,255,.06) inset; white-space:nowrap; max-width:92cqw; overflow:hidden; }
+  .venue .pin{ filter:drop-shadow(0 1px 0 rgba(0,0,0,.25)); flex:0 0 auto; }
+  .venue a{ color:#e6ebf2; text-decoration:none; font-weight:700; letter-spacing:.04cqw; font-size:clamp(13px,2.2cqw,16px);
+            display:inline-block; overflow:hidden; text-overflow:ellipsis; max-width:calc(92cqw - 4cqw); }
   .venue a:hover{ text-decoration:underline; }
 
-  /* FAB share */
-  .fab{
-    --fab-size: clamp(36px, 10cqw, 48px);
-    --fab-edge: clamp(10px, 2cqw, 16px);
-    --fab-radius: 12px;
-    position:absolute; top:var(--fab-edge); left:var(--fab-edge);
-    width:var(--fab-size); height:var(--fab-size); display:grid; place-items:center;
-    border: 1px solid rgba(0,0,0,.08); border-radius: var(--fab-radius);
-    background:#fff; color:#111;
-    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
-    cursor:pointer; z-index:10;
-    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease;
-  }
-  .fab:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
-  .fab:active{ transform: translateY(0); background:#eceef2; }
-  .fab:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab{ --fab-size:clamp(36px,10cqw,48px); --fab-edge:clamp(10px,2cqw,16px); --fab-radius:12px;
+        position:absolute; top:var(--fab-edge); left:var(--fab-edge); width:var(--fab-size); height:var(--fab-size); display:grid; place-items:center;
+        border:1px solid rgba(0,0,0,.08); border-radius:var(--fab-radius); background:#fff; color:#111;
+        box-shadow:0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16); cursor:pointer; z-index:10;
+        transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease; }
+  .fab:hover{ transform:translateY(-1px); background:#f5f6f8; box-shadow:0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab:active{ transform:translateY(0); background:#eceef2; }
+  .fab:focus-visible{ outline:3px solid rgba(66,133,244,.55); outline-offset:2px; }
   .fab[aria-busy="true"]{ pointer-events:none; opacity:.7 }
-  .fab svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); }
+  .fab svg{ width:calc(var(--fab-size)*.56); height:calc(var(--fab-size)*.56); }
 </style>
 </head>
 <body>
   <div class="stage">
-    <!-- 🎥 Video di sfondo (riusa lo stesso del countdown o metti un file post) -->
     <video id="bg-video" autoplay muted loop playsinline preload="metadata">
       <source src="video_2025-09-02_23-14-49.mp4" type="video/mp4">
     </video>
@@ -162,33 +104,28 @@
       <div class="title-badge"><div class="title">Full Time</div></div>
 
       <div class="vs-block">
-        <!-- Squadra 1 -->
         <div class="team-row top">
           <img id="logo1" class="team-logo" alt="" />
           <span id="t1">—</span>
         </div>
 
-        <!-- Centro: etichetta + punteggio -->
-        <div class="center">
-          <div class="ft-label">Full Time</div>
-          <div class="score" id="scoreLine">—</div>
+        <!-- SCORE + MARCATORI AI LATI -->
+        <div class="scoreline" id="scoreline">
+          <div class="scorers-inline left" id="sc1i" hidden>—</div>
+          <div class="score-num" id="s1">0</div>
+          <div class="dash">–</div>
+          <div class="score-num" id="s2">0</div>
+          <div class="scorers-inline right" id="sc2i" hidden>—</div>
         </div>
 
-        <!-- Squadra 2 -->
         <div class="team-row bottom">
           <span id="t2">—</span>
           <img id="logo2" class="team-logo" alt="" />
         </div>
       </div>
 
-      <!-- Marcatori -->
-      <div class="scorers left"  id="sc1" hidden>—</div>
-      <div class="scorers right" id="sc2" hidden>—</div>
-
-      <!-- Meta data/ora -->
       <div class="meta" id="metaLine">—</div>
 
-      <!-- Venue pill -->
       <div class="venue" id="venueBox" hidden>
         <span class="pin" aria-hidden="true">📍</span>
         <a id="venueLink" target="_blank" rel="noopener">Campo</a>
@@ -258,93 +195,86 @@ function normalizeOpp(rows){
   return out;
 }
 
-/* Venue & Maps helpers (come countdown) */
+/* Venue & Maps (come countdown) */
 function parseCoords(s){
   if(!s) return null;
-  const m = String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
+  const m=String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
   if(!m) return null;
-  const lat = parseFloat(m[1].replace(',', '.'));
-  const lon = parseFloat(m[2].replace(',', '.'));
-  return (isFinite(lat) && isFinite(lon)) ? {lat, lon} : null;
+  const lat=parseFloat(m[1].replace(',','.'));
+  const lon=parseFloat(m[2].replace(',','.'));
+  return (isFinite(lat)&&isFinite(lon))?{lat,lon}:null;
 }
 function isGoodMapsLink(url){
   try{
-    const u = new URL(url);
-    const h = u.hostname.toLowerCase();
-    const p = u.pathname.toLowerCase();
-    if (h === 'maps.app.goo.gl') return true;
-    if (h.endsWith('.google.com') && p.startsWith('/maps')) return true;
-    if (h === 'goo.gl' && p.startsWith('/maps')) return true;
+    const u=new URL(url), h=u.hostname.toLowerCase(), p=u.pathname.toLowerCase();
+    if(h==='maps.app.goo.gl') return true;
+    if(h.endsWith('.google.com')&&p.startsWith('/maps')) return true;
+    if(h==='goo.gl'&&p.startsWith('/maps')) return true;
     return false;
   }catch{ return false; }
 }
 function normalizeVenues(rows){
-  const out = new Map();
+  const out=new Map();
   rows.forEach(r=>{
-    const name  = String(r.Squadra || r.squadra || '').trim();
-    const campo = String(r.Campo   || r.campo   || r.Venue || r.venue || r.Stadio || '').trim();
-    const coord = String(r.Coordinate || r.coordinate || r.Coords || r.coords || r.GPS || '').trim();
-    const link  = String(r.Link || r.link || r.Maps || r.maps || r.URL || r.url || '').trim();
+    const name=String(r.Squadra||r.squadra||'').trim();
+    const campo=String(r.Campo||r.campo||r.Venue||r.venue||r.Stadio||'').trim();
+    const coord=String(r.Coordinate||r.coordinate||r.Coords||r.coords||r.GPS||'').trim();
+    const link =String(r.Link||r.link||r.Maps||r.maps||r.URL||r.url||'').trim();
     if(!name) return;
-    const coords = parseCoords(coord);
-    out.set(name.toLowerCase(), {
-      venue: campo || '',
-      lat: coords?.lat ?? null,
-      lon: coords?.lon ?? null,
-      link: isGoodMapsLink(link) ? link : ''
+    const coords=parseCoords(coord);
+    out.set(name.toLowerCase(),{
+      venue:campo||'',
+      lat:coords?.lat??null, lon:coords?.lon??null,
+      link:isGoodMapsLink(link)?link:''
     });
   });
   return out;
 }
-function buildMapsLink({venue, lat, lon, link}) {
-  if (link) return link;
-  if (venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
-  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+function buildMapsLink({venue,lat,lon,link}){
+  if(link) return link;
+  if(venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
+  if(lat!=null&&lon!=null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
   return '#';
 }
 
 /* Varie */
 function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-function resolveLogoSrc(teamName, oppMap){
+function resolveLogoSrc(teamName,oppMap){
   const name=(teamName||'').trim(); if(!name) return '';
   const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
   return `logos/${slugify(name)}.webp`;
 }
-function setLogo(imgEl, src, alt){
+function setLogo(imgEl,src,alt){
   if(!src){ imgEl.style.visibility='hidden'; return; }
   imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
   imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
   imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
 }
 function formatWhen(dt){
-  try{
-    return dt.toLocaleString('it-IT', { weekday:'long', day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
-  }catch{ return dt.toString(); }
+  try{ return dt.toLocaleString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch{ return dt.toString(); }
 }
 
-/* Score & scorers parsing */
+/* Score & scorers */
 function readScore(meta){
-  const raw = (meta.get('finale')||meta.get('risultato')||meta.get('ft')||meta.get('score')||'').toString().trim();
-  const m = raw.match(/(\d+)\s*[-:–]\s*(\d+)/);
-  if (m) return {s1:+m[1], s2:+m[2]};
-  const a1 = (meta.get('gol1')||meta.get('score1')||'').toString().trim();
-  const a2 = (meta.get('gol2')||meta.get('score2')||'').toString().trim();
-  if (a1!=='' && a2!=='') return {s1:+a1, s2:+a2};
-  return {s1:null, s2:null};
+  const raw=(meta.get('finale')||meta.get('risultato')||meta.get('ft')||meta.get('score')||'').toString().trim();
+  const m=raw.match(/(\d+)\s*[-:–]\s*(\d+)/);
+  if(m) return {s1:+m[1], s2:+m[2]};
+  const a1=(meta.get('gol1')||meta.get('score1')||'').toString().trim();
+  const a2=(meta.get('gol2')||meta.get('score2')||'').toString().trim();
+  if(a1!==''&&a2!=='') return {s1:+a1, s2:+a2};
+  return {s1:null,s2:null};
 }
-function readScorers(meta, key1List=['marcatori1','scorer1','marcatori_casa'], key2List=['marcatori2','scorer2','marcatori_ospiti']){
-  const get = (keys)=> {
-    for (const k of keys){ const v = (meta.get(k)||'').toString().trim(); if(v) return v; }
-    return '';
-  };
-  const s1 = get(key1List), s2 = get(key2List);
+function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['marcatori2','scorer2','marcatori_ospiti']){
+  const pick=(keys)=>{ for(const k of keys){ const v=(meta.get(k)||'').toString().trim(); if(v) return v; } return ''; };
+  const s1=pick(k1), s2=pick(k2);
   const split = s => s ? s.split(/[;,|]\s*|\s{2,}/).map(x=>x.trim()).filter(Boolean) : [];
-  return { list1: split(s1), list2: split(s2) };
+  return {list1:split(s1), list2:split(s2)};
 }
 
 /* ====== INIT ====== */
 (async function init(){
-  // Share immagine
+  // Share
   const shareBtn=document.getElementById('shareFab');
   shareBtn.addEventListener('click', async()=>{
     try{
@@ -368,85 +298,86 @@ function readScorers(meta, key1List=['marcatori1','scorer1','marcatori_casa'], k
     finally{ shareBtn.removeAttribute('aria-busy'); }
   });
 
-  // Dati dallo Sheet
+  // Sheet
   const [metaRows, oppRows] = await Promise.all([
     fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
     fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL)
   ]);
-  const meta     = normalizeMeta(metaRows);
-  const opp      = normalizeOpp(oppRows);
-  const venuesM  = normalizeVenues(oppRows);
+  const meta=normalizeMeta(metaRows);
+  const opp=normalizeOpp(oppRows);
+  const venuesM=normalizeVenues(oppRows);
 
-  // Meta base
-  const squadra1 = (meta.get('squadra1')||'Petriolese').toString().trim() || 'Petriolese';
-  const squadra2 = (meta.get('squadra2')||'').toString().trim();
-  const dateStr  = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
-  const timeStr  = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
+  const squadra1=(meta.get('squadra1')||'Petriolese').toString().trim()||'Petriolese';
+  const squadra2=(meta.get('squadra2')||'').toString().trim();
+  const dateStr =(meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
+  const timeStr =(meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
 
-  // Venue (squadra1) -> AVVERSARI, poi fallback Meta
-  let venueMeta = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
-  let venue = ''; let lat = null, lon = null; let link = '';
-  const vRec = venuesM.get((squadra1||'').toLowerCase());
-  if (vRec) { venue = vRec.venue || ''; lat = vRec.lat; lon = vRec.lon; link = vRec.link || ''; }
-  if (!venue) venue = venueMeta;
+  // Venue (squadra1) → AVVERSARI, poi Meta
+  let venueMeta=(meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
+  let venue=''; let lat=null, lon=null; let link='';
+  const vRec=venuesM.get((squadra1||'').toLowerCase());
+  if(vRec){ venue=vRec.venue||''; lat=vRec.lat; lon=vRec.lon; link=vRec.link||''; }
+  if(!venue) venue=venueMeta;
 
   // Loghi + nomi
-  document.getElementById('t1').textContent = squadra1 || '—';
-  document.getElementById('t2').textContent = squadra2 || '—';
-  setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
-  setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
+  document.getElementById('t1').textContent=squadra1||'—';
+  document.getElementById('t2').textContent=squadra2||'—';
+  setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1,opp), squadra1);
+  setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2,opp), squadra2);
 
-  // Score + scorers
-  const {s1, s2} = readScore(meta);
-  const scoreEl = document.getElementById('scoreLine');
-  if (s1!=null && s2!=null){
-    scoreEl.textContent = `${s1} – ${s2}`;
-    // evidenzia vincitore
-    if (s1 > s2) document.querySelector('.team-row.top').classList.add('win');
-    else if (s2 > s1) document.querySelector('.team-row.bottom').classList.add('win');
-  } else {
-    scoreEl.textContent = '—';
+  // Score + marcatori inline
+  const {s1,s2}=readScore(meta);
+  const scoreline=document.getElementById('scoreline');
+  const s1El=document.getElementById('s1');
+  const s2El=document.getElementById('s2');
+  if(s1!=null && s2!=null){
+    s1El.textContent=s1; s2El.textContent=s2;
+    if(s1>s2) document.querySelector('.team-row.top').classList.add('win');
+    else if(s2>s1) document.querySelector('.team-row.bottom').classList.add('win');
+  }else{
+    s1El.textContent='—'; s2El.textContent='—';
   }
 
-  const {list1, list2} = readScorers(meta);
-  const sc1 = document.getElementById('sc1');
-  const sc2 = document.getElementById('sc2');
-  if (list1.length){ sc1.textContent = '⚽ ' + list1.join(' · '); sc1.hidden = false; }
-  if (list2.length){ sc2.textContent = '⚽ ' + list2.join(' · '); sc2.hidden = false; }
+  const {list1,list2}=readScorers(meta);
+  const sc1i=document.getElementById('sc1i');
+  const sc2i=document.getElementById('sc2i');
+  let hasL=false, hasR=false;
+  if(list1.length){ sc1i.textContent='⚽ ' + list1.join(' · '); sc1i.hidden=false; hasL=true; }
+  if(list2.length){ sc2i.textContent='⚽ ' + list2.join(' · '); sc2i.hidden=false; hasR=true; }
+  if(!hasL && !hasR) scoreline.classList.add('no-scorers');
+  else if(hasL && !hasR) scoreline.classList.add('only-left');
+  else if(!hasL && hasR) scoreline.classList.add('only-right');
 
-  // Meta linea (data/ora)
-  const dt = (function parseDateTimeIT(dateStr, timeStr){
-    const s = String(dateStr||'').trim();
-    const t = String(timeStr||'').trim();
+  // Meta data/ora
+  const dt=(function(dateStr,timeStr){
+    const s=String(dateStr||'').trim(), t=String(timeStr||'').trim();
     if(!s) return null;
     const combined = s.includes(':') ? s : (t ? `${s} ${t}` : s);
-    const m1 = combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
-    const m2 = combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
+    const m1=combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
+    const m2=combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
     let y,M,d,h=15,min=0;
     if(m1){ d=+m1[1]; M=+m1[2]-1; y=+m1[3]; if(m1[4]){h=+m1[4]; min=+m1[5];} }
     else if(m2){ y=+m2[1]; M=+m2[2]-1; d=+m2[3]; if(m2[4]){h=+m2[4]; min=+m2[5];} }
     else return new Date(s);
     return new Date(y,M,d,h,min,0,0);
-  })(dateStr, timeStr);
+  })(dateStr,timeStr);
 
-  const metaLine = document.getElementById('metaLine');
-  if (dt && !isNaN(+dt)) metaLine.textContent = formatWhen(dt);
-  else metaLine.textContent = '';
+  const metaLine=document.getElementById('metaLine');
+  if(dt && !isNaN(+dt)) metaLine.textContent=formatWhen(dt); else metaLine.textContent='';
 
   // Venue pill
-  if (venue) {
-    const box = document.getElementById('venueBox');
-    const a   = document.getElementById('venueLink');
-    a.textContent = venue;
-    a.href = buildMapsLink({venue, lat, lon, link});
-    a.title = venue;
-    box.hidden = false;
+  if(venue){
+    const box=document.getElementById('venueBox');
+    const a=document.getElementById('venueLink');
+    a.textContent=venue;
+    a.href=buildMapsLink({venue,lat,lon,link});
+    a.title=venue;
+    box.hidden=false;
   }
 })();
 </script>
 
 <!-- html2canvas -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-
 </body>
 </html>
