@@ -103,6 +103,7 @@
   .badge{
     position:absolute; left:50%; top: calc(100% - var(--badge-overlap));
     transform: translateX(-50%);
+    text-transform: uppercase;
     display:flex; align-items:center; justify-content:center;
     width: var(--badge-w); aspect-ratio: 5.5/1;
     font-size: var(--badge-font); font-weight: 900;
@@ -576,7 +577,7 @@ function normalizeDist(rows){
   });
   return map;
 }
-const SURNAME=full=>{const t=String(full||'').trim(); if(!t) return ''; const p=t.split(/\s+/); return p[p.length-1].toUpperCase();};
+const DISPLAY_NAME = full => String(full || '').trim();
 function normalizeMeta(rows){
   const out=new Map();
   rows.forEach(r=>{
@@ -649,7 +650,7 @@ function playerNode(obj,x,y){
   if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
   else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
   div.appendChild(img);
-  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${SURNAME(obj.name)}`;
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${DISPLAY_NAME(obj.name)}`;
   div.appendChild(badge);
   return div;
 }
@@ -674,7 +675,7 @@ function render(byNum, modulo="3412"){
     });
   }
 
-  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${SURNAME(p.name)}`;}).join('  ');
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${DISPLAY_NAME(p.name)}`;}).join('  ');
   document.getElementById('subsList').textContent=subs;
 }
 
