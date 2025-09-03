@@ -214,13 +214,12 @@
   }
   .fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab-ig:active{ transform: translateY(0); background:#eceef2; }
-  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset:  2px; }
   .fab-ig svg{
     width: calc(var(--fab-size) * .56);
     height: calc(var(--fab-size) * .56);
     fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
-  /* (freccetta rimossa) */
 
   /* ===== FAB WhatsApp ===== */
   .fab-wa{
@@ -318,12 +317,12 @@
     }
   }
 
-  /* ===== Giocatori e badge più piccoli su mobile ===== */
+  /* ===== Giocatori e badge più piccoli su mobile (nuovo) ===== */
   @container (max-width: 520px){
     :root{
-      --photo-h: 14cqh;                 /* prima 20cqh */
-      --badge-w: 12cqh;                 /* proporzione badge */
-      --badge-font: min(1.5cqh, 2cqw);  /* testo badge */
+      --photo-h: 14cqh;
+      --badge-w: 12cqh;
+      --badge-font: min(1.5cqh, 2cqw);
     }
   }
 </style>
@@ -430,6 +429,10 @@
     </button>
   </div>
 
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+
+<!-- Handlers + Campo + Render -->
 <script>
 /* ====== DISEGNO CAMPO ====== */
 const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
@@ -714,10 +717,7 @@ function render(byNum, modulo="3412"){
 })();
 </script>
 
-<!-- html2canvas -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-
-<!-- Handlers FAB -->
+<!-- Share / Download -->
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
   const fab = document.getElementById('shareFab');
