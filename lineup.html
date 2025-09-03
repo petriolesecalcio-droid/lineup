@@ -304,7 +304,14 @@
       padding: 0 1cqw;
     }
   }
-
+  /* Foto giocatori più piccole su mobile */
+@container (max-width: 520px){
+  :root{
+    --photo-h: 14cqh;   /* invece di 20cqh */
+    --badge-w: 12cqh;   /* badge proporzionati */
+    --badge-font: min(1.5cqh, 2cqw);
+  }
+}
   /* Fallback senza container queries */
   @supports not (width: 1cqw){
     @media (max-width: 520px){
