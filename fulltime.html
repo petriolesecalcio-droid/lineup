@@ -7,7 +7,8 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
 <style>
   :root{ --bg:#0b0c11; --roof-dark:#151923; --roof-mid:#1f2531; --roof-glow:rgba(255,255,255,.08);
-         --vs-gap:1.4cqw; --md-w:72cqw; --md-splat-bleed:2.2cqh; }
+         --vs-gap:1.4cqw; --md-w:72cqw; --md-splat-bleed:2.2cqh;
+         --fab-stack-gap: clamp(8px, 1.6cqw, 12px); }
   html,body{height:100%}
   body{margin:0;background:var(--bg);display:grid;place-items:center;font-family:system-ui,Arial,sans-serif}
 
@@ -39,26 +40,36 @@
   .team-row.bottom{ justify-self:end; margin-right:6cqw; }
   .team-row.win{ filter:drop-shadow(0 6px 16px rgba(0,0,0,.35)); }
 
-  /* ===== SCORE INLINE CON MARCATORI AI LATI ===== */
+  /* ===== SCORE INLINE + COLLASSO ===== */
   .scoreline{
     margin-top:.4cqh;
     display:grid;
     grid-template-columns:minmax(0,1fr) auto auto auto minmax(0,1fr); /* SC1 | s1 | – | s2 | SC2 */
-    align-items:center;
-    gap:clamp(8px,1.8cqw,14px);
-    color:#fff;
+    align-items:center; gap:clamp(8px,1.8cqw,14px); color:#fff;
   }
   .score-num{ font-weight:900; letter-spacing:.18cqw; line-height:1; font-size:clamp(42px,10cqw,96px);
               filter:drop-shadow(0 8px 18px rgba(0,0,0,.35)); }
   .dash{ font-weight:900; font-size:clamp(24px,5cqw,48px); opacity:.9; }
-  .scorers-inline{ color:#cfd3dc; font-weight:600; letter-spacing:.02cqw; font-size:clamp(12px,2.1cqw,16px); line-height:1.35; }
+  .scorers-inline{
+    color:#cfd3dc; font-weight:600; letter-spacing:.02cqw; font-size:clamp(12px,2.1cqw,16px); line-height:1.35;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+    max-width: clamp(120px, 28cqw, 360px);
+  }
   .scorers-inline.left{ text-align:right; }
   .scorers-inline.right{ text-align:left; }
+  .scorers-inline .more{ opacity:.85; font-weight:700; }
 
-  /* Collassa le colonne quando mancano marcatori */
-  .scoreline.no-scorers{ grid-template-columns:auto auto auto; }
-  .scoreline.only-left{ grid-template-columns:minmax(0,1fr) auto auto auto; }
-  .scoreline.only-right{ grid-template-columns:auto auto auto minmax(0,1fr); }
+  /* Drawer completo */
+  .scorers-drawer{
+    margin-top:.8cqh; padding:.9cqh 1.2cqw;
+    background:rgba(255,255,255,.08); border-radius:14px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
+    display:grid; grid-template-columns:1fr 1fr; gap:1.4cqw; align-items:start;
+    color:#e6ebf2; font-weight:600; font-size:clamp(12px,2.1cqw,16px); line-height:1.35;
+  }
+  .scorers-drawer .col.left{ text-align:right; }
+  .scorers-drawer .col.right{ text-align:left; }
+  .scorers-drawer[hidden]{ display:none; }
 
   .meta{ margin-top:1.0cqh; color:#cfd3dc; text-align:center; opacity:.95; font-size:clamp(13px,2.1cqw,16px); letter-spacing:.06cqw; }
 
@@ -69,16 +80,32 @@
             display:inline-block; overflow:hidden; text-overflow:ellipsis; max-width:calc(92cqw - 4cqw); }
   .venue a:hover{ text-decoration:underline; }
 
-  .fab{ --fab-size:clamp(36px,10cqw,48px); --fab-edge:clamp(10px,2cqw,16px); --fab-radius:12px;
-        position:absolute; top:var(--fab-edge); left:var(--fab-edge); width:var(--fab-size); height:var(--fab-size); display:grid; place-items:center;
-        border:1px solid rgba(0,0,0,.08); border-radius:var(--fab-radius); background:#fff; color:#111;
-        box-shadow:0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16); cursor:pointer; z-index:10;
-        transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease; }
+  /* FABs (share, IG, WA) */
+  .fab{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+    position:absolute; top:var(--fab-edge); left:var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size); display:grid; place-items:center;
+    border:1px solid rgba(0,0,0,.08); border-radius:var(--fab-radius);
+    background:#fff; color:#111;
+    box-shadow:0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+    transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
   .fab:hover{ transform:translateY(-1px); background:#f5f6f8; box-shadow:0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
   .fab:active{ transform:translateY(0); background:#eceef2; }
   .fab:focus-visible{ outline:3px solid rgba(66,133,244,.55); outline-offset:2px; }
   .fab[aria-busy="true"]{ pointer-events:none; opacity:.7 }
   .fab svg{ width:calc(var(--fab-size)*.56); height:calc(var(--fab-size)*.56); }
+
+  .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
+  .fab-wa{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
+
+  @container (max-width: 520px){
+    .fab{ --fab-size: clamp(24px, 7cqw, 34px); --fab-edge: clamp(8px, 1.6cqw, 12px); --fab-radius: 10px; }
+    .fab svg{ width: calc(var(--fab-size) * .50); height: calc(var(--fab-size) * .50); }
+  }
 </style>
 </head>
 <body>
@@ -100,7 +127,6 @@
     </svg>
 
     <div class="wrap">
-      <!-- Titolo -->
       <div class="title-badge"><div class="title">Full Time</div></div>
 
       <div class="vs-block">
@@ -109,13 +135,19 @@
           <span id="t1">—</span>
         </div>
 
-        <!-- SCORE + MARCATORI AI LATI -->
+        <!-- SCORE + MARCATORI AI LATI (collassabili) -->
         <div class="scoreline" id="scoreline">
-          <div class="scorers-inline left" id="sc1i" hidden>—</div>
+          <div class="scorers-inline left" id="sc1i" hidden></div>
           <div class="score-num" id="s1">0</div>
           <div class="dash">–</div>
           <div class="score-num" id="s2">0</div>
-          <div class="scorers-inline right" id="sc2i" hidden>—</div>
+          <div class="scorers-inline right" id="sc2i" hidden></div>
+        </div>
+
+        <!-- Drawer con elenco completo -->
+        <div class="scorers-drawer" id="drawer" hidden>
+          <div class="col left" id="sc1full"></div>
+          <div class="col right" id="sc2full"></div>
         </div>
 
         <div class="team-row bottom">
@@ -132,10 +164,25 @@
       </div>
     </div>
 
-    <!-- Share -->
-    <button id="shareFab" class="fab" title="Condividi" aria-label="Condividi">
+    <!-- FABs -->
+    <button id="shareFab" class="fab fab-share" title="Condividi" aria-label="Condividi">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
+      </svg>
+    </button>
+
+    <button id="igFab" class="fab fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <circle cx="17.5" cy="6.5" r="1.2"></circle>
+      </svg>
+    </button>
+
+    <button id="waFab" class="fab fab-wa" title="Apri canale WhatsApp" aria-label="Apri canale WhatsApp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M20.5 11.9c0 4.73-3.86 8.56-8.62 8.56a8.6 8.6 0 0 1-4.46-1.26L3.5 20.5l1.37-3.8a8.52 8.52 0 0 1-1.0-3.8C3.87 8.18 7.73 4.35 12.49 4.35c4.76 0 8.02 3.83 8.02 7.55Z"/>
+        <path d="M9.3 8.9c-.24.12-.8.59-.8 1.39 0 .8.5 1.58.57 1.68.09.12 1.57 2.52 4.02 3.48 2.46.96 2.46.64 2.91.62.45-.02 1.44-.59 1.64-1.16.2-.57.2-1.07.14-1.18-.06-.11-.22-.17-.47-.3-.25-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.25-.12-1.05-.39-2.0-1.24-.74-.64-1.23-1.43-1.38-1.67-.14-.24-.01-.37.11-.49.11-.11.25-.3.37-.45.12-.16.16-.24.24-.41.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.77-.2-.46-.4-.39-.54-.39-.14 0-.3 0-.54.12Z"/>
       </svg>
     </button>
   </div>
@@ -148,7 +195,7 @@ const OPP_GID='1284472120';
 const PUBLISHED_META_URL='';
 const PUBLISHED_OPP_URL='';
 
-/* ====== HELPERS ====== */
+/* ====== HELPERS (csv + mappe + utility) ====== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
@@ -195,7 +242,7 @@ function normalizeOpp(rows){
   return out;
 }
 
-/* Venue & Maps (come countdown) */
+/* Venue & Maps */
 function parseCoords(s){
   if(!s) return null;
   const m=String(s).trim().match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
@@ -255,7 +302,7 @@ function formatWhen(dt){
   catch{ return dt.toString(); }
 }
 
-/* Score & scorers */
+/* Score & Scorers */
 function readScore(meta){
   const raw=(meta.get('finale')||meta.get('risultato')||meta.get('ft')||meta.get('score')||'').toString().trim();
   const m=raw.match(/(\d+)\s*[-:–]\s*(\d+)/);
@@ -274,7 +321,21 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
 
 /* ====== INIT ====== */
 (async function init(){
-  // Share
+  // FAB socials
+  document.getElementById('igFab').addEventListener('click', ()=>{
+    const username='asd_petriolese_calcio';
+    const web='https://www.instagram.com/asd_petriolese_calcio/';
+    const scheme=`instagram://user?username=${username}`;
+    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(isMobile){ const start=Date.now(); location.href=scheme; setTimeout(()=>{ if(Date.now()-start<1600) window.open(web,'_blank','noopener'); },700); }
+    else{ window.open(web,'_blank','noopener'); }
+  }, {passive:true});
+  document.getElementById('waFab').addEventListener('click', ()=>{
+    const url='https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
+    window.open(url,'_blank','noopener');
+  }, {passive:true});
+
+  // FAB share -> immagine
   const shareBtn=document.getElementById('shareFab');
   shareBtn.addEventListener('click', async()=>{
     try{
@@ -325,9 +386,8 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
   setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1,opp), squadra1);
   setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2,opp), squadra2);
 
-  // Score + marcatori inline
+  // Score + marcatori
   const {s1,s2}=readScore(meta);
-  const scoreline=document.getElementById('scoreline');
   const s1El=document.getElementById('s1');
   const s2El=document.getElementById('s2');
   if(s1!=null && s2!=null){
@@ -339,14 +399,41 @@ function readScorers(meta, k1=['marcatori1','scorer1','marcatori_casa'], k2=['ma
   }
 
   const {list1,list2}=readScorers(meta);
+
+  // inline (max 2) + badge "+N"
   const sc1i=document.getElementById('sc1i');
   const sc2i=document.getElementById('sc2i');
-  let hasL=false, hasR=false;
-  if(list1.length){ sc1i.textContent='⚽ ' + list1.join(' · '); sc1i.hidden=false; hasL=true; }
-  if(list2.length){ sc2i.textContent='⚽ ' + list2.join(' · '); sc2i.hidden=false; hasR=true; }
-  if(!hasL && !hasR) scoreline.classList.add('no-scorers');
-  else if(hasL && !hasR) scoreline.classList.add('only-left');
-  else if(!hasL && hasR) scoreline.classList.add('only-right');
+  const drawer=document.getElementById('drawer');
+  const sc1full=document.getElementById('sc1full');
+  const sc2full=document.getElementById('sc2full');
+
+  function inlineText(list){
+    const MAX=2;
+    if(!list.length) return {text:'', more:0};
+    if(list.length<=MAX) return {text:'⚽ '+list.join(' · '), more:0};
+    return {text:'⚽ '+list.slice(0,MAX).join(' · '), more:list.length-MAX};
+  }
+  const c1=inlineText(list1), c2=inlineText(list2);
+
+  if(list1.length){
+    sc1i.innerHTML = c1.text + (c1.more?` <span class="more">· +${c1.more}</span>`:'');
+    sc1i.hidden=false;
+  }
+  if(list2.length){
+    sc2i.innerHTML = c2.text + (c2.more?` <span class="more">+${c2.more} ·</span>`:'');
+    sc2i.hidden=false;
+  }
+
+  // drawer completo (se serve o se si clicca)
+  if(list1.length || list2.length){
+    sc1full.textContent = list1.length ? ('⚽ '+list1.join(' · ')) : '';
+    sc2full.textContent = list2.length ? ('⚽ '+list2.join(' · ')) : '';
+  }
+  function toggleDrawer(){ drawer.hidden = !drawer.hidden; }
+  if((c1.more||c2.more)){
+    sc1i.addEventListener('click', toggleDrawer, {passive:true});
+    sc2i.addEventListener('click', toggleDrawer, {passive:true});
+  }
 
   // Meta data/ora
   const dt=(function(dateStr,timeStr){
