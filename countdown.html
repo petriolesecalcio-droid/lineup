@@ -106,17 +106,17 @@
     border-radius: 999px;
     background: rgba(255,255,255,.08);
     box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
-    white-space: nowrap;                 /* no wrap */
-    max-width: 92cqw;                    /* limita la larghezza per evitare a-capo */
-    overflow: hidden;                    /* taglia l'eccesso */
+    white-space: nowrap;
+    max-width: 92cqw;
+    overflow: hidden;
   }
   .venue .pin{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); flex: 0 0 auto; }
   .venue a{
     color:#e6ebf2; text-decoration:none; font-weight:700;
     letter-spacing:.04cqw; font-size: clamp(13px, 2.2cqw, 16px);
-    display:inline-block;                /* per ellissi */
+    display:inline-block;
     overflow:hidden; text-overflow:ellipsis;
-    max-width: calc(92cqw - 4cqw);       /* lascia spazio alla pin e ai padding */
+    max-width: calc(92cqw - 4cqw);
   }
   .venue a:hover{ text-decoration:underline; }
 
@@ -304,7 +304,6 @@ function isGoodMapsLink(url){
     const u = new URL(url);
     const h = u.hostname.toLowerCase();
     const p = u.pathname.toLowerCase();
-    // consentiti: maps.app.goo.gl, *.google.com con path /maps..., goo.gl/maps...
     if (h === 'maps.app.goo.gl') return true;
     if (h.endsWith('.google.com') && p.startsWith('/maps')) return true;
     if (h === 'goo.gl' && p.startsWith('/maps')) return true;
@@ -330,9 +329,9 @@ function normalizeVenues(rows){
   return out;
 }
 function buildMapsLink({venue, lat, lon, link}) {
-  if (link) return link;                                    // 1) usa link condivisibile
-  if (venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`; // 2) ricerca per nome
-  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`; // 3) fallback
+  if (link) return link;  // preferisci link condivisibile
+  if (venue) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue)}`;
+  if (lat != null && lon != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
   return '#';
 }
 
@@ -379,7 +378,7 @@ function parseDateTimeIT(dateStr, timeStr){
 
 /* ====== INIT ====== */
 (async function init(){
-  // Pulsanti
+  // Pulsanti social
   document.getElementById('igFab').addEventListener('click', ()=>{
     const username='asd_petriolese_calcio';
     const web='https://www.instagram.com/asd_petriolese_calcio/';
@@ -443,15 +442,35 @@ function parseDateTimeIT(dateStr, timeStr){
   setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
   setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
 
-  // Countdown
+  // Countdown + auto-redirect a lineup 5' prima
   const dt = parseDateTimeIT(dateStr, timeStr);
   const line = document.getElementById('countdownLine');
   const metaLine = document.getElementById('metaLine');
 
+  // === AUTO-REDIRECT CONFIG ===
+  const LINEUP_URL = 'lineup.html';
+  const COUNTDOWN_TO_LINEUP = 5 * 60 * 1000; // 5 minuti
+  const params = new URLSearchParams(location.search);
+  const disableAuto = (params.get('force') === 'countdown'); // override manuale
+
+  function maybeGoLineup() {
+    if (!dt || isNaN(+dt) || disableAuto) return;
+    const ms = +dt - Date.now();
+    if (ms <= COUNTDOWN_TO_LINEUP) {
+      location.replace(LINEUP_URL);
+    }
+  }
+
   if(dt && !isNaN(+dt)){
     metaLine.textContent = formatWhen(dt); // SOLO data/ora
+    // check immediato (se apri già sotto i 5')
+    maybeGoLineup();
+
     const tick = ()=>{
       const ms = +dt - Date.now();
+      // appena entri nei 5', vai su lineup
+      maybeGoLineup();
+
       line.textContent = formatOneLine(ms);
       if(ms<=0){ clearInterval(t); line.textContent='LIVE'; }
     };
@@ -462,13 +481,13 @@ function parseDateTimeIT(dateStr, timeStr){
     metaLine.textContent = 'Imposta Data e Ora nella scheda Meta.';
   }
 
-  // Venue UI (sempre una riga + link condivisibile se presente)
+  // Venue UI (pill + link)
   if (venue) {
     const box = document.getElementById('venueBox');
     const a   = document.getElementById('venueLink');
     a.textContent = venue;
     a.href = buildMapsLink({venue, lat, lon, link});
-    a.title = venue; // mostra il nome completo al passaggio del mouse
+    a.title = venue;
     box.hidden = false;
   }
 })();
