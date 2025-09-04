@@ -63,7 +63,22 @@
     color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw;
     font-size: clamp(18px, 3.8cqw, 34px); text-align:center;
   }
-
+  /* sottotitoli sotto al titolo principale */
+.subtitle{
+  margin-top: .4cqh;
+  color:#e9edf5;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.18cqw;
+  text-align:center;
+  font-size: clamp(14px, 2.4cqw, 20px);
+  opacity:.96;
+}
+.subtitle.small{
+  margin-top: .2cqh;
+  font-size: clamp(12px, 2.0cqw, 16px);
+  opacity:.9;
+}
   .vs-block{
     margin-top: 2cqh;
     display:grid; grid-auto-rows: min-content; row-gap: 1.2cqh;
@@ -178,6 +193,8 @@
       <!-- Titolo -->
       <div class="title-badge">
         <div class="title">Prossima partita</div>
+        <div class="subtitle" id="giornataLine" hidden></div>
+        <div class="subtitle small" id="compLine" hidden></div>
       </div>
 
       <div class="vs-block">
@@ -428,6 +445,45 @@ function parseDateTimeIT(dateStr, timeStr){
   const squadra2 = (meta.get('squadra2')||'').toString().trim();
   const dateStr  = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
   const timeStr  = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
+  // === COMPETIZIONE / GIORNATA (sottotitoli) ===
+const competizione = (meta.get('competizione')||'').toString().trim();
+const giornata     = (meta.get('giornata')||'').toString().trim();
+const giorEl = document.getElementById('giornataLine');
+const compEl = document.getElementById('compLine');
+
+// reset visibilità
+if (giorEl) giorEl.hidden = true;
+if (compEl) { compEl.hidden = true; compEl.classList.add('small'); } // di default più piccola
+
+if (competizione){
+  if (competizione === 'Amichevole'){
+    // Mostra solo "Amichevole" sotto al titolo
+    if (compEl){
+      compEl.textContent = 'Amichevole';
+      compEl.hidden = false;
+      // per Amichevole va bene la dimensione small
+    }
+  } else if (competizione === 'Terza Cat. Girone E'){
+    // Riga 1: "GIORNATA N" (se N c'è)
+    if (giorEl && giornata){
+      giorEl.textContent = `GIORNATA ${giornata}`;
+      giorEl.hidden = false;
+    }
+    // Riga 2 (più piccola): "Terza Cat. Girone E"
+    if (compEl){
+      compEl.textContent = 'Terza Cat. Girone E';
+      compEl.hidden = false;
+      compEl.classList.add('small');
+    }
+  } else {
+    // Default: mostra la competizione sotto al titolo
+    if (compEl){
+      compEl.textContent = competizione;
+      compEl.hidden = false;
+      // resta small
+    }
+  }
+}
 
   // Venue: precedenza AVVERSARI (squadra1) → fallback Meta
   let venueMeta = (meta.get('luogo')||meta.get('campo')||meta.get('stadio')||meta.get('venue')||'').toString().trim();
