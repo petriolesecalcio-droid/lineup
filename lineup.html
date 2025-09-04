@@ -126,9 +126,6 @@
   .matchday-text{ display:flex; flex-direction:column; align-items:center; gap:.35cqh; color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw; line-height:1.05; text-align:center; }
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
-  /* ▼ aggiunta per competizione sotto MATCHDAY (stessa logica del countdown) */
-  .matchday-text .md-comp{ font-size: var(--md-font-sub); letter-spacing:.18cqw; opacity:.95; }
-  .matchday-text .md-comp[hidden]{ display:none; }
 
   /* VS */
   .versus-badge{
@@ -351,8 +348,6 @@
       <div class="matchday-text">
         <div class="md-top">MATCHDAY</div>
         <div class="md-sub" id="mdSub"></div>
-        <!-- ▼ aggiunto: competizione sotto MATCHDAY -->
-        <div class="md-comp" id="mdComp" hidden></div>
       </div>
     </div>
 
@@ -533,7 +528,7 @@ function setLogo(imgEl, src, alt){
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
   const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
-  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||';
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
   const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
   return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
 }
