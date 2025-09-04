@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Matchday (SPA) – Petriolese Calcio</title>
+<title>Matchday – Petriolese Calcio (Live SPA)</title>
 <meta name="color-scheme" content="dark light">
 <style>
   :root{ --bg:#0b0c11; --fg:#e6ebf2; --muted:#9aa3b2; }
@@ -13,17 +13,17 @@
   .muted{ color:var(--muted) }
   .spinner{ width:28px; height:28px; border-radius:50%; border:3px solid rgba(255,255,255,.18); border-top-color:#fff; animation:spin 1s linear infinite; margin:12px auto 0 }
   @keyframes spin{ to{ transform:rotate(360deg) } }
-  #hud{ position:fixed; inset:auto 12px 12px auto; background:rgba(0,0,0,.55); color:#fff; font:12px/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; padding:8px 10px; border-radius:8px; backdrop-filter: blur(6px); display:none; white-space:pre; }
+  #hud{ position:fixed; inset:auto 12px 12px auto; background:rgba(0,0,0,.55); color:#fff; font:12px/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; padding:8px 10px; border-radius:8px; backdrop-filter: blur(6px); display:none; white-space:pre; z-index:9999 }
   #hud.show{ display:block }
-  a.btn{ display:inline-block; margin-top:14px; padding:10px 14px; border-radius:10px; background:#fff; color:#111; text-decoration:none; font-weight:700 }
-  #app{ display:none }
+  #app{ display:none; width:100%; height:100%; opacity:0; transition: opacity .28s ease }
+  #app.ready{ opacity:1 }
 </style>
 </head>
 <body>
   <div class="card" id="status">
     <div style="font-weight:900; letter-spacing:.04em; text-transform:uppercase">Petriolese Calcio</div>
     <h1 style="margin:.35em 0 .2em">Caricamento…</h1>
-    <div class="muted">Scelgo la pagina giusta (countdown / lineup)</div>
+    <div class="muted">Scelgo la pagina giusta (countdown / lineup) e commuto live</div>
     <div class="spinner"></div>
   </div>
 
@@ -34,7 +34,7 @@
 /* ====== CONFIG ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const META_GID      = '254048258';
-const PUBLISHED_META_URL = ''; // opzionale fallback pubhtml -> CSV
+const PUBLISHED_META_URL = '';
 
 const ROUTES = {
   countdown: 'countdown.html',
@@ -55,7 +55,7 @@ function pubCsvURL(pubhtmlUrl){
   return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
 }
 function parseCSV(text){
-  let t=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
   const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
   if(!lines.length) return [];
   const rows=[]; let row=[],cur='',inQ=false;
@@ -98,40 +98,81 @@ function parseDateTimeIT(dateStr, timeStr){
   return new Date(y,M,d,h,min,0,0);
 }
 
-/* ====== SPA LOADER ====== */
-async function loadIntoApp(url){
+/* ====== HEAD/BODY SPA LOADER ====== */
+function clearInjectedHead(){
+  document.querySelectorAll('head [data-spa-injected]').forEach(el=>el.remove());
+}
+function injectHead(fromDoc){
+  clearInjectedHead();
+  const head = document.head;
+  fromDoc.head.querySelectorAll('style').forEach(s=>{
+    const ns = document.createElement('style');
+    ns.setAttribute('data-spa-injected','');
+    ns.textContent = s.textContent;
+    head.appendChild(ns);
+  });
+  fromDoc.head.querySelectorAll('link[rel="stylesheet"]').forEach(l=>{
+    const nl = document.createElement('link');
+    for(const a of l.attributes){ nl.setAttribute(a.name, a.value); }
+    nl.setAttribute('data-spa-injected','');
+    head.appendChild(nl);
+  });
+  const fav = fromDoc.head.querySelector('link[rel~="icon"]');
+  if (fav){
+    const nl = document.createElement('link');
+    for(const a of fav.attributes){ nl.setAttribute(a.name, a.value); }
+    nl.setAttribute('data-spa-injected','');
+    head.appendChild(nl);
+  }
+  return [...fromDoc.head.querySelectorAll('script')];
+}
+
+async function loadHTML(url){
   const res = await fetch(url, { cache: 'no-store' });
   if(!res.ok) throw new Error('Fetch failed: '+url);
-  const html = await res.text();
-  const doc  = new DOMParser().parseFromString(html, 'text/html');
-  const body = doc.body;
-
+  return await res.text();
+}
+function parseDoc(html){
+  return new DOMParser().parseFromString(html, 'text/html');
+}
+async function mountDoc(doc){
+  const headScripts = injectHead(doc);
   const app = document.getElementById('app');
+  app.classList.remove('ready');
+  app.style.display = 'block';
+  const body = doc.body;
   app.innerHTML = '';
-  // copia tutti i figli tranne script
   [...body.childNodes].forEach(node=>{
     if(!(node.tagName && node.tagName.toLowerCase()==='script')){
       app.appendChild(node.cloneNode(true));
     }
   });
-
-  // esegui gli script in ordine
-  const scripts = [...body.querySelectorAll('script')];
-  for(const s of scripts){
+  // run head scripts
+  for(const s of headScripts){
+    const ns = document.createElement('script');
+    for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
+    if(!s.src){ ns.textContent = s.textContent; }
+    document.head.appendChild(ns);
+    if(ns.src && !ns.defer && !ns.async){
+      await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Head script load error: '+ns.src)); });
+    }
+  }
+  // run body scripts
+  const bodyScripts = [...body.querySelectorAll('script')];
+  for(const s of bodyScripts){
     const ns = document.createElement('script');
     for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
     if(!s.src){ ns.textContent = s.textContent; }
     app.appendChild(ns);
     if(ns.src && !ns.defer && !ns.async){
-      await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Script load error: '+ns.src)); });
+      await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Body script load error: '+ns.src)); });
     }
   }
-
-  document.getElementById('status').style.display='none';
-  app.style.display='block';
+  // fade-in
+  requestAnimationFrame(()=> app.classList.add('ready'));
 }
 
-/* ====== ROUTING ====== */
+/* ====== ROUTER LIVE ====== */
 function decideRoute(now, kickoff){
   const t  = kickoff.getTime();
   const n  = now.getTime();
@@ -142,14 +183,87 @@ function decideRoute(now, kickoff){
   return 'countdown';
 }
 
+let currentRoute = null;
+let kickoffCache = null;
+let metaPollTimer = null;
+let boundaryTimer = null;
+let pageCache = new Map(); // url -> {html, doc}
+
+/** Precarica e cache la pagina */
+async function preload(url){
+  if(pageCache.has(url)) return pageCache.get(url);
+  const html = await loadHTML(url);
+  const doc  = parseDoc(html);
+  const obj = { html, doc };
+  pageCache.set(url, obj);
+  return obj;
+}
+
+/** Carica (monta) una rotta */
+async function loadRoute(route){
+  const url = ROUTES[route] || ROUTES.countdown;
+  const { doc } = await preload(url);
+  await mountDoc(doc);
+  currentRoute = route;
+}
+
+/** Calcola e programma il prossimo controllo con timer mirato */
+function scheduleBoundaryCheck(){
+  if(!kickoffCache) return;
+  clearTimeout(boundaryTimer);
+  const now = new Date().getTime();
+  const tKO = kickoffCache.getTime();
+  const t1  = tKO - WINDOWS.countdown_to_lineup; // -5m
+  const t2  = tKO + WINDOWS.lineup_to_after;     // +3h
+
+  // prossimo istante rilevante (prima quello più vicino nel futuro)
+  const upcoming = [t1, t2].filter(t=>t > now).sort((a,b)=>a-b)[0];
+
+  // se non c'è, ricontrolla tra 30 min
+  const delay = upcoming ? Math.max(500, Math.min(upcoming - now + 250, 30*60*1000)) : 30*60*1000;
+
+  boundaryTimer = setTimeout(async ()=>{
+    // Evita rimbalzi: ricalcola route e commuta se cambia
+    const routeNew = decideRoute(new Date(), kickoffCache);
+    if(routeNew !== currentRoute){
+      // Precarica la destinazione per switch rapido
+      await preload(ROUTES[routeNew]);
+      await loadRoute(routeNew);
+    }
+    // riprogramma
+    scheduleBoundaryCheck();
+  }, delay);
+}
+
+/** Poll leggero della Meta per cogliere eventuali spostamenti orario */
+async function startMetaPolling(intervalMs=120000){
+  clearInterval(metaPollTimer);
+  metaPollTimer = setInterval(async ()=>{
+    try{
+      const rows = await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+      const meta = normalizeMeta(rows);
+      const dateStr = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
+      const timeStr = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
+      const k = parseDateTimeIT(dateStr, timeStr);
+      if(k && !isNaN(+k)){
+        // se l'orario è cambiato di > 1 minuti, aggiorna e riscadula
+        if(!kickoffCache || Math.abs(k.getTime() - kickoffCache.getTime()) > 60*1000){
+          kickoffCache = k;
+          scheduleBoundaryCheck();
+        }
+      }
+    }catch(e){ /* silenzio: prossimo giro */ }
+  }, intervalMs);
+}
+
 (async function main(){
   const params = new URLSearchParams(location.search);
-  const force  = (params.get('force')||'').toLowerCase();
+  const force  = (params.get('force')||'').toLowerCase(); // countdown|lineup|post
   const debug  = params.get('debug') === '1';
 
+  // Leggi Meta iniziale
   let metaRows=[];
   try{ metaRows = await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL); }catch(e){}
-
   if(!metaRows.length){
     document.getElementById('status').innerHTML = `
       <div class="card">
@@ -164,26 +278,42 @@ function decideRoute(now, kickoff){
   const dateStr = (meta.get('data')||meta.get('prossimadata')||meta.get('prossima_data')||'').toString().trim();
   const timeStr = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
   const kickoff = parseDateTimeIT(dateStr, timeStr);
+  if(kickoff && !isNaN(+kickoff)) kickoffCache = kickoff;
 
+  // Decidi rotta iniziale
   let route = 'countdown';
   if (force && ROUTES[force]) {
     route = force;
-  } else if (kickoff && !isNaN(+kickoff)) {
-    route = decideRoute(new Date(), kickoff);
+  } else if (kickoffCache) {
+    route = decideRoute(new Date(), kickoffCache);
   }
 
+  // HUD
   if (debug){
     const hud = document.getElementById('hud');
     hud.textContent = [
       `FORCE:   ${force||'-'}`,
       `ROUTE:   ${route}`,
-      kickoff ? `KICKOFF: ${kickoff.toLocaleString('it-IT')}` : 'KICKOFF: n/d',
+      kickoffCache ? `KICKOFF: ${kickoffCache.toLocaleString('it-IT')}` : 'KICKOFF: n/d',
       `TARGET:  ${ROUTES[route]}`
     ].join('\n');
     hud.classList.add('show');
   }
 
-  await loadIntoApp(ROUTES[route]);
+  // Precarica entrambe per switch istantaneo
+  await Promise.all([ preload(ROUTES.countdown), preload(ROUTES.lineup) ]);
+
+  // Carica la rotta iniziale
+  await loadRoute(route);
+
+  // Avvia scheduling (commuta live ai confini)
+  scheduleBoundaryCheck();
+
+  // Avvia polling meta (per eventuali cambi di orario)
+  startMetaPolling(120000); // ogni 2 minuti
+
+  // Mantieni la root in barra per condivisione evergreen
+  try{ history.replaceState(null,'','./'); }catch(e){}
 })();
 </script>
 </body>
