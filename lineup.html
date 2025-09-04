@@ -30,6 +30,10 @@
     --subs-transform: uppercase;
     --subs-maxw: calc(100% - 6cqw);
     --subs-font-family: system-ui, Arial, sans-serif;
+    --subs-drop: 1cqh;
+
+    /* pennellate */
+    --brush-bleed-y: 2cqh;
 
     /* MATCHDAY */
     --md-w: 88cqw;
@@ -44,7 +48,7 @@
     --vs-font: 2.2cqw;
     --vs-letter: .18cqw;
 
-    /* FABs */
+    /* Stack FABs */
     --fab-stack-gap: clamp(8px, 1.6cqw, 12px);
   }
 
@@ -64,48 +68,52 @@
     border-radius:18px;
     background:#0b0c11;
     box-shadow:0 25px 80px rgba(0,0,0,.6);
-    container-type:size;
+    container-type:size; /* abilita cqw/cqh e @container */
   }
 
-  /* Fondale */
+  /* Fondale stadio */
   .stadium{
     position:absolute; inset:0; z-index:0;
     background:
       radial-gradient(1200px 220px at 50% -40px, var(--roof-glow), transparent 60%),
       linear-gradient(to bottom, var(--roof-mid) 0%, var(--roof-dark) 48%, #061007 100%);
   }
+
+  /* Strisce oblique */
   .roof-stripes{ position:absolute; inset:0; z-index:1; pointer-events:none; display:block; }
 
-  /* Campo */
+  /* Campo (SVG con clipPath) */
   .pitch-wrap{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
-    width:100%; height:75%; z-index:2;
+    width:100%; height:75%;
+    z-index:2;
   }
   #pitch{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-  .pitch-rect{ fill:url(#grass); stroke:#fff; stroke-width:2; opacity:.98; }
-  .pitch-lines{ stroke:#fff; stroke-width:2; fill:none; opacity:.95; }
 
-  /* Layer giocatori */
+  /* Giocatori */
   .players{
     position:absolute; left:50%; bottom:var(--pitch-bottom); transform:translateX(-50%);
     width:100%; height:75%;
-    overflow:visible; pointer-events:none; z-index:3;
+    overflow:visible; pointer-events:none;
+    container-type:size; z-index:3;
   }
   .player{ position:absolute; left:0; top:0; transform:translate(-50%, -100%); display:block; overflow:visible; }
   .player .photo{ height: var(--photo-h); width:auto; position:relative; display:block; z-index:1; }
+
   .badge{
-    position:absolute; left:50%; top: calc(100% - var(--badge-overlap)); transform: translateX(-50%);
-    text-transform: uppercase; display:flex; align-items:center; justify-content:center;
+    position:absolute; left:50%; top: calc(100% - var(--badge-overlap));
+    transform: translateX(-50%);
+    text-transform: uppercase;
+    display:flex; align-items:center; justify-content:center;
     width: var(--badge-w); aspect-ratio: 5.5/1;
     font-size: var(--badge-font); font-weight: 900;
     background: url('badge.png?v=6') center/100% auto no-repeat;
     color:#000; white-space:nowrap; line-height:1; pointer-events:none; z-index:2;
-    text-shadow: 0 1px 0 rgba(255,255,255,.25);
   }
 
-  /* MATCHDAY + competizione (come countdown) */
+  /* MATCHDAY */
   .matchday-badge{
-    position:absolute; left:50%; top: 18%; transform: translate(-50%, -50%);
+    position:absolute; transform: translate(-50%, -50%);
     width: var(--md-w); aspect-ratio: 5.5/1;
     display:flex; align-items:center; justify-content:center;
     background:none; overflow:visible; pointer-events:none; z-index:4;
@@ -113,52 +121,218 @@
   .matchday-badge::before{
     content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
     width:100%; height: calc(100% + var(--md-splat-bleed) * 2);
-    background: url('md-splat.webp?v=3') center / contain no-repeat; z-index:-1; pointer-events:none;
+    background: url('md-splat.webp') center / contain no-repeat; z-index:-1; pointer-events:none;
   }
   .matchday-text{ display:flex; flex-direction:column; align-items:center; gap:.35cqh; color:#fff; font-weight:900; text-transform:uppercase; letter-spacing:.22cqw; line-height:1.05; text-align:center; }
   .matchday-text .md-top{ font-size: var(--md-font-top); }
   .matchday-text .md-sub{ font-size: var(--md-font-sub); letter-spacing:.18cqw; }
-  .matchday-text .md-comp{ font-size: var(--md-font-sub); letter-spacing:.18cqw; opacity:.95; }
-  .matchday-text .md-comp[hidden]{ display:none; }
-  @container (max-width: 520px){
-    .matchday-text .md-comp{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing:.16cqw; }
-  }
 
   /* VS */
-  .versus{
-    position:absolute; left:50%; top: 29%; transform:translateX(-50%);
-    width: var(--vs-w); display:flex; align-items:center; justify-content:space-between;
-    gap: var(--vs-gap); color:#fff; z-index:4; text-transform:uppercase; font-weight:900; letter-spacing: var(--vs-letter);
+  .versus-badge{
+    position:absolute; transform: translate(-50%, -50%);
+    width: var(--vs-w);
+    display:flex; align-items:center; justify-content:center; gap: var(--vs-gap);
+    background:none; overflow:visible; pointer-events:none; z-index:4;
   }
-  .team{ display:flex; align-items:center; gap:1cqw; }
-  .team img{ height: var(--vs-logo-h); width:auto; object-fit:contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
-  .vs-core{ font-size: clamp(22px, var(--vs-font), 42px); opacity:.95; }
+  .versus-badge .team-logo{ height: var(--vs-logo-h); width:auto; object-fit:contain; image-rendering:auto; display:block; }
+  .versus-badge .vs-text{ color:#fff; font-weight:900; text-transform:uppercase; font-size: var(--vs-font); letter-spacing: var(--vs-letter); line-height:1; display:block; }
 
-  /* Sostituti */
-  .subs{
-    position:absolute; left:50%; transform:translateX(-50%);
-    bottom: calc(var(--pitch-bottom) - 8%);
-    width: var(--subs-maxw);
-    color:#fff; text-transform: var(--subs-transform);
-    font-weight: var(--subs-weight);
-    letter-spacing: var(--subs-tracking);
-    line-height: var(--subs-line);
-    font-size: var(--subs-font);
+  /* SUBS */
+  .subs-badge{
+    position:absolute; bottom: var(--pitch-bottom);
+    transform: translate(-50%, calc(50% + var(--subs-drop)));
+    width: 30cqw; aspect-ratio: 5.5/1;
+    display:flex; align-items:center; justify-content:center;
+    background:none; overflow:visible; color:#fff; font-weight:900; text-transform:uppercase;
+    font-size: min(1.6cqh, 2.1cqw); letter-spacing:.18cqw; padding: 0 .8cqw;
+    pointer-events:none; z-index:4;
+  }
+  .subs-badge::before{
+    content:""; position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
+    width:100%; height: calc(100% + var(--brush-bleed-y) * 2);
+    background: url('badge-bg.webp') center / contain no-repeat; z-index:-1; pointer-events:none;
+  }
+  .subs-zone{
+    position:absolute; left:0; right:0; bottom:0; height: var(--pitch-bottom);
+    display:flex; align-items:center; justify-content:center; padding: 0 2cqw; pointer-events:none; z-index:4;
+  }
+  .subs-zone .subs-list{
+    margin:0 auto; max-width: var(--subs-maxw);
+    text-align:center; white-space:normal; overflow-wrap:anywhere;
     font-family: var(--subs-font-family);
-    text-align:center;
-    filter: drop-shadow(0 2px 10px rgba(0,0,0,.45));
-    z-index:4;
+    font-size: var(--subs-font); font-weight: var(--subs-weight);
+    letter-spacing: var(--subs-tracking); /* fix */
+    line-height: var(--subs-line);
+    text-transform: var(--subs-transform);
+    color:#fff; opacity:.95;
   }
 
-  /* FAB */
-  .fab-stack{ position:absolute; right: 2cqw; bottom: 2cqh; display:flex; flex-direction:column; gap: var(--fab-stack-gap); z-index:5; }
-  .fab{ width: 48px; height: 48px; border-radius:50%; background:#1e293b; color:#fff; display:grid; place-items:center; box-shadow:0 10px 25px rgba(0,0,0,.45); font-size:18px; user-select:none; }
+  /* ===== FAB Share ===== */
+  .fab-share{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+
+    position:absolute; top:var(--fab-edge); left:var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center;
+
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: var(--fab-radius);
+    background:#fff;  color:#111;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
+  .fab-share:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab-share:active{ transform: translateY(0); background:#eceef2; }
+  .fab-share:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-share[aria-busy="true"]{ pointer-events:none; opacity:.7 }
+  .fab-share svg{ width: calc(var(--fab-size) * .56); height: calc(var(--fab-size) * .56); fill: currentColor; }
+
+  /* ===== FAB Instagram ===== */
+  .fab-ig{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+
+    position:absolute;
+    top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap));
+    left: var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center;
+
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: var(--fab-radius);
+    background:#fff; color:#111;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
+  .fab-ig:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab-ig:active{ transform: translateY(0); background:#eceef2; }
+  .fab-ig:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset:  2px; }
+  .fab-ig svg{
+    width: calc(var(--fab-size) * .56);
+    height: calc(var(--fab-size) * .56);
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ===== FAB WhatsApp ===== */
+  .fab-wa{
+    --fab-size: clamp(36px, 10cqw, 48px);
+    --fab-edge: clamp(10px, 2cqw, 16px);
+    --fab-radius: 12px;
+
+    position:absolute;
+    top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2);
+    left: var(--fab-edge);
+    width:var(--fab-size); height:var(--fab-size);
+    display:grid; place-items:center;
+
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: var(--fab-radius);
+    background:#fff; color:#111;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.16);
+    cursor:pointer; z-index:10;
+
+    transition: transform .15s ease, box-shadow .15s ease,
+                background-color .15s ease, opacity .15s ease, border-color .15s ease;
+  }
+  .fab-wa:hover{ transform: translateY(-1px); background:#f5f6f8; box-shadow: 0 3px 6px rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.18); }
+  .fab-wa:active{ transform: translateY(0); background:#eceef2; }
+  .fab-wa:focus-visible{ outline: 3px solid rgba(66,133,244,.55); outline-offset: 2px; }
+  .fab-wa svg{
+    width: calc(var(--fab-size) * .56);
+    height: calc(var(--fab-size) * .56);
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ===== FABs più piccoli su mobile (container) ===== */
+  @container (max-width: 520px){
+    .fab-share,
+    .fab-ig,
+    .fab-wa{
+      --fab-size: clamp(24px, 7cqw, 34px);
+      --fab-edge: clamp(8px, 1.6cqw, 12px);
+      --fab-radius: 10px;
+    }
+    .fab-ig{ top: calc(var(--fab-edge) + var(--fab-size) + var(--fab-stack-gap)); }
+    .fab-wa{ top: calc(var(--fab-edge) + (var(--fab-size) + var(--fab-stack-gap)) * 2); }
+    .fab-share svg,
+    .fab-ig   svg,
+    .fab-wa   svg{
+      width: calc(var(--fab-size) * .50);
+      height: calc(var(--fab-size) * .50);
+    }
+  }
+
+  /* EXPORT MODE */
+  .stage.is-capturing{ border-radius:0 !important; box-shadow:none !important; background:#0b0c11 !important; }
+  .stage.is-capturing svg{ shape-rendering: geometricPrecision; }
+  .stage.is-capturing #lines > *{ stroke-width: 3.6px !important; }
+
+  /* BOOST MATCHDAY mobile */
+  @container (max-width: 520px){
+    .matchday-badge{ --md-w: 96cqw; --md-splat-bleed: 3.2cqh; }
+    .matchday-text{ letter-spacing: .20cqw; }
+    .matchday-text .md-top{ font-size: clamp(20px, 5cqw, 34px); }
+    .matchday-text .md-sub{ font-size: clamp(14px, 3.2cqw, 22px); letter-spacing: .16cqw; }
+  }
+
+  /* COMPACT VS mobile */
+  @container (max-width: 520px){
+    .versus-badge{
+      --vs-gap: .8cqw;
+      --vs-logo-h: 8.2cqh;
+      --vs-font: clamp(22px, 4.2cqw, 36px);
+      --vs-letter: .22cqw;
+    }
+  }
+
+  /* ===== SUBS badge BOOST su mobile ===== */
+  @container (max-width: 520px){
+    .stage{ --brush-bleed-y: 3.4cqh; }
+    .subs-badge{
+      width: 40cqw;
+      font-size: clamp(14px, 3.3cqw, 20px);
+      letter-spacing: .22cqw;
+      padding: 0 1cqw;
+    }
+  }
+
+  /* Fallback senza container queries */
+  @supports not (width: 1cqw){
+    @media (max-width: 520px){
+      .matchday-badge{ width: min(96vw, 96%); }
+      .matchday-text .md-top{ font-size: clamp(20px, 5vw, 34px); }
+      .matchday-text .md-sub{ font-size: clamp(14px, 3.2vw, 22px); }
+      .versus-badge .team-logo{ height: 9vh; }
+      .versus-badge{ gap: 1.5vw; }
+      .versus-badge .vs-text{ font-size: clamp(22px, 4.2vw, 36px); letter-spacing: .22vw; }
+      .subs-badge{ width: 40vw; font-size: clamp(14px, 3.3vw, 20px); letter-spacing: .22vw; padding: 0 1vw; }
+    }
+  }
+
+/* Giocatori e badge più piccoli su mobile (container query CORRETTA) */
+@container (max-width: 520px){
+  .player .photo{ height: 14cqh; }                 /* prima era 20cqh */
+  .badge{
+    width: 16cqh;
+    font-size: min(1.5cqh, 2cqw);
+  }
+}
 </style>
 </head>
 <body>
   <div class="stage">
     <div class="stadium"></div>
 
+    <!-- Strisce oblique tetto/gradoni -->
     <svg class="roof-stripes" viewBox="0 0 1000 1778" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <pattern id="diag" patternUnits="userSpaceOnUse" width="44" height="44" patternTransform="rotate(-10)">
@@ -169,316 +343,480 @@
       <rect x="0" y="0" width="1000" height="1778" fill="url(#diag)"/>
     </svg>
 
-    <!-- MATCHDAY con competizione (sotto) -->
+    <!-- MATCHDAY -->
     <div id="matchdayBadge" class="matchday-badge">
       <div class="matchday-text">
         <div class="md-top">MATCHDAY</div>
         <div class="md-sub" id="mdSub"></div>
-        <div class="md-comp" id="mdComp" hidden></div>
       </div>
     </div>
 
     <!-- VS -->
-    <div class="versus" id="versus" aria-hidden="true" hidden>
-      <div class="team" id="team1"><img id="logo1" alt="Logo Squadra 1" /><span id="name1"></span></div>
-      <div class="vs-core">VS</div>
-      <div class="team" id="team2"><span id="name2"></span><img id="logo2" alt="Logo Squadra 2" /></div>
+    <div id="versusBadge" class="versus-badge">
+      <img id="logo1" class="team-logo" alt="" crossorigin="anonymous">
+      <span class="vs-text">VS</span>
+      <img id="logo2" class="team-logo" alt="" crossorigin="anonymous">
     </div>
 
     <!-- Campo -->
     <div class="pitch-wrap">
-      <svg id="pitch" viewBox="0 0 1000 1400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <svg id="pitch" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="false">
         <defs>
-          <linearGradient id="grass" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%"  stop-color="var(--grass-1)"/>
-            <stop offset="100%" stop-color="var(--grass-2)"/>
+          <clipPath id="clipPitch" clipPathUnits="userSpaceOnUse">
+            <polygon points="120,120 880,120 1000,1000 0,1000"/>
+          </clipPath>
+
+          <!-- Gradiente prato -->
+          <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#0d7f26"/>
+            <stop offset="100%" stop-color="#0a6f20"/>
           </linearGradient>
+
+          <!-- Bande 50/50 allineate top e bottom -->
+          <pattern id="mow" patternUnits="userSpaceOnUse" width="1000" height="110" patternTransform="translate(0,120)">
+            <rect x="0" y="0"  width="1000" height="55" fill="#ffffff" opacity="0.12"/>
+            <rect x="0" y="55" width="1000" height="55" fill="transparent"/>
+          </pattern>
         </defs>
-        <rect x="60" y="60" width="880" height="1280" rx="18" class="pitch-rect"/>
-        <g class="pitch-lines">
-          <rect x="60" y="60" width="880" height="1280" rx="18" fill="none"/>
-          <line x1="60" y1="700" x2="940" y2="700"/>
-          <circle cx="500" cy="700" r="70"/>
-          <circle cx="500" cy="700" r="4" fill="#fff"/>
-          <rect x="60"  y="460" width="170" height="440"/>
-          <rect x="770" y="460" width="170" height="440"/>
-          <rect x="60"  y="570" width="60"  height="260"/>
-          <rect x="880" y="570" width="60"  height="260"/>
-          <rect x="45"  y="630" width="15" height="140"/>
-          <rect x="940" y="630" width="15" height="140"/>
+
+        <!-- Prato con clip trapezoidale -->
+        <g clip-path="url(#clipPitch)">
+          <rect x="0" y="0" width="1000" height="1000" fill="url(#grassGrad)"/>
+          <rect x="0" y="0" width="1000" height="1000" fill="url(#mow)"/>
         </g>
+
+        <!-- Linee campo -->
+        <g id="lines" clip-path="url(#clipPitch)" stroke="white" fill="none"></g>
       </svg>
     </div>
 
     <!-- Giocatori -->
-    <div class="players" id="playersLayer"></div>
+    <div class="players" id="players"></div>
 
-    <!-- Sostituti -->
-    <div class="subs" id="subsText"></div>
+    <!-- SUBS -->
+    <div id="subsBadge" class="subs-badge">SUBS</div>
 
-    <!-- FAB -->
-    <div class="fab-stack">
-      <div class="fab" title="Refresh" id="refreshBtn">⟳</div>
+    <!-- Elenco panchina -->
+    <div class="subs-zone">
+      <div class="subs-list" id="subsList"></div>
     </div>
+
+    <!-- FAB Share -->
+    <button id="shareFab" class="fab-share" title="Condividi" aria-label="Condividi">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.2 3.2 0 000-1.39l7-4.11a2.5 2.5 0 10-.9-1.45l-7 4.11a2.5 2.5 0 100 4.07l7.05 4.14a2.5 2.5 0 101.94-2z"/>
+      </svg>
+    </button>
+
+    <!-- FAB Instagram -->
+    <button id="igFab" class="fab-ig" title="Apri Instagram @asd_petriolese_calcio" aria-label="Apri Instagram @asd_petriolese_calcio">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <circle cx="17.5" cy="6.5" r="1.2"></circle>
+      </svg>
+    </button>
+
+    <!-- FAB WhatsApp -->
+    <button id="waFab" class="fab-wa" title="Apri Canale WhatsApp" aria-label="Apri Canale WhatsApp">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <!-- BOLLA con CODINO (outline) -->
+        <circle cx="12" cy="12" r="9"></circle>
+        <!-- codino in basso a sinistra -->
+        <path d="M6.2 18.2 L4.1 20.1 L4.8 17.2" />
+        <!-- CORNETTA (classica) -->
+        <path d="M15.7 14.3c-.2.6-1.2 1.3-1.9 1.3s-1.9-.4-3.2-1.2c-1.3-.7-2.5-2.1-2.9-2.7-.4-.6-1.1-1.6-1.1-2.3s.4-1.1.6-1.3.5-.4.8-.4.6.1.8.2.5 1 .7 1.5c.2.4.2.6 0 .9-.1.2-.5.5-.6.7-.1.1-.2.3 0 .6.2.3 1 1.6 2.2 2.2 1.2.6 1.6.6 2 .4.3-.2.9-1 1.1-1.2.2-.2.4-.2.6-.1.2.1 1.6.7 1.9.9.2.1.3.2.3.3 0 .3-.1.7-.3 1z"/>
+      </svg>
+    </button>
   </div>
 
+<!-- html2canvas -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+
+<!-- Handlers + Campo + Render -->
 <script>
-/* ====== CONFIG FOGLIO GOOGLE ====== */
-const SHEET_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
-const GID_META  = '254048258';   // "Meta" (Giornata, Squadra 1/2, Competizione, Modulo)
-const GID_DIST  = '116187224';   // "Distinta/giocatori"
-const GID_OPP   = '1284472120';  // "Avversari" (Squadra, Logo)
+/* ====== DISEGNO CAMPO ====== */
+const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
+/* Trapezio coerente con lo SVG */
+const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
+const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
+const G=document.getElementById('lines');
+function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+  el.setAttribute('stroke','white'); el.setAttribute('fill','none');
+  el.setAttribute('stroke-width',w); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
+  G.appendChild(el);}
+const addLine=(u1,v1,u2,v2,w=3)=>addPolyline([map(u1,v1),map(u2,v2)],w);
+function addRect(x1,y1,x2,y2,w=3){addLine(x1,y1,x2,y1,w); addLine(x1,y2,x2,y2,w); addLine(x1,y1,x1,y2,w); addLine(x2,y1,x2,y2,w);}
+function addCircle(cx,cy,r,from,to,steps=240,w=3){const pts=[]; for(let i=0;i<=steps;i++){const a=from+(to-from)*i/steps; pts.push(map(cx+r*Math.cos(a),cy+r*Math.sin(a)));} addPolyline(pts,w);}
+function addDot(u,v,r=2.2){const p=map(u,v); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',r); c.setAttribute('fill','white'); G.appendChild(c);}
+addPolyline([TL,TR,BR,BL,TL],6);
+addLine(0,H/2,W,H/2,3);
+addCircle(W/2,H/2,R,0,2*Math.PI,280,3); addDot(W/2,H/2);
+const cx=W/2, ax1=cx-areaW/2, ax2=cx+areaW/2;
+const gx1=cx-goalW/2, gx2=cx+goalW/2;
+addRect(ax1,0,ax2,areaD,3); addRect(gx1,0,gx2,goalD,3); addDot(cx,spot);
+addRect(ax1,H-areaD,ax2,H,3); addRect(gx1,H-goalD,gx2,H,3); addDot(cx,H-spot);
+const eps=0.03, base=Math.acos((areaD-spot)/R);
+addCircle(cx,spot,R,base-eps,Math.PI-base+eps,260,3);
+addCircle(cx,H-spot,R,Math.PI+base-eps,2*Math.PI-base+eps,260,3);
 
-/* ====== FETCH CSV ====== */
-const csvUrl = (gid) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+/* ====== DATI ====== */
+const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
+const DIST_GID='116187224';
+const PUBLISHED_DIST_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml?gid=116187224&single=true';
 
-async function fetchCSV(url){
-  const res = await fetch(url, {cache:'no-store'});
-  if(!res.ok) throw new Error('Fetch CSV failed '+res.status);
-  const text = await res.text();
-  return parseCSV(text);
+const META_GID='254048258';
+const OPP_GID='1284472120';
+const PUBLISHED_META_URL='';
+const PUBLISHED_OPP_URL='';
+
+const XI_NUMBERS=[1,2,5,3,7,6,4,11,10,9,8];
+const BENCH_NUMBERS=[12,13,14,15,16,17,18,19,20];
+
+/* 3412 legacy (già perfetto) — coordinate "in metri" (u,v) per map() */
+let coords3412=[[34,107],[54,78],[34,82],[14,78],[62,52],[44,57],[24,57],[6,52],[34,36],[44,13],[24,13]];
+
+/* ====== FORMAZIONI UV (metri) ======
+   NUMERO DI MAGLIA → [u, v] in metri su campo 68×105.
+   GK coerente: [34,107] in tutti i moduli.  */
+const FORMATIONS_UV = {
+  "4-3-3": {
+    1:[34,107], 2:[62,78], 3:[6,78], 4:[44,82], 5:[24,82],
+    6:[34,60], 7:[62,20], 8:[53,51], 9:[34,13], 10:[15,51], 11:[6,20]
+  },
+  "4-2-3-1": {
+    1:[34,107], 2:[62,78], 3:[6,78], 4:[46,82], 5:[22,82],
+    6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
+  }
+};
+/* Aliases dal Meta senza trattini */
+const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
+function canonicalFormation(name){
+  const raw = String(name||"").trim().toLowerCase().replace(/^['’]/,''); // gestisce '433 dallo sheet
+  const norm = raw.replace(/[–—−]/g, "-");
+  if (FORMATIONS_UV[norm]) return norm;
+  const digits = norm.replace(/[^0-9]/g, "");
+  return FORMATION_ALIASES[digits] || "3-4-1-2";
+}
+
+/* ====== LOGHI ====== */
+function normalizeOpp(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const name=(''+(r.Squadra||r.squadra||'')).trim();
+    const url =(''+(r.Logo||r.logo||'')).trim();
+    if(name) out.set(name.toLowerCase(), url);
+  });
+  return out;
+}
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function resolveLogoSrc(teamName, oppMap){
+  const name=(teamName||'').trim(); if(!name) return '';
+  const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet;
+  return `logos/${slugify(name)}.webp`;
+}
+function setLogo(imgEl, src, alt){
+  if(!src){ imgEl.style.visibility='hidden'; return; }
+  imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src;
+  imgEl.onload=()=>{ imgEl.style.visibility='visible'; };
+  imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; };
+}
+
+/* ====== CSV/Sheet helpers ====== */
+const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+function pubCsvURL(pubhtmlUrl){
+  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/');
+  const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
 }
 function parseCSV(text){
-  const rows = text.replace(/\r/g,'').split('\n').filter(Boolean).map(r=>splitCsvLine(r));
-  const headers = rows.shift().map(h=>h.trim());
-  return rows.map(cols=>{
-    const obj={};
-    headers.forEach((h,i)=>obj[h]= (cols[i]??'').trim());
-    return obj;
-  });
-}
-function splitCsvLine(line){
-  const out=[]; let cur=''; let inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i], n=line[i+1];
-    if(c=='"' && n=='"'){ cur+='"'; i++; continue; }
-    if(c=='"'){ inQ=!inQ; continue; }
-    if(c==',' && !inQ){ out.push(cur); cur=''; continue; }
-    cur+=c;
+  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+  if(!lines.length) return [];
+  const rows=[]; let row=[],cur='',inQ=false;
+  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
+  const s=lines.join('\n');
+  for(let i=0;i<s.length;i++){
+    const c=s[i],n=s[i+1];
+    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
   }
-  out.push(cur);
+  if(cur!==''||row.length){pushCell();pushRow()}
+  const header=rows.shift().map(h=>String(h||'').trim());
+  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+}
+async function fetchCsvPrefer(fileId,gid,pubUrl){
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ const txt=await res.text(); return parseCSV(txt); }
+  }catch(e){}
+  if(pubUrl){
+    const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'});
+    const txt=await res.text(); return parseCSV(txt);
+  }
+  return [];
+}
+const fetchDistRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
+const fetchMetaRows   = ()=>fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
+const fetchOppRows    = ()=>fetchCsvPrefer(SHEET_FILE_ID, OPP_GID,  PUBLISHED_OPP_URL);
+
+function normalizeDist(rows){
+  if(!rows||!rows.length) return new Map();
+  const keys=Object.keys(rows[0]);
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  let kNum=keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
+  let kName=keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
+  let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
+  const map=new Map();
+  rows.forEach(r=>{
+    const n=Number(String(r[kNum]||'').trim()); if(!(n>0)) return;
+    map.set(n,{num:n,name:String(r[kName]||'').trim(),photo:String(r[kPhoto]||'').trim()});
+  });
+  return map;
+}
+const DISPLAY_NAME = full => String(full || '').trim();
+function normalizeMeta(rows){
+  const out=new Map();
+  rows.forEach(r=>{
+    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
+    const v=(''+(r.Value||r.VALORE||'')).trim();
+    if(k) out.set(k, v);
+  });
   return out;
 }
 
-/* ====== DATA ====== */
-async function fetchMetaRows(){ return fetchCSV(csvUrl(GID_META)); }
-async function fetchDistRows(){ return fetchCSV(csvUrl(GID_DIST)); }
-async function fetchOppRows(){  return fetchCSV(csvUrl(GID_OPP));  }
+/* ====== POSIZIONAMENTI BADGE ====== */
+function computeTopForBadges(){
+  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return 20;
+  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
+  const topCampo=pRect.top + pRect.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - sRect.top);
+  return ((spazioSopra*0.5)/sRect.height)*100;
+}
+function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
+function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
+function placeSubsByPitch(){
+  const el=document.getElementById('subsBadge'); if(!el) return;
+  const cx=W/2; const xAreaLeft=cx-areaW/2;
+  const A=map(0,H); const B=map(xAreaLeft,H);
+  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
+}
 
-function normalizeMeta(metaRows){
-  const map = new Map();
-  for(const r of metaRows){
-    for(const [k,v] of Object.entries(r)){
-      const key = (k||'').toString().trim().toLowerCase();
-      const val = (v||'').toString().trim();
-      if(!key) continue;
-      if(key==='chiave' && r['valore']){
-        map.set(r['chiave'].toString().trim().toLowerCase(), r['valore'].toString().trim());
-      }else{
-        if(['giornata','squadra 1','squadra1','squadra 2','squadra2','competizione','modulo','modulo tattico'].includes(key)){
-          map.set(key, val);
-        }
-      }
-    }
+/* ====== FAB auto-avoid su telefoni piccoli ====== */
+function layoutFABs(){
+  const stage = document.querySelector('.stage');
+  const share = document.getElementById('shareFab');
+  const ig    = document.getElementById('igFab');
+  const wa    = document.getElementById('waFab');
+  const md    = document.getElementById('matchdayBadge');
+  if(!stage || !share || !ig || !wa || !md) return;
+
+  // reset a default (CSS)
+  share.style.top = '';
+  ig.style.top = '';
+  wa.style.top = '';
+
+  const srect = stage.getBoundingClientRect();
+  const mdRect = md.getBoundingClientRect();
+  const fabRect = share.getBoundingClientRect();
+
+  const overlap = !(fabRect.right < mdRect.left ||
+                    fabRect.left  > mdRect.right ||
+                    fabRect.bottom< mdRect.top ||
+                    fabRect.top   > mdRect.bottom);
+
+  if(overlap){
+    const csShare = getComputedStyle(share);
+    const fabSize = parseFloat(csShare.getPropertyValue('--fab-size')) || share.offsetWidth;
+    const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fab-stack-gap')) || 8;
+
+    const targetTop = Math.round(mdRect.bottom - srect.top + 8);
+    share.style.top = targetTop + 'px';
+    ig.style.top    = (targetTop + (fabSize + gap) * 1) + 'px';
+    wa.style.top    = (targetTop + (fabSize + gap) * 2) + 'px';
   }
-  return map;
-}
-function normalizeOpp(oppRows){
-  const m = new Map();
-  for(const r of oppRows){
-    const s = (r['Squadra']||r['squadra']||'').trim();
-    const l = (r['Logo']||r['logo']||'').trim();
-    if(s) m.set(s, l);
-  }
-  return m;
-}
-function normalizeDist(rows){
-  const byNum = new Map();
-  for(const r of rows){
-    const num  = (r['Numero']||r['N']||r['#']||'').toString().trim();
-    const cog  = (r['Cognome']||r['COGNOME']||'').toString().trim();
-    const nome = (r['Nome']||r['NOME']||'').toString().trim();
-    const ruol = (r['Ruolo']||r['RUOLO']||'').toString().trim();
-    const tit  = (r['Titolare']||r['TITOLARE']||'').toString().trim().toLowerCase();
-    const foto = (r['Foto']||r['FOTO']||'').toString().trim();
-    if(!num && !cog) continue;
-    byNum.set(num || cog, { num, cognome:cog, nome, ruolo:ruol, titolare: (tit==='si' || tit==='sì' || tit==='yes' || tit==='1' ), foto });
-  }
-  return byNum;
 }
 
 /* ====== RENDER ====== */
-const playersLayer = document.getElementById('playersLayer');
-const subsText     = document.getElementById('subsText');
-
-const FORMATIONS = {
-  '3412': [
-    {x:50,y:95, ruolo:'P'},
-    {x:20,y:72, ruolo:'D'},{x:50,y:70, ruolo:'D'},{x:80,y:72, ruolo:'D'},
-    {x:18,y:56, ruolo:'C'},{x:40,y:48, ruolo:'C'},{x:60,y:48, ruolo:'C'},{x:82,y:56, ruolo:'C'},
-    {x:50,y:36, ruolo:'T'},
-    {x:35,y:22, ruolo:'A'},{x:65,y:22, ruolo:'A'}
-  ]
-};
-
-function render(byNum, moduloRaw){
-  playersLayer.innerHTML = '';
-  const modulo = (moduloRaw || '3412').replace(/\s/g,'');
-  const slots = FORMATIONS[modulo] || FORMATIONS['3412'];
-
-  const starters = pickStarters(byNum);
-  while(starters.length < 11) starters.push({num:'', cognome:'', ruolo:'', foto:''});
-
-  starters.slice(0,11).forEach((pl,i)=>{
-    const pos = slots[i] || {x:50,y:50};
-    addPlayerNode(pl, pos.x, pos.y);
-  });
-
-  const bench = [...byNum.values()].filter(p=>!p.titolare);
-  subsText.textContent = bench.length ? 'PANCHINA: ' + bench.map(b=>fmtPlayer(b)).join('  •  ') : '';
-
-  document.getElementById('versus').hidden = false;
-  document.getElementById('versus').setAttribute('aria-hidden','false');
+function pct(n){ return (n/1000*100).toFixed(3)+'%'; }
+function playerNode(obj,x,y){
+  const div=document.createElement('div'); div.className='player';
+  div.style.left=pct(x); div.style.top=pct(y);
+  const img=document.createElement('img'); img.className='photo'; img.alt=obj.name||''; img.crossOrigin='anonymous';
+  if(obj.photo){ img.src=obj.photo; img.onerror=()=>{img.onerror=null; img.src=`img/players/${obj.num}.png`;};}
+  else{ img.src=`img/players/${obj.num}.png`; img.onerror=()=>img.remove(); }
+  div.appendChild(img);
+  const badge=document.createElement('span'); badge.className='badge'; badge.textContent=`${obj.num}.${DISPLAY_NAME(obj.name)}`;
+  div.appendChild(badge);
+  return div;
 }
+function render(byNum, modulo="3412"){
+  const layer=document.getElementById('players'); layer.innerHTML='';
+  const key = canonicalFormation(modulo);
 
-function fmtPlayer(p){
-  const n = p.num ? `${p.num}.` : '';
-  return `${n}${(p.cognome||'').toUpperCase()}`.trim();
-}
-function addPlayerNode(p, xPct, yPct){
-  const el = document.createElement('div');
-  el.className = 'player';
-  el.style.left = xPct + '%';
-  el.style.top  = yPct + '%';
-
-  const img = document.createElement('img');
-  img.className = 'photo';
-  img.alt = `${p.nome||''} ${p.cognome||''}`.trim();
-  img.src = p.foto || 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
-  el.appendChild(img);
-
-  const badge = document.createElement('div');
-  badge.className = 'badge';
-  badge.textContent = fmtPlayer(p) || '—';
-  el.appendChild(badge);
-
-  playersLayer.appendChild(el);
-}
-
-/* ====== MATCHDAY / VS ====== */
-function setLogo(imgEl, src, alt){
-  if(!imgEl) return;
-  imgEl.src = src;
-  imgEl.alt = alt||'';
-}
-function resolveLogoSrc(squadra, oppMap){
-  const s = (squadra||'').trim();
-  if(!s) return 'logos/petriolese.webp';
-  if(oppMap && oppMap.get(s)) return oppMap.get(s);
-  const slug = s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'').replace(/^$/,'squadra');
-  return `logos/${slug}.webp`;
-}
-
-/* ====== PICK STARTERS ====== */
-function pickStarters(byNum){
-  const arr = [...byNum.values()];
-  const starters = arr.filter(p=>p.titolare);
-  if(starters.length===0){
-    const P = arr.filter(p=>/^p(e|o|)\b/i.test(p.ruolo)||/port/i.test(p.ruolo)).slice(0,1);
-    const others = arr.filter(p=>!P.includes(p)).slice(0,10);
-    return [...P, ...others];
+  if (key === "3-4-1-2"){
+    XI_NUMBERS.forEach((n,i)=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const [u,v]=coords3412[i];
+      const world=map(u,v);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
+  } else {
+    const table = FORMATIONS_UV[key] || {};
+    XI_NUMBERS.forEach(n=>{
+      const p=byNum.get(n)||{num:n,name:''};
+      const uv = table[n] || [34,50];
+      const world=map(uv[0], uv[1]);
+      layer.appendChild(playerNode(p,world.x,world.y));
+    });
   }
-  const order = (r) => /^p/i.test(r)?0:/^d/i.test(r)?1:/^c|m/i.test(r)?2:/^t/i.test(r)?3:/^a|f/i.test(r)?4:5;
-  return starters.sort((a,b)=>order(a.ruolo)-order(b.ruolo)).slice(0,11);
+
+  const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${DISPLAY_NAME(p.name)}`;}).join('  ');
+  document.getElementById('subsList').textContent=subs;
 }
 
-/* ====== INIT ====== */
-async function init(){
-  const mdSubEl  = document.getElementById('mdSub');
-  const mdCompEl = document.getElementById('mdComp');
-  const name1El  = document.getElementById('name1');
-  const name2El  = document.getElementById('name2');
-
+/* ==== GO! ==== */
+(async function init(){
   try{
-    const [distRows, metaRows, oppRows] = await Promise.all([
-      fetchDistRows(), fetchMetaRows(), fetchOppRows()
-    ]);
-
+    const [distRows, metaRows, oppRows] = await Promise.all([ fetchDistRows(), fetchMetaRows(), fetchOppRows() ]);
     const byNum = normalizeDist(distRows);
+
     const meta  = normalizeMeta(metaRows);
     const opp   = normalizeOpp(oppRows);
 
-    const moduloRaw = (meta.get('modulo') || meta.get('modulo tattico') || '3412').toString().trim();
+    const moduloRaw = (meta.get('modulo')||'3412').toString().trim();
     render(byNum, moduloRaw);
 
-    const giornata     = (meta.get('giornata') || '').toString().trim();
-    const competizione = (meta.get('competizione') || '').toString().trim();
-    const squadra1     = (meta.get('squadra 1') || meta.get('squadra1') || 'Petriolese').toString().trim() || 'Petriolese';
-    const squadra2     = (meta.get('squadra 2') || meta.get('squadra2') || '').toString().trim();
+    const giornata = (meta.get('giornata')||'').toString().trim();
+    const squadra1 = (meta.get('squadra1')||'').toString().trim() || 'Petriolese';
+    const squadra2 = (meta.get('squadra2')||'').toString().trim();
 
-    /* === LOGICA COME COUNTDOWN === */
-    if (competizione.toLowerCase() === 'amichevole'){
-      mdSubEl.textContent = 'AMICHEVOLE';
-      mdCompEl.textContent = '';
-      mdCompEl.hidden = true;
-    } else if (competizione === 'Terza Cat. Girone E'){
-      mdSubEl.textContent  = giornata ? `GIORNATA ${giornata}` : '';
-      mdCompEl.textContent = 'Terza Cat. Girone E';
-      mdCompEl.hidden = false;
-    } else {
-      mdSubEl.textContent  = giornata ? `GIORNATA ${giornata}` : '';
-      if (competizione){
-        mdCompEl.textContent = competizione;
-        mdCompEl.hidden = false;
-      } else {
-        mdCompEl.textContent = '';
-        mdCompEl.hidden = true;
-      }
-    }
+    document.getElementById('mdSub').textContent = giornata ? `GIORNATA ${giornata}` : '';
 
-    /* VS */
-    name1El.textContent = squadra1;
-    name2El.textContent = squadra2 || '—';
     setLogo(document.getElementById('logo1'), resolveLogoSrc(squadra1, opp), squadra1);
     setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
-
   }catch(e){
-    console.error('Errore dati sheet, uso fallback demo:', e);
-
-    // Fallback demo
-    const demo = new Map([
-      ['1',{num:'1', cognome:'TABORRI', ruolo:'P', titolare:true}],
-      ['2',{num:'2', cognome:'ROSSI', ruolo:'D', titolare:true}],
-      ['3',{num:'3', cognome:'MALVESTITI', ruolo:'D', titolare:true}],
-      ['4',{num:'4', cognome:'BELLESI', ruolo:'D', titolare:true}],
-      ['5',{num:'5', cognome:'RUGGERI', ruolo:'C', titolare:true}],
-      ['6',{num:'6', cognome:'LISI', ruolo:'C', titolare:true}],
-      ['7',{num:'7', cognome:'CIURLANTI', ruolo:'C', titolare:true}],
-      ['8',{num:'8', cognome:'PIERANTONI', ruolo:'C', titolare:true}],
-      ['10',{num:'10', cognome:'TREQUARTISTA', ruolo:'T', titolare:true}],
-      ['9',{num:'9', cognome:'PRIMA PUNTA', ruolo:'A', titolare:true}],
-      ['11',{num:'11', cognome:'ALA', ruolo:'A', titolare:true}],
-      ['12',{num:'12', cognome:'SUB1', ruolo:'P', titolare:false}],
-      ['13',{num:'13', cognome:'SUB2', ruolo:'D', titolare:false}],
-    ]);
-    render(demo, '3412');
-
-    document.getElementById('mdSub').textContent = 'AMICHEVOLE';
-    const mdCompEl = document.getElementById('mdComp');
-    mdCompEl.textContent = '';
-    mdCompEl.hidden = true;
-
-    document.getElementById('name1').textContent = 'Petriolese';
-    document.getElementById('name2').textContent = 'Moglianese';
-    setLogo(document.getElementById('logo1'), 'logos/petriolese.webp', 'Petriolese');
-    setLogo(document.getElementById('logo2'), 'logos/moglianese.webp', 'Moglianese');
+    console.error(e);
+    render(new Map(), "3412");
   }
 
+  placeSubsByPitch(); placeMatchday(); placeVersus();
   layoutFABs();
-}
-function layoutFABs(){ document.getElementById('refreshBtn').onclick = ()=>location.reload(); }
 
-init();
+  const stage=document.querySelector('.stage');
+  if(window.ResizeObserver && stage){
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    ro.observe(stage);
+  }else{
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+  }
+})();
+</script>
+
+<!-- Share / Download -->
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const fab = document.getElementById('shareFab');
+  const ig  = document.getElementById('igFab');
+  const wa  = document.getElementById('waFab');
+  const stage = document.querySelector('.stage');
+
+  async function stageToBlob(){
+    const prevVis = fab.style.visibility;
+    const prevVisIG = ig ? ig.style.visibility : '';
+    const prevVisWA = wa ? wa.style.visibility : '';
+
+    fab.style.visibility = 'hidden';
+    if(ig) ig.style.visibility = 'hidden';
+    if(wa) wa.style.visibility = 'hidden';
+    stage.classList.add('is-capturing');
+
+    const targetW = 1080, targetH = 1920;
+    const rect = stage.getBoundingClientRect();
+    const dpr  = Math.max(1, window.devicePixelRatio || 1);
+    const need = Math.max(targetW / rect.width, targetH / rect.height);
+    const scale = Math.max(3, dpr, need);
+
+    const canvas = await html2canvas(stage, {
+      backgroundColor: '#0b0c11',
+      scale,
+      useCORS: true
+    });
+
+    const out = document.createElement('canvas');
+    out.width = targetW; out.height = targetH;
+    const ctx = out.getContext('2d', { willReadFrequently:true });
+
+    ctx.fillStyle = '#0b0c11';
+    ctx.fillRect(0,0,targetW,targetH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
+    const w = Math.round(canvas.width * ratio);
+    const h = Math.round(canvas.height * ratio);
+    const x = Math.floor((targetW - w)/2);
+    const y = Math.floor((targetH - h)/2);
+    ctx.drawImage(canvas, x, y, w, h);
+
+    stage.classList.remove('is-capturing');
+    fab.style.visibility = prevVis || 'visible';
+    if(ig) ig.style.visibility = prevVisIG || 'visible';
+    if(wa) wa.style.visibility = prevVisWA || 'visible';
+
+    return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+  }
+
+  async function shareOrDownload(){
+    try{
+      fab.setAttribute('aria-busy','true');
+      const blob = await stageToBlob();
+      const fileName = `matchday_petriolese_${new Date().toISOString().slice(0,10)}.png`;
+
+      const file = new File([blob], fileName, { type: 'image/png' });
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ title:'Matchday – Petriolese Calcio', text:'Formazione titolari e panchina.', files:[file] });
+        fab.removeAttribute('aria-busy'); return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      fab.removeAttribute('aria-busy');
+    }catch(err){
+      console.error(err);
+      fab.removeAttribute('aria-busy');
+      alert('Impossibile condividere automaticamente.');
+    }
+  }
+
+  function openInstagram(){
+    const web = 'https://www.instagram.com/asd_petriolese_calcio/';
+    const scheme = 'instagram://user?username=asd_petriolese_calcio';
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if(isMobile){
+      const start = Date.now();
+      window.location.href = scheme;
+      setTimeout(()=>{ if(Date.now() - start < 1600){ window.open(web, '_blank', 'noopener'); } }, 700);
+    }else{
+      window.open(web, '_blank', 'noopener');
+    }
+  }
+
+  const WHATSAPP_CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
+  function openWhatsAppChannel(){
+    window.open(WHATSAPP_CHANNEL_URL, '_blank', 'noopener');
+  }
+
+  fab.addEventListener('click', shareOrDownload, { passive:true });
+  ig.addEventListener('click', openInstagram, { passive:true });
+  wa.addEventListener('click', openWhatsAppChannel, { passive:true });
+});
 </script>
 </body>
 </html>
