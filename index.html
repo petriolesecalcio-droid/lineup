@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Matchday – Petriolese Calcio (Live SPA v3)</title>
+<title>Matchday – Petriolese Calcio (Live SPA v4)</title>
 <meta name="color-scheme" content="dark light">
 <style>
   :root{ --bg:#0b0c11; --fg:#e6ebf2; --muted:#9aa3b2; }
@@ -15,9 +15,9 @@
   @keyframes spin{ to{ transform:rotate(360deg) } }
   #hud{ position:fixed; inset:auto 12px 12px auto; background:rgba(0,0,0,.55); color:#fff; font:12px/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; padding:8px 10px; border-radius:8px; backdrop-filter: blur(6px); display:none; white-space:pre; z-index:9999 }
   #hud.show{ display:block }
-  #app{ display:none; width:100%; height:100%; opacity:0; transition: opacity .28s ease }
+  #app{ display:grid; place-items:center; min-height:100vh; width:100%; opacity:0; transition: opacity .28s ease }
   #app.ready{ opacity:1 }
-  /* Fallback centering for injected pages that expect body to be the grid container */
+  /* Fallback: se la pagina iniettata usa .stage centrale, garantisci margine auto */
   #app > .stage { margin:auto; }
 </style>
 </head>
@@ -25,7 +25,7 @@
   <div class="card" id="status">
     <div style="font-weight:900; letter-spacing:.04em; text-transform:uppercase">Petriolese Calcio</div>
     <h1 style="margin:.35em 0 .2em">Caricamento…</h1>
-    <div class="muted">Seleziono e carico la vista (countdown / lineup) – live switch</div>
+    <div class="muted">Vista dinamica (countdown / lineup) con switch live</div>
     <div class="spinner"></div>
   </div>
 
@@ -36,27 +36,34 @@
 /* ====== CONFIG ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const META_GID      = '254048258';
-const PUBLISHED_META_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpJqXmoJaIznEo_EGHCfUxyYVWWKJCGULM9FbnI14hLhGpsjt3oMHT5ahJwEmJ4w/pubhtml'; // se pubblichi la scheda Meta via "Pubblica su web", metti qui l'URL pubhtml
+// Incolla QUI l'URL "Pubblica sul web" della scheda Meta (opzionale ma consigliato)
+const PUBLISHED_META_URL = ''; 
 
 const ROUTES = {
   countdown: 'countdown.html',
   lineup:    'lineup.html',
-  fulltime:  'fulltime.html',  // opzionale: se non esiste, verrà ignorato
-  post:      'post.html'       // non usato automaticamente
+  fulltime:  'fulltime.html',
+  post:      'post.html'
 };
 
 const WINDOWS = {
   countdown_to_lineup: 5 * 60 * 1000,
-  lineup_to_fulltime:  3 * 60 * 60 * 1000   // dopo 3h dal KO
+  lineup_to_fulltime:  3 * 60 * 60 * 1000
 };
 
 /* ====== HELPERS CSV ====== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
+// ulteriore fallback diretto (richiede file pubblico "chiunque con link")
+const exportCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&id=${fileId}&gid=${encodeURIComponent(gid)}`;
 function pubCsvURL(pubhtmlUrl){
   try{
-    const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+    const u=new URL(pubhtmlUrl);
+    const gid=u.searchParams.get('gid')||'0';
+    const parts=u.pathname.split('/'); 
+    const idIdx=parts.findIndex(p=>p==='e')+1; 
+    const id=parts[idIdx]||'';
     const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
-    return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+    return `${root}/pub?gid=${encodeURIComponent(gid)}&single=true&output=csv`;
   }catch(e){ return null; }
 }
 function parseCSV(text){
@@ -78,28 +85,37 @@ function parseCSV(text){
   }catch(e){ console.error('parseCSV error', e); return []; }
 }
 async function fetchCsvPrefer(fileId,gid,pubUrl){
-  // 1) gviz
+  // 1) gviz CSV
   try{
-    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store', mode:'cors'});
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'});
     if(res.ok){ return parseCSV(await res.text()); }
   }catch(e){ console.warn('gvizCsv fetch fail', e); }
-  // 2) fallback pubhtml->csv
+  // 2) published csv (se impostato)
   try{
     if(pubUrl){
       const url = pubCsvURL(pubUrl);
       if(url){
-        const res=await fetch(url,{cache:'no-store', mode:'cors'});
+        const res=await fetch(url,{cache:'no-store'});
         if(res.ok){ return parseCSV(await res.text()); }
       }
     }
   }catch(e){ console.warn('pubCsv fetch fail', e); }
+  // 3) export csv (se file è pubblico)
+  try{
+    const res=await fetch(exportCsvURL(fileId,gid),{cache:'no-store'});
+    if(res.ok){ return parseCSV(await res.text()); }
+  }catch(e){ console.warn('exportCsv fetch fail', e); }
   return [];
 }
 function normalizeMeta(rows){
   const m=new Map();
   rows.forEach(r=>{
-    const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase();
-    const v=(''+(r.Value||r.VALORE||'')).trim();
+    // Supporta sia "Key/Value" che "Chiave/Valore" o altre varianti
+    const keys = Object.keys(r);
+    const keyK = keys.find(k => /^(key|chiave)$/i.test(k)) || 'Key';
+    const valK = keys.find(k => /^(value|valore|valore|val)$/i.test(k)) || 'Value';
+    const k=(''+(r[keyK]||'')).trim().toLowerCase();
+    const v=(''+(r[valK]||'')).trim();
     if(k) m.set(k,v);
   });
   return m;
@@ -125,21 +141,18 @@ function clearInjectedHead(){
 function injectHead(fromDoc){
   clearInjectedHead();
   const head = document.head;
-  // copy styles
   fromDoc.head.querySelectorAll('style').forEach(s=>{
     const ns = document.createElement('style');
     ns.setAttribute('data-spa-injected','');
     ns.textContent = s.textContent;
     head.appendChild(ns);
   });
-  // copy css links
   fromDoc.head.querySelectorAll('link[rel="stylesheet"]').forEach(l=>{
     const nl = document.createElement('link');
     for(const a of l.attributes){ nl.setAttribute(a.name, a.value); }
     nl.setAttribute('data-spa-injected','');
     head.appendChild(nl);
   });
-  // favicon
   const fav = fromDoc.head.querySelector('link[rel~="icon"]');
   if (fav){
     const nl = document.createElement('link');
@@ -147,21 +160,13 @@ function injectHead(fromDoc){
     nl.setAttribute('data-spa-injected','');
     head.appendChild(nl);
   }
-  // sync title
   const t = fromDoc.querySelector('title');
   if(t) document.title = t.textContent.trim();
   return [...fromDoc.head.querySelectorAll('script')];
 }
-function copyBodyAttrs(fromDoc){
-  // Copia class e style del body target per mantenere centrature/layout
-  const src = fromDoc.body;
-  const dst = document.body;
-  dst.className = src.className || '';
-  dst.setAttribute('style', src.getAttribute('style') || '');
-}
 
 async function loadHTML(url){
-  const res = await fetch(url, { cache: 'no-store', mode:'cors' });
+  const res = await fetch(url, { cache: 'no-store' });
   if(!res.ok) throw new Error('Fetch failed: '+url+' ('+res.status+')');
   return await res.text();
 }
@@ -169,14 +174,22 @@ function parseDoc(html){
   return new DOMParser().parseFromString(html, 'text/html');
 }
 async function mountDoc(doc){
-  // ensure we stop the loader in any case
   const stopLoader = () => { const s=document.getElementById('status'); if(s) s.style.display='none'; };
   const app = document.getElementById('app');
   try{
     const headScripts = injectHead(doc);
-    copyBodyAttrs(doc); // keep centering and styles
+    app.className = ''; // reset class copy
+    app.removeAttribute('style'); // reset inline style
+    // Copia layout base dal body target dentro #app (NON sul body principale)
+    const srcBody = doc.body;
+    if (srcBody.getAttribute('style')) app.setAttribute('style', srcBody.getAttribute('style'));
+    if (srcBody.className) app.className = srcBody.className;
+    // ma assicurati che #app resti grid+center del wrapper SPA
+    app.style.display = 'grid';
+    app.style.placeItems = 'center';
+    app.style.minHeight = '100vh';
     app.classList.remove('ready');
-    app.style.display = 'block';
+    app.style.opacity = '0';
 
     const body = doc.body;
     app.innerHTML = '';
@@ -186,7 +199,6 @@ async function mountDoc(doc){
       }
     });
 
-    // run head scripts
     for(const s of headScripts){
       const ns = document.createElement('script');
       for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
@@ -196,7 +208,6 @@ async function mountDoc(doc){
         await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Head script load error: '+ns.src)); });
       }
     }
-    // run body scripts
     const bodyScripts = [...body.querySelectorAll('script')];
     for(const s of bodyScripts){
       const ns = document.createElement('script');
@@ -207,7 +218,7 @@ async function mountDoc(doc){
         await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Body script load error: '+ns.src)); });
       }
     }
-    requestAnimationFrame(()=> app.classList.add('ready'));
+    requestAnimationFrame(()=>{ app.classList.add('ready'); app.style.opacity='1'; });
   }catch(e){
     console.error('mountDoc error', e);
     app.innerHTML = `<div class="card"><h2>⚠️ Errore caricamento</h2><div class="muted">${String(e.message||e)}</div></div>`;
@@ -224,7 +235,7 @@ function decideRoute(now, kickoff){
   const T_plus_3h  = t + WINDOWS.lineup_to_fulltime;
   if (n < T_minus_5m) return 'countdown';
   if (n < T_plus_3h)  return 'lineup';
-  return (ROUTES.fulltime && window.__hasFullTime) ? 'fulltime' : 'countdown';
+  return (ROUTES.fulltime) ? 'fulltime' : 'countdown';
 }
 
 let currentRoute = null;
@@ -298,21 +309,14 @@ async function startMetaPolling(intervalMs=120000){
   const force  = (params.get('force')||'').toLowerCase();
   const debug  = params.get('debug') === '1';
 
-  // scopri se esiste fulltime.html
-  try{
-    const check = await fetch(ROUTES.fulltime, { method:'HEAD' });
-    window.__hasFullTime = check.ok;
-  }catch(e){ window.__hasFullTime = false; }
-
-  // Leggi Meta iniziale
+  // Leggi Meta iniziale (con più fallback)
   let metaRows=[];
   try{ metaRows = await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL); }catch(e){ console.warn('meta read fail', e); }
   if(!metaRows.length){
     document.getElementById('status').innerHTML = `
       <div class="card">
-        <h2>⚠️ Dati non disponibili</h2>
-        <div class="muted">Impossibile leggere la scheda “Meta”.</div>
-        <div class="muted" style="margin-top:8px">Controlla la pubblicazione dello Sheet o riprova.</div>
+        <h2>⚠️ Meta non raggiungibile</h2>
+        <div class="muted">Controlla condivisione/publishing dello Sheet o imposta PUBLISHED_META_URL nello script.</div>
       </div>`;
     return;
   }
@@ -336,23 +340,17 @@ async function startMetaPolling(intervalMs=120000){
       `FORCE:   ${force||'-'}`,
       `ROUTE:   ${route}`,
       kickoffCache ? `KICKOFF: ${kickoffCache.toLocaleString('it-IT')}` : 'KICKOFF: n/d',
-      `TARGET:  ${ROUTES[route]}`,
-      `FULLTIME: ${window.__hasFullTime?'yes':'no'}`
+      `TARGET:  ${ROUTES[route]}`
     ].join('\n');
     hud.classList.add('show');
   }
 
-  // Precarica tutto il necessario
-  await Promise.all([ preload(ROUTES.countdown), preload(ROUTES.lineup), window.__hasFullTime ? preload(ROUTES.fulltime) : Promise.resolve() ]);
-
-  // Carica la rotta iniziale
+  await Promise.all([ preload(ROUTES.countdown), preload(ROUTES.lineup), preload(ROUTES.fulltime) ]);
   await loadRoute(route);
 
-  // Avvia scheduling live
   scheduleBoundaryCheck();
   startMetaPolling(120000);
 
-  // Mantieni la root nella barra per condivisione evergreen
   try{ history.replaceState(null,'','./'); }catch(e){}
 })();
 </script>
