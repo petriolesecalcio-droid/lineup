@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Matchday – Petriolese Calcio (Live SPA)</title>
+<title>Matchday – Petriolese Calcio (Live SPA v3)</title>
 <meta name="color-scheme" content="dark light">
 <style>
   :root{ --bg:#0b0c11; --fg:#e6ebf2; --muted:#9aa3b2; }
@@ -17,62 +17,82 @@
   #hud.show{ display:block }
   #app{ display:none; width:100%; height:100%; opacity:0; transition: opacity .28s ease }
   #app.ready{ opacity:1 }
+  /* Fallback centering for injected pages that expect body to be the grid container */
+  #app > .stage { margin:auto; }
 </style>
 </head>
 <body>
   <div class="card" id="status">
     <div style="font-weight:900; letter-spacing:.04em; text-transform:uppercase">Petriolese Calcio</div>
     <h1 style="margin:.35em 0 .2em">Caricamento…</h1>
-    <div class="muted">Scelgo la pagina giusta (countdown / lineup) e commuto live</div>
+    <div class="muted">Seleziono e carico la vista (countdown / lineup) – live switch</div>
     <div class="spinner"></div>
   </div>
 
-  <div id="app"></div>
+  <div id="app" role="main" aria-live="polite"></div>
   <pre id="hud"></pre>
 
 <script>
 /* ====== CONFIG ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
 const META_GID      = '254048258';
-const PUBLISHED_META_URL = '';
+const PUBLISHED_META_URL = ''; // se pubblichi la scheda Meta via "Pubblica su web", metti qui l'URL pubhtml
 
 const ROUTES = {
   countdown: 'countdown.html',
   lineup:    'lineup.html',
-  post:      'post.html'
+  fulltime:  'fulltime.html',  // opzionale: se non esiste, verrà ignorato
+  post:      'post.html'       // non usato automaticamente
 };
 
 const WINDOWS = {
   countdown_to_lineup: 5 * 60 * 1000,
-  lineup_to_after:     3 * 60 * 60 * 1000
+  lineup_to_fulltime:  3 * 60 * 60 * 1000   // dopo 3h dal KO
 };
 
 /* ====== HELPERS CSV ====== */
 const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
 function pubCsvURL(pubhtmlUrl){
-  const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
-  const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
-  return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+  try{
+    const u=new URL(pubhtmlUrl); const parts=u.pathname.split('/'); const idIdx=parts.findIndex(p=>p==='e')+1; const id=parts[idIdx]||'';
+    const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
+    return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`;
+  }catch(e){ return null; }
 }
 function parseCSV(text){
-  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
-  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
-  if(!lines.length) return [];
-  const rows=[]; let row=[],cur='',inQ=false;
-  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
-  const s=lines.join('\n');
-  for(let i=0;i<s.length;i++){
-    const c=s[i],n=s[i+1];
-    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
-    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
-  }
-  if(cur!==''||row.length){pushCell();pushRow()}
-  const header=(rows.shift()||[]).map(h=>String(h||'').trim());
-  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+  try{
+    let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
+    const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
+    if(!lines.length) return [];
+    const rows=[]; let row=[],cur='',inQ=false;
+    const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
+    const s=lines.join('\n');
+    for(let i=0;i<s.length;i++){
+      const c=s[i],n=s[i+1];
+      if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
+      else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
+    }
+    if(cur!==''||row.length){pushCell();pushRow()}
+    const header=(rows.shift()||[]).map(h=>String(h||'').trim());
+    return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
+  }catch(e){ console.error('parseCSV error', e); return []; }
 }
 async function fetchCsvPrefer(fileId,gid,pubUrl){
-  try{ const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(res.ok){ return parseCSV(await res.text()); } }catch(e){}
-  if(pubUrl){ const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'}); return parseCSV(await res.text()); }
+  // 1) gviz
+  try{
+    const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store', mode:'cors'});
+    if(res.ok){ return parseCSV(await res.text()); }
+  }catch(e){ console.warn('gvizCsv fetch fail', e); }
+  // 2) fallback pubhtml->csv
+  try{
+    if(pubUrl){
+      const url = pubCsvURL(pubUrl);
+      if(url){
+        const res=await fetch(url,{cache:'no-store', mode:'cors'});
+        if(res.ok){ return parseCSV(await res.text()); }
+      }
+    }
+  }catch(e){ console.warn('pubCsv fetch fail', e); }
   return [];
 }
 function normalizeMeta(rows){
@@ -105,18 +125,21 @@ function clearInjectedHead(){
 function injectHead(fromDoc){
   clearInjectedHead();
   const head = document.head;
+  // copy styles
   fromDoc.head.querySelectorAll('style').forEach(s=>{
     const ns = document.createElement('style');
     ns.setAttribute('data-spa-injected','');
     ns.textContent = s.textContent;
     head.appendChild(ns);
   });
+  // copy css links
   fromDoc.head.querySelectorAll('link[rel="stylesheet"]').forEach(l=>{
     const nl = document.createElement('link');
     for(const a of l.attributes){ nl.setAttribute(a.name, a.value); }
     nl.setAttribute('data-spa-injected','');
     head.appendChild(nl);
   });
+  // favicon
   const fav = fromDoc.head.querySelector('link[rel~="icon"]');
   if (fav){
     const nl = document.createElement('link');
@@ -124,52 +147,73 @@ function injectHead(fromDoc){
     nl.setAttribute('data-spa-injected','');
     head.appendChild(nl);
   }
+  // sync title
+  const t = fromDoc.querySelector('title');
+  if(t) document.title = t.textContent.trim();
   return [...fromDoc.head.querySelectorAll('script')];
+}
+function copyBodyAttrs(fromDoc){
+  // Copia class e style del body target per mantenere centrature/layout
+  const src = fromDoc.body;
+  const dst = document.body;
+  dst.className = src.className || '';
+  dst.setAttribute('style', src.getAttribute('style') || '');
 }
 
 async function loadHTML(url){
-  const res = await fetch(url, { cache: 'no-store' });
-  if(!res.ok) throw new Error('Fetch failed: '+url);
+  const res = await fetch(url, { cache: 'no-store', mode:'cors' });
+  if(!res.ok) throw new Error('Fetch failed: '+url+' ('+res.status+')');
   return await res.text();
 }
 function parseDoc(html){
   return new DOMParser().parseFromString(html, 'text/html');
 }
 async function mountDoc(doc){
-  const headScripts = injectHead(doc);
+  // ensure we stop the loader in any case
+  const stopLoader = () => { const s=document.getElementById('status'); if(s) s.style.display='none'; };
   const app = document.getElementById('app');
-  app.classList.remove('ready');
-  app.style.display = 'block';
-  const body = doc.body;
-  app.innerHTML = '';
-  [...body.childNodes].forEach(node=>{
-    if(!(node.tagName && node.tagName.toLowerCase()==='script')){
-      app.appendChild(node.cloneNode(true));
+  try{
+    const headScripts = injectHead(doc);
+    copyBodyAttrs(doc); // keep centering and styles
+    app.classList.remove('ready');
+    app.style.display = 'block';
+
+    const body = doc.body;
+    app.innerHTML = '';
+    [...body.childNodes].forEach(node=>{
+      if(!(node.tagName && node.tagName.toLowerCase()==='script')){
+        app.appendChild(node.cloneNode(true));
+      }
+    });
+
+    // run head scripts
+    for(const s of headScripts){
+      const ns = document.createElement('script');
+      for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
+      if(!s.src){ ns.textContent = s.textContent; }
+      document.head.appendChild(ns);
+      if(ns.src && !ns.defer && !ns.async){
+        await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Head script load error: '+ns.src)); });
+      }
     }
-  });
-  // run head scripts
-  for(const s of headScripts){
-    const ns = document.createElement('script');
-    for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
-    if(!s.src){ ns.textContent = s.textContent; }
-    document.head.appendChild(ns);
-    if(ns.src && !ns.defer && !ns.async){
-      await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Head script load error: '+ns.src)); });
+    // run body scripts
+    const bodyScripts = [...body.querySelectorAll('script')];
+    for(const s of bodyScripts){
+      const ns = document.createElement('script');
+      for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
+      if(!s.src){ ns.textContent = s.textContent; }
+      app.appendChild(ns);
+      if(ns.src && !ns.defer && !ns.async){
+        await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Body script load error: '+ns.src)); });
+      }
     }
+    requestAnimationFrame(()=> app.classList.add('ready'));
+  }catch(e){
+    console.error('mountDoc error', e);
+    app.innerHTML = `<div class="card"><h2>⚠️ Errore caricamento</h2><div class="muted">${String(e.message||e)}</div></div>`;
+  }finally{
+    stopLoader();
   }
-  // run body scripts
-  const bodyScripts = [...body.querySelectorAll('script')];
-  for(const s of bodyScripts){
-    const ns = document.createElement('script');
-    for(const a of s.attributes){ ns.setAttribute(a.name, a.value); }
-    if(!s.src){ ns.textContent = s.textContent; }
-    app.appendChild(ns);
-    if(ns.src && !ns.defer && !ns.async){
-      await new Promise((ok,ko)=>{ ns.onload=ok; ns.onerror=()=>ko(new Error('Body script load error: '+ns.src)); });
-    }
-  }
-  // fade-in
-  requestAnimationFrame(()=> app.classList.add('ready'));
 }
 
 /* ====== ROUTER LIVE ====== */
@@ -177,65 +221,59 @@ function decideRoute(now, kickoff){
   const t  = kickoff.getTime();
   const n  = now.getTime();
   const T_minus_5m = t - WINDOWS.countdown_to_lineup;
-  const T_plus_3h  = t + WINDOWS.lineup_to_after;
+  const T_plus_3h  = t + WINDOWS.lineup_to_fulltime;
   if (n < T_minus_5m) return 'countdown';
   if (n < T_plus_3h)  return 'lineup';
-  return 'countdown';
+  return (ROUTES.fulltime && window.__hasFullTime) ? 'fulltime' : 'countdown';
 }
 
 let currentRoute = null;
 let kickoffCache = null;
 let metaPollTimer = null;
 let boundaryTimer = null;
-let pageCache = new Map(); // url -> {html, doc}
+let pageCache = new Map();
 
-/** Precarica e cache la pagina */
 async function preload(url){
   if(pageCache.has(url)) return pageCache.get(url);
-  const html = await loadHTML(url);
-  const doc  = parseDoc(html);
-  const obj = { html, doc };
-  pageCache.set(url, obj);
-  return obj;
+  try{
+    const html = await loadHTML(url);
+    const doc  = parseDoc(html);
+    const obj = { html, doc };
+    pageCache.set(url, obj);
+    return obj;
+  }catch(e){
+    console.warn('preload failed for', url, e);
+    return null;
+  }
 }
-
-/** Carica (monta) una rotta */
 async function loadRoute(route){
   const url = ROUTES[route] || ROUTES.countdown;
-  const { doc } = await preload(url);
-  await mountDoc(doc);
+  const cached = await preload(url);
+  if(!cached){ throw new Error('Route not available: '+route); }
+  await mountDoc(cached.doc);
   currentRoute = route;
 }
 
-/** Calcola e programma il prossimo controllo con timer mirato */
 function scheduleBoundaryCheck(){
   if(!kickoffCache) return;
   clearTimeout(boundaryTimer);
-  const now = new Date().getTime();
+  const now = Date.now();
   const tKO = kickoffCache.getTime();
-  const t1  = tKO - WINDOWS.countdown_to_lineup; // -5m
-  const t2  = tKO + WINDOWS.lineup_to_after;     // +3h
-
-  // prossimo istante rilevante (prima quello più vicino nel futuro)
+  const t1  = tKO - WINDOWS.countdown_to_lineup;
+  const t2  = tKO + WINDOWS.lineup_to_fulltime;
   const upcoming = [t1, t2].filter(t=>t > now).sort((a,b)=>a-b)[0];
-
-  // se non c'è, ricontrolla tra 30 min
   const delay = upcoming ? Math.max(500, Math.min(upcoming - now + 250, 30*60*1000)) : 30*60*1000;
 
   boundaryTimer = setTimeout(async ()=>{
-    // Evita rimbalzi: ricalcola route e commuta se cambia
     const routeNew = decideRoute(new Date(), kickoffCache);
     if(routeNew !== currentRoute){
-      // Precarica la destinazione per switch rapido
-      await preload(ROUTES[routeNew]);
+      await preload(ROUTES[routeNew] || '');
       await loadRoute(routeNew);
     }
-    // riprogramma
     scheduleBoundaryCheck();
   }, delay);
 }
 
-/** Poll leggero della Meta per cogliere eventuali spostamenti orario */
 async function startMetaPolling(intervalMs=120000){
   clearInterval(metaPollTimer);
   metaPollTimer = setInterval(async ()=>{
@@ -246,30 +284,35 @@ async function startMetaPolling(intervalMs=120000){
       const timeStr = (meta.get('ora') ||meta.get('prossimaora') ||meta.get('prossima_ora') ||'').toString().trim();
       const k = parseDateTimeIT(dateStr, timeStr);
       if(k && !isNaN(+k)){
-        // se l'orario è cambiato di > 1 minuti, aggiorna e riscadula
         if(!kickoffCache || Math.abs(k.getTime() - kickoffCache.getTime()) > 60*1000){
           kickoffCache = k;
           scheduleBoundaryCheck();
         }
       }
-    }catch(e){ /* silenzio: prossimo giro */ }
+    }catch(e){ console.warn('meta polling error', e); }
   }, intervalMs);
 }
 
 (async function main(){
   const params = new URLSearchParams(location.search);
-  const force  = (params.get('force')||'').toLowerCase(); // countdown|lineup|post
+  const force  = (params.get('force')||'').toLowerCase();
   const debug  = params.get('debug') === '1';
+
+  // scopri se esiste fulltime.html
+  try{
+    const check = await fetch(ROUTES.fulltime, { method:'HEAD' });
+    window.__hasFullTime = check.ok;
+  }catch(e){ window.__hasFullTime = false; }
 
   // Leggi Meta iniziale
   let metaRows=[];
-  try{ metaRows = await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL); }catch(e){}
+  try{ metaRows = await fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL); }catch(e){ console.warn('meta read fail', e); }
   if(!metaRows.length){
     document.getElementById('status').innerHTML = `
       <div class="card">
         <h2>⚠️ Dati non disponibili</h2>
         <div class="muted">Impossibile leggere la scheda “Meta”.</div>
-        <div style="margin-top:10px" class="muted">Prova a ricaricare.</div>
+        <div class="muted" style="margin-top:8px">Controlla la pubblicazione dello Sheet o riprova.</div>
       </div>`;
     return;
   }
@@ -280,7 +323,6 @@ async function startMetaPolling(intervalMs=120000){
   const kickoff = parseDateTimeIT(dateStr, timeStr);
   if(kickoff && !isNaN(+kickoff)) kickoffCache = kickoff;
 
-  // Decidi rotta iniziale
   let route = 'countdown';
   if (force && ROUTES[force]) {
     route = force;
@@ -288,31 +330,29 @@ async function startMetaPolling(intervalMs=120000){
     route = decideRoute(new Date(), kickoffCache);
   }
 
-  // HUD
   if (debug){
     const hud = document.getElementById('hud');
     hud.textContent = [
       `FORCE:   ${force||'-'}`,
       `ROUTE:   ${route}`,
       kickoffCache ? `KICKOFF: ${kickoffCache.toLocaleString('it-IT')}` : 'KICKOFF: n/d',
-      `TARGET:  ${ROUTES[route]}`
+      `TARGET:  ${ROUTES[route]}`,
+      `FULLTIME: ${window.__hasFullTime?'yes':'no'}`
     ].join('\n');
     hud.classList.add('show');
   }
 
-  // Precarica entrambe per switch istantaneo
-  await Promise.all([ preload(ROUTES.countdown), preload(ROUTES.lineup) ]);
+  // Precarica tutto il necessario
+  await Promise.all([ preload(ROUTES.countdown), preload(ROUTES.lineup), window.__hasFullTime ? preload(ROUTES.fulltime) : Promise.resolve() ]);
 
   // Carica la rotta iniziale
   await loadRoute(route);
 
-  // Avvia scheduling (commuta live ai confini)
+  // Avvia scheduling live
   scheduleBoundaryCheck();
+  startMetaPolling(120000);
 
-  // Avvia polling meta (per eventuali cambi di orario)
-  startMetaPolling(120000); // ogni 2 minuti
-
-  // Mantieni la root in barra per condivisione evergreen
+  // Mantieni la root nella barra per condivisione evergreen
   try{ history.replaceState(null,'','./'); }catch(e){}
 })();
 </script>
