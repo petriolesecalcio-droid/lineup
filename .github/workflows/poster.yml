@@ -22,7 +22,7 @@ jobs:
 
       - name: Install deps (poster tool)
         working-directory: tools/poster
-        run: npm ci
+        run: npm install
 
       - name: Fetch data from Sheet (Meta)
         working-directory: tools/poster
