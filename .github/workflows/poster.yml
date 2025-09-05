@@ -1,0 +1,46 @@
+
+name: Poster – Generate
+
+on:
+  workflow_dispatch:
+    inputs:
+      MATCH_INDEX:
+        description: 'Indice riga (0-based) della Sheet; vuoto=ultima riga non vuota'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps (poster tool)
+        working-directory: tools/poster
+        run: npm ci
+
+      - name: Fetch data from Sheet (Meta)
+        working-directory: tools/poster
+        env:
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          SHEET_GID: ${{ secrets.SHEET_GID }}
+          MATCH_INDEX: ${{ github.event.inputs.MATCH_INDEX }}
+        run: node src/fetch_meta.js
+
+      - name: Build posters
+        working-directory: tools/poster
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: posters
+          path: |
+            tools/poster/dist/*.png
+            tools/poster/dist/*.webp
