@@ -5,24 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Locandina – {{competition}}</title>
   <style>
-    /* Canvas PSD di riferimento: 2480 x 3508 (A4 base) */
     :root{
-      /* Misura finale (render.js la cambia per i formati social) */
       --W: 1080px;
       --H: 1350px;
-
-      /* Base PSD */
       --BASE_W: 2480;
       --BASE_H: 3508;
-
-      /* QUICK TUNING (solo se vuoi rifinire i posizionamenti) */
-      --teams-top:   1760px;  /* fascia “VS” centrale */
-      --meta-top:     840px;  /* blocco a destra del MATCH DAY */
-      --sponsor-h:    360px;  /* altezza area sponsor nella banda bianca */
-
+      --teams-top: 1760px;
+      --meta-top:  840px;
+      --sponsor-h: 360px;
       --white:#f7f8fa; --muted:#a7b0bd;
     }
-
     html,body{margin:0;height:100%;}
     body{
       background:#0b0c11;
@@ -30,8 +22,6 @@
       color: var(--white);
       display:flex; align-items:center; justify-content:center;
     }
-
-    /* wrapper esterno (A4/social) */
     .canvas{
       position:relative; width: var(--W); height: var(--H);
       border-radius: 24px; overflow:hidden;
@@ -39,8 +29,6 @@
       background:#0b0c11;
       display:flex; align-items:center; justify-content:center;
     }
-
-    /* stage “PSD” 2480x3508, scalata uniformemente */
     .stage{
       position:relative; width: var(--BASE_W); height: var(--BASE_H);
       transform-origin: top left;
@@ -48,10 +36,10 @@
       --sy: calc((var(--H)) / (var(--BASE_H) * 1px));
       --s: min(var(--sx), var(--sy));
       transform: scale(var(--s));
-      background: center/cover no-repeat url("../assets/ui/fixed.svg"); /* <-- se usi PNG/WEBP: fixed.png o fixed.webp */
     }
+    .bgimg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+    .content{ position:relative; z-index:1; }
 
-    /* ========== ZONA DINAMICA 1: Squadre (loghi + nomi) ========== */
     .teams{
       position:absolute; left:160px; right:160px; top: var(--teams-top);
       display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap: 36px;
@@ -62,7 +50,6 @@
     .crest{ width:150px; height:150px; object-fit:contain; filter: drop-shadow(0 4px 14px rgba(0,0,0,.35)); }
     .vs{ font-size: 120px; font-weight: 900; line-height:1; }
 
-    /* ========== ZONA DINAMICA 2: Meta (a destra di MATCH DAY) ========== */
     .meta{
       position:absolute; right:160px; top: var(--meta-top); width: 900px;
       display:grid; grid-template-columns: 240px 1fr; gap: 16px 18px;
@@ -75,13 +62,11 @@
     .label{ color: var(--muted); font-size: 28px; font-weight:700; }
     .value{ font-size: 34px; }
 
-    /* ========== ZONA DINAMICA 3: Sponsor nella banda bianca ========== */
     .sponsor{
       position:absolute; left:160px; right:160px;
       bottom: 120px; height: var(--sponsor-h);
       display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px 24px; align-items:center; justify-items:center;
-      /* bordo e sfondo leggerissimi per “contenere” ma non coprire la grafica bianca */
       background: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.02));
       border: 1px solid rgba(0,0,0,.06);
       border-radius: 14px;
@@ -93,30 +78,34 @@
 <body>
   <div class="canvas">
     <div class="stage">
-      <!-- Squadre -->
-      <section class="teams">
-        <div class="team" style="justify-self:end">
-          <span>{{homeTeamName}}</span>
-          <img class="crest" src="{{homeLogo}}" alt="{{homeTeamName}}">
-        </div>
-        <div class="vs">VS</div>
-        <div class="team" style="justify-self:start">
-          <img class="crest" src="{{awayLogo}}" alt="{{awayTeamName}}">
-          <span>{{awayTeamName}}</span>
-        </div>
-      </section>
+      <!-- sfondo fisso come immagine -->
+      <img class="bgimg" src="../assets/ui/fixed.svg" alt="">
+      <div class="content">
+        <!-- TEAMS -->
+        <section class="teams">
+          <div class="team" style="justify-self:end">
+            <span>{{homeTeamName}}</span>
+            <img class="crest" src="{{homeLogo}}" alt="{{homeTeamName}}">
+          </div>
+          <div class="vs">VS</div>
+          <div class="team" style="justify-self:start">
+            <img class="crest" src="{{awayLogo}}" alt="{{awayTeamName}}">
+            <span>{{awayTeamName}}</span>
+          </div>
+        </section>
 
-      <!-- Meta a destra del MATCH DAY -->
-      <section class="meta">
-        <div class="label">Data</div><div class="value">{{dateISO}}</div>
-        <div class="label">Ora</div><div class="value">{{time}}</div>
-        <div class="label">Luogo</div><div class="value">{{venue}}</div>
-      </section>
+        <!-- META -->
+        <section class="meta">
+          <div class="label">Data</div><div class="value">{{dateISO}}</div>
+          <div class="label">Ora</div><div class="value">{{time}}</div>
+          <div class="label">Luogo</div><div class="value">{{venue}}</div>
+        </section>
 
-      <!-- Sponsor nella banda bianca -->
-      <section class="sponsor">
-        {{SPONSOR_GRID}}
-      </section>
+        <!-- SPONSOR -->
+        <section class="sponsor">
+          {{SPONSOR_GRID}}
+        </section>
+      </div>
     </div>
   </div>
 </body>
