@@ -1,0 +1,16 @@
+{
+  "name": "petriolese-poster-addon",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node src/render.js",
+    "from:sheet": "node src/fetch_meta.js && node src/render.js",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "puppeteer": "^22.13.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  }
+}
