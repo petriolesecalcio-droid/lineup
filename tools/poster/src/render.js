@@ -45,7 +45,7 @@ async function renderOne(browser, htmlPath, out, w, h){
   if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
   const data = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
 
-  data.awaySlug = slugify(data.awayTeamName || '');
+ // data.awaySlug = slugify(data.awayTeamName || '');
 
   // Sponsor list
   const sponsors = listSponsors(data.sponsorCsv || '');
