@@ -5,90 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Locandina – {{competition}}</title>
   <style>
+    /* Canvas di riferimento PSD: 2480 x 3508 (A4 @base) */
     :root{
-      --bg:#0b0c11; --roof-mid:#1f2531; --white:#f7f8fa; --muted:#98a2b3;
+      --W: 1080px;     /* verranno sovrascritte da render.js per i formati */
+      --H: 1350px;
+
+      --BASE_W: 2480;  /* px del canvas PSD */
+      --BASE_H: 3508;
+
+      /* colori fallback per testi */
+      --white:#f7f8fa;
+      --muted:#a7b0bd;
     }
+
     html,body{margin:0;height:100%;}
     body{
-      background: radial-gradient(120% 100% at 50% 0%, var(--roof-mid), var(--bg) 60%);
-      color: var(--white);
+      background:#0b0c11;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans', 'Helvetica Neue', sans-serif;
+      color: var(--white);
       display:flex; align-items:center; justify-content:center;
     }
-    .canvas{ position:relative; width: var(--W,1080px); height: var(--H,1350px); overflow:hidden; border-radius: 24px; box-shadow: 0 40px 80px rgba(0,0,0,.4); }
-    .header{ position:absolute; left:40px; top:40px; display:flex; gap:16px; align-items:center; }
-    .logo{ width:92px; height:92px; object-fit:contain; }
-    .title .club{ font-weight:800; letter-spacing:.5px; font-size: 44px; }
-    .title .comp{ color: var(--muted); font-weight:600; font-size: 18px; }
 
-    /* Riga MATCHDAY con squadre (zona 1 dinamica: loghi+nomi) */
+    /* wrapper esterno: misura finale del poster (A4/social) */
+    .canvas{
+      position:relative;
+      width: var(--W);
+      height: var(--H);
+      overflow:hidden;
+      border-radius: 24px;
+      box-shadow: 0 40px 80px rgba(0,0,0,.45);
+      background:#0b0c11;
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* stage “PSD” a misura fissa 2480x3508, scalata uniformemente */
+    .stage-wrap{
+      position:relative;
+      width: var(--BASE_W);
+      height: var(--BASE_H);
+      transform-origin: top left;
+      /* scale = min(W/baseW, H/baseH) */
+      --sx: calc((var(--W)) / (var(--BASE_W) * 1px));
+      --sy: calc((var(--H)) / (var(--BASE_H) * 1px));
+      --s: min(var(--sx), var(--sy));
+      transform: scale(var(--s));
+    }
+
+    /* layer immagine bg e overlay (esportati dalla PSD) */
+    .bg, .overlay{
+      position:absolute; inset:0;
+      background-position:center;
+      background-size: cover;
+      pointer-events:none;
+    }
+    .bg{ background-image: url("../assets/ui/bg.webp"); }
+    .overlay{ background-image: url("../assets/ui/overlay.webp"); }
+
+    /* === Testi e blocchi (coordinate prese dalla PSD; aggiusta i top/left) === */
+
+    /* intestazione in alto (logo + titolo) */
+    .header{
+      position:absolute; left:140px; top:120px; display:flex; gap:20px; align-items:center;
+    }
+    .logo{ width:120px; height:120px; object-fit:contain; }
+    .title{
+      line-height:1.1;
+    }
+    .club{ font-weight:900; letter-spacing:.5px; font-size: 64px; }
+    .comp{ color: var(--muted); font-weight:600; font-size: 28px; }
+
+    /* riga centrale con squadre e MATCHDAY (zona dinamica 1) */
     .match{
-      position:absolute; left:40px; top:170px; right:40px;
-      display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap:24px; text-transform:uppercase;
+      position:absolute; left:140px; right:140px; top:680px;
+      display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap: 28px;
+      text-transform: uppercase; font-weight:800;
     }
-    .team{ display:flex; align-items:center; gap:14px; font-weight:800; letter-spacing:.5px; }
-    .crest{ width:80px; height:80px; object-fit:contain; }
-    .vs{ font-weight:900; font-size: 110px; line-height:.9; }
+    .team{ display:flex; align-items:center; gap:18px; }
+    .crest{ width:124px; height:124px; object-fit:contain; }
+    .team span{ font-size: 54px; letter-spacing:.6px; }
+    .md{
+      font-size: 140px; font-weight: 900; line-height:.9;
+      /* se in PSD "MATCHDAY" è in overlay.webp, puoi nasconderlo: */
+      /* visibility:hidden; */
+      text-shadow: 0 8px 28px rgba(0,0,0,.35);
+    }
 
-    /* Pannello a destra di MATCHDAY (zona 2 dinamica) */
+    /* pannello a destra di MATCHDAY (zona dinamica 2) */
     .meta{
-      position:absolute; right:40px; top:340px; width: 460px;
-      display:grid; grid-template-columns: 1fr; gap:12px;
+      position:absolute; right:140px; top:1080px; width: 740px;
+      display:grid; grid-template-columns: 1fr; gap: 16px;
+      padding: 24px 28px;
+      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.08));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      backdrop-filter: blur(2px);
     }
-    .row .label{ color: var(--muted); font-size: 14px; }
-    .row .value{ font-size: 22px; font-weight: 700; }
+    .row{ display:grid; grid-template-columns: 180px 1fr; align-items:baseline; gap: 14px; }
+    .label{ color: var(--muted); font-size: 22px; font-weight:600; }
+    .value{ font-size: 30px; font-weight:800; }
 
-    /* Gabbia sponsor in basso */
+    /* gabbia sponsor in basso (auto-fit, max 2 righe visive in PSD) */
     .sponsor{
-      position:absolute; left:40px; right:40px; bottom:30px;
-      display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 16px 18px; align-items:center; justify-items:center;
-      padding: 16px 18px; border-radius: 14px;
+      position:absolute; left:140px; right:140px; bottom:120px;
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px 22px; align-items:center; justify-items:center;
+      padding: 18px 22px; border-radius: 16px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border: 1px solid rgba(255,255,255,.08);
     }
-    .s-item{ width: 180px; height: 70px; display:flex; align-items:center; justify-content:center; }
-    .s-item img{ max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,.35)); }
+    .s-item{ width: 260px; height: 100px; display:flex; align-items:center; justify-content:center; }
+    .s-item img{ max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,.35)); }
   </style>
 </head>
 <body>
   <div class="canvas">
-    <header class="header">
-      <img class="logo" src="../assets/petriolese.webp" alt="Petriolese">
-      <div class="title">
-        <div class="club">PETRIOLESE CALCIO</div>
-        <div class="comp">{{competition}}</div>
-      </div>
-    </header>
+    <div class="stage-wrap">
+      <!-- LAYER FISSI DA PSD -->
+      <div class="bg"></div>
+      <div class="overlay"></div>
 
-    <!-- Zona dinamica 1: Squadre -->
-    <section class="match">
-      <div class="team" style="justify-self:end">
-        <span>Petriolese</span>
-        <img class="crest" src="../assets/petriolese.webp" alt="Petriolese">
-      </div>
-      <div class="vs">MATCHDAY</div>
-      <div class="team" style="justify-self:start">
-        <img class="crest" src="../assets/logos/{{awaySlug}}.webp" alt="{{awayTeamName}}">
-        <span>{{awayTeamName}}</span>
-      </div>
-    </section>
+      <!-- HEADER (testo vivo, ma se il titolo è disegnato in PSD puoi toglierlo) -->
+      <header class="header">
+        <img class="logo" src="../assets/petriolese.webp" alt="Petriolese">
+        <div class="title">
+          <div class="club">PETRIOLESE CALCIO</div>
+          <div class="comp">{{competition}}</div>
+        </div>
+      </header>
 
-    <!-- Zona dinamica 2: Pannello a destra di MATCHDAY -->
-    <section class="meta">
-      <div class="row"><div class="label">Giornata</div><div class="value">{{matchdayLabel}}</div></div>
-      <div class="row"><div class="label">Data</div><div class="value">{{dateISO}}</div></div>
-      <div class="row"><div class="label">Orario</div><div class="value">{{time}}</div></div>
-      <div class="row"><div class="label">Campo</div><div class="value">{{venue}}</div></div>
-      <div class="row"><div class="label">Competizione</div><div class="value">{{competition}}</div></div>
-      <div class="row"><div class="label">Arbitro</div><div class="value">{{referee}}</div></div>
-      <div class="row"><div class="label">Note</div><div class="value">{{note}}</div></div>
-    </section>
+      <!-- ZONA DINAMICA 1: Squadre + MATCHDAY -->
+      <section class="match">
+        <div class="team" style="justify-self:end">
+          <span>Petriolese</span>
+          <img class="crest" src="../assets/petriolese.webp" alt="Petriolese">
+        </div>
+        <div class="md">MATCHDAY</div>
+        <div class="team" style="justify-self:start">
+          <img class="crest" src="../assets/logos/{{awaySlug}}.webp" alt="{{awayTeamName}}">
+          <span>{{awayTeamName}}</span>
+        </div>
+      </section>
 
-    <!-- Sponsor -->
-    <section class="sponsor">
-      {{SPONSOR_GRID}}
-    </section>
+      <!-- ZONA DINAMICA 2: Pannello a destra di MATCHDAY -->
+      <section class="meta">
+        <div class="row"><div class="label">Giornata</div><div class="value">{{matchdayLabel}}</div></div>
+        <div class="row"><div class="label">Data</div><div class="value">{{dateISO}}</div></div>
+        <div class="row"><div class="label">Orario</div><div class="value">{{time}}</div></div>
+        <div class="row"><div class="label">Campo</div><div class="value">{{venue}}</div></div>
+        <div class="row"><div class="label">Competizione</div><div class="value">{{competition}}</div></div>
+        <div class="row"><div class="label">Arbitro</div><div class="value">{{referee}}</div></div>
+        <div class="row"><div class="label">Note</div><div class="value">{{note}}</div></div>
+      </section>
+
+      <!-- SPONSOR (auto-fit; se vuoi l’ordine, usa colonna 'Sponsor' nello Sheet) -->
+      <section class="sponsor">
+        {{SPONSOR_GRID}}
+      </section>
+    </div>
   </div>
 </body>
 </html>
