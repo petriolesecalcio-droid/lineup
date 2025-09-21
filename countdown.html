@@ -395,43 +395,6 @@ function parseDateTimeIT(dateStr, timeStr){
 
 /* ====== INIT ====== */
 (async function init(){
-  // Pulsanti social
-  document.getElementById('igFab').addEventListener('click', ()=>{
-    const username='asd_petriolese_calcio';
-    const web='https://www.instagram.com/asd_petriolese_calcio/';
-    const scheme=`instagram://user?username=${username}`;
-    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if(isMobile){ const start=Date.now(); location.href=scheme; setTimeout(()=>{ if(Date.now()-start<1600) window.open(web,'_blank','noopener'); },700); }
-    else{ window.open(web,'_blank','noopener'); }
-  }, {passive:true});
-
-  document.getElementById('waFab').addEventListener('click', ()=>{
-    const url='https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
-    window.open(url, '_blank', 'noopener');
-  }, {passive:true});
-
-  const shareBtn=document.getElementById('shareFab');
-  shareBtn.addEventListener('click', async()=>{
-    try{
-      shareBtn.setAttribute('aria-busy','true');
-      const stage=document.querySelector('.stage'); const prev = shareBtn.style.visibility; shareBtn.style.visibility='hidden';
-      const scale=Math.max(3, window.devicePixelRatio||1);
-      const canvas=await html2canvas(stage,{backgroundColor:'#0b0c11',scale});
-      shareBtn.style.visibility=prev||'visible';
-      const out=document.createElement('canvas'); out.width=1080; out.height=1920;
-      const ctx=out.getContext('2d'); ctx.fillStyle='#0b0c11'; ctx.fillRect(0,0,out.width,out.height);
-      const ratio=Math.min(out.width/canvas.width, out.height/canvas.height);
-      const w=Math.round(canvas.width*ratio), h=Math.round(canvas.height*ratio);
-      const x=Math.floor((out.width-w)/2), y=Math.floor((out.height-h)/2);
-      ctx.drawImage(canvas,x,y,w,h);
-      const blob=await new Promise(r=>out.toBlob(r,'image/png',0.95));
-      const file=new File([blob], `countdown_petriolese_${new Date().toISOString().slice(0,10)}.png`, {type:'image/png'});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({title:'Countdown – Petriolese', files:[file]}); }
-      else{ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-    }catch(e){ console.error(e); alert('Condivisione non disponibile.'); }
-    finally{ shareBtn.removeAttribute('aria-busy'); }
-  });
-
   // Dati dallo Sheet
   const [metaRows, oppRows] = await Promise.all([
     fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL),
@@ -658,6 +621,54 @@ if (competizione){
   </div>
 </div>
 </div>
+
+<script type="module">
+import { createStageShareHandler, createInstagramOpener, createWhatsAppOpener } from './js/share-controls.js';
+
+function setupCountdownShare(){
+  const stage = document.querySelector('.stage');
+  const shareFab = document.getElementById('shareFab');
+  const igFab = document.getElementById('igFab');
+  const waFab = document.getElementById('waFab');
+
+  if(igFab){
+    const openInstagram = createInstagramOpener({ username: 'asd_petriolese_calcio' });
+    igFab.addEventListener('click', openInstagram, { passive: true });
+  }
+
+  if(waFab){
+    const openWhatsApp = createWhatsAppOpener({ url: 'https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E' });
+    waFab.addEventListener('click', openWhatsApp, { passive: true });
+  }
+
+  if(!stage || !shareFab) return;
+
+  const shareHandler = createStageShareHandler(stage, {
+    hideDuringCapture: [shareFab, igFab, waFab],
+    shareTitle: 'Countdown – Petriolese',
+    fileNamePrefix: 'countdown_petriolese',
+    backgroundColor: '#0b0c11'
+  });
+
+  shareFab.addEventListener('click', async () => {
+    try{
+      shareFab.setAttribute('aria-busy', 'true');
+      await shareHandler();
+    }catch(error){
+      console.error(error);
+      alert('Condivisione non disponibile.');
+    }finally{
+      shareFab.removeAttribute('aria-busy');
+    }
+  }, { passive: true });
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', setupCountdownShare, { once: true });
+}else{
+  setupCountdownShare();
+}
+</script>
 
 </body>
 </html>
