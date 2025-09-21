@@ -232,6 +232,7 @@
     </button>
   </div>
 
+<script src="js/sheet-utils.js"></script>
 <script>
 /* ====== SHEET CONFIG ====== */
 const SHEET_FILE_ID='1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
@@ -240,16 +241,12 @@ const OPP_GID='1284472120';
 const PUBLISHED_META_URL='';
 const PUBLISHED_OPP_URL='';
 
-/* ====== CSV + UTILS ====== */
-const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
-function pubCsvURL(pubhtmlUrl){ const u=new URL(pubhtmlUrl); const p=u.pathname.split('/'); const idIdx=p.findIndex(x=>x==='e')+1; const id=p[idIdx]||''; const root=`${u.protocol}//${u.host}${p.slice(0,idIdx).join('/')}/${id}`; return `${root}/pub?gid=${encodeURIComponent(u.searchParams.get('gid')||'0')}&single=true&output=csv`; }
-function parseCSV(text){ let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n'); const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0); if(!lines.length) return []; const rows=[]; let row=[],cur='',inQ=false; const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]}; const s=lines.join('\n'); for(let i=0;i<s.length;i++){ const c=s[i],n=s[i+1]; if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c } else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c } } if(cur!==''||row.length){pushCell();pushRow()} const header=(rows.shift()||[]).map(h=>String(h||'').trim()); return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ]))); }
-async function fetchCsvPrefer(fileId,gid,pubUrl){ try{ const res=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(res.ok){ return parseCSV(await res.text()); } }catch(e){} if(pubUrl){ const res=await fetch(pubCsvURL(pubUrl),{cache:'no-store'}); return parseCSV(await res.text()); } return []; }
-function normalizeMeta(rows){ const m=new Map(); rows.forEach(r=>{ const k=(''+(r.Key||r.KEY||'')).trim().toLowerCase(); const v=(''+(r.Value||r.VALORE||'')).trim(); if(k) m.set(k,v); }); return m; }
-function normalizeOpp(rows){ const out=new Map(); rows.forEach(r=>{ const name=(''+(r.Squadra||r.squadra||'')).trim(); const url=(''+(r.Logo||r.logo||'')).trim(); if(name) out.set(name.toLowerCase(), url); }); return out; }
-function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-function resolveLogoSrc(teamName,oppMap){ const name=(teamName||'').trim(); if(!name) return ''; const fromSheet=oppMap.get(name.toLowerCase())||''; if(fromSheet) return fromSheet; return `logos/${slugify(name)}.webp`; }
-function setLogo(imgEl,src,alt){ if(!src){ imgEl.style.visibility='hidden'; return; } imgEl.alt=alt||''; imgEl.crossOrigin='anonymous'; imgEl.src=src; imgEl.onload=()=>{ imgEl.style.visibility='visible'; }; imgEl.onerror=()=>{ imgEl.style.visibility='hidden'; }; }
+const Sheets = window.PetrioleseSheets;
+if(!Sheets){
+  throw new Error('PetrioleseSheets utils not loaded');
+}
+const { fetchCsvPrefer, normalizeMeta, normalizeOpp, resolveLogoSrc, setLogo } = Sheets;
+
 function formatWhen(dt){ try{ return dt.toLocaleString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch{ return dt.toString(); } }
 
 /* Venue & Maps */

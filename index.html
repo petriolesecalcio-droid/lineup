@@ -44,6 +44,7 @@
   </div>
   <pre id="hud"></pre>
 
+<script src="js/sheet-utils.js"></script>
 <script>
 /* ====== CONFIG ====== */
 const SHEET_FILE_ID = '1nWG0OBGpiyK-lulP-OKGad4jG7uEVmcy';
@@ -62,66 +63,11 @@ const WINDOWS = {
   lineup_to_fulltime:  3 * 60 * 60 * 1000  // +3h da KO
 };
 
-/* ====== HELPERS (CSV Google) ====== */
-const gvizCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?gid=${encodeURIComponent(gid)}&headers=1&tqx=out:csv`;
-const exportCsvURL=(fileId,gid)=>`https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&id=${fileId}&gid=${encodeURIComponent(gid)}`;
-function pubCsvURL(pubhtmlUrl){
-  try{
-    const u=new URL(pubhtmlUrl);
-    const gid=u.searchParams.get('gid')||'0';
-    const parts=u.pathname.split('/');
-    const idIdx=parts.findIndex(p=>p==='e')+1;
-    const id=parts[idIdx]||'';
-    const root=`${u.protocol}//${u.host}${parts.slice(0,idIdx).join('/')}/${id}`;
-    return `${root}/pub?gid=${encodeURIComponent(gid)}&single=true&output=csv`;
-  }catch(e){ return null; }
+const Sheets = window.PetrioleseSheets;
+if (!Sheets) {
+  throw new Error('PetrioleseSheets utils not loaded');
 }
-function parseCSV(text){
-  let t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
-  const lines=t.split('\n').filter((ln,i)=>i===0||ln.trim().length>0);
-  if(!lines.length) return [];
-  const rows=[]; let row=[],cur='',inQ=false;
-  const pushCell=()=>{row.push(cur);cur=''}; const pushRow=()=>{rows.push(row);row=[]};
-  const s=lines.join('\n');
-  for(let i=0;i<s.length;i++){
-    const c=s[i],n=s[i+1];
-    if(inQ){ if(c=='"'&&n=='"'){cur+='"';i++} else if(c=='"'){inQ=false} else cur+=c }
-    else{ if(c=='"') inQ=true; else if(c==',') pushCell(); else if(c=='\n'){pushCell();pushRow()} else cur+=c }
-  }
-  if(cur!==''||row.length){pushCell();pushRow()}
-  const header=(rows.shift()||[]).map(h=>String(h||'').trim());
-  return rows.map(r=>Object.fromEntries(header.map((h,i)=>[h, r[i]!==undefined?r[i]:'' ])));
-}
-async function fetchCsvPrefer(fileId,gid,pubUrl){
-  try{ const r=await fetch(gvizCsvURL(fileId,gid),{cache:'no-store'}); if(r.ok) return parseCSV(await r.text()); }catch(e){}
-  if(pubUrl){ try{ const u=pubCsvURL(pubUrl); if(u){ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return parseCSV(await r.text()); } }catch(e){} }
-  try{ const r=await fetch(exportCsvURL(fileId,gid),{cache:'no-store'}); if(r.ok) return parseCSV(await r.text()); }catch(e){}
-  return [];
-}
-function normalizeMeta(rows){
-  const m=new Map();
-  rows.forEach(r=>{
-    const keys = Object.keys(r);
-    const keyK = keys.find(k => /^(key|chiave)$/i.test(k)) || keys[0];
-    const valK = keys.find(k => /^(value|valore|val)$/i.test(k)) || keys[1];
-    const k=(''+(r[keyK]||'')).trim().toLowerCase();
-    const v=(''+(r[valK]||'')).trim();
-    if(k) m.set(k,v);
-  });
-  return m;
-}
-function parseDateTimeIT(dateStr, timeStr){
-  const s=String(dateStr||'').trim(), t=String(timeStr||'').trim();
-  if(!s) return null;
-  const combined = s.includes(':') ? s : (t ? `${s} ${t}` : s);
-  const m1 = combined.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
-  const m2 = combined.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?$/);
-  let y,M,d,h=15,min=0;
-  if(m1){ d=+m1[1]; M=+m1[2]-1; y=+m1[3]; if(m1[4]){h=+m1[4]; min=+m1[5];} }
-  else if(m2){ y=+m2[1]; M=+m2[2]-1; d=+m2[3]; if(m2[4]){h=+m2[4]; min=+m2[5];} }
-  else return new Date(s);
-  return new Date(y,M,d,h,min,0,0);
-}
+const { fetchCsvPrefer, normalizeMeta, parseDateTimeIT } = Sheets;
 
 /* ====== ROUTER (iframe) ====== */
 function decideRoute(now, kickoff){
