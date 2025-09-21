@@ -719,104 +719,54 @@ function render(byNum, modulo="3412"){
 </script>
 
 <!-- Share / Download -->
-<script>
-document.addEventListener('DOMContentLoaded', ()=>{
-  const fab = document.getElementById('shareFab');
-  const ig  = document.getElementById('igFab');
-  const wa  = document.getElementById('waFab');
+<script type="module">
+import { createStageShareHandler, createInstagramOpener, createWhatsAppOpener } from './js/share-controls.js';
+
+function setupShareControls(){
   const stage = document.querySelector('.stage');
+  const shareFab = document.getElementById('shareFab');
+  const igFab = document.getElementById('igFab');
+  const waFab = document.getElementById('waFab');
 
-  async function stageToBlob(){
-    const prevVis = fab.style.visibility;
-    const prevVisIG = ig ? ig.style.visibility : '';
-    const prevVisWA = wa ? wa.style.visibility : '';
-
-    fab.style.visibility = 'hidden';
-    if(ig) ig.style.visibility = 'hidden';
-    if(wa) wa.style.visibility = 'hidden';
-    stage.classList.add('is-capturing');
-
-    const targetW = 1080, targetH = 1920;
-    const rect = stage.getBoundingClientRect();
-    const dpr  = Math.max(1, window.devicePixelRatio || 1);
-    const need = Math.max(targetW / rect.width, targetH / rect.height);
-    const scale = Math.max(3, dpr, need);
-
-    const canvas = await html2canvas(stage, {
-      backgroundColor: '#0b0c11',
-      scale,
-      useCORS: true
-    });
-
-    const out = document.createElement('canvas');
-    out.width = targetW; out.height = targetH;
-    const ctx = out.getContext('2d', { willReadFrequently:true });
-
-    ctx.fillStyle = '#0b0c11';
-    ctx.fillRect(0,0,targetW,targetH);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    const ratio = Math.min(targetW/canvas.width, targetH/canvas.height);
-    const w = Math.round(canvas.width * ratio);
-    const h = Math.round(canvas.height * ratio);
-    const x = Math.floor((targetW - w)/2);
-    const y = Math.floor((targetH - h)/2);
-    ctx.drawImage(canvas, x, y, w, h);
-
-    stage.classList.remove('is-capturing');
-    fab.style.visibility = prevVis || 'visible';
-    if(ig) ig.style.visibility = prevVisIG || 'visible';
-    if(wa) wa.style.visibility = prevVisWA || 'visible';
-
-    return await new Promise(res=> out.toBlob(b=>res(b), 'image/png', 0.95));
+  if(igFab){
+    const openInstagram = createInstagramOpener({ username: 'asd_petriolese_calcio' });
+    igFab.addEventListener('click', openInstagram, { passive: true });
   }
 
-  async function shareOrDownload(){
-    try{
-      fab.setAttribute('aria-busy','true');
-      const blob = await stageToBlob();
-      const fileName = `matchday_petriolese_${new Date().toISOString().slice(0,10)}.png`;
+  if(waFab){
+    const openWhatsApp = createWhatsAppOpener({ url: 'https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E' });
+    waFab.addEventListener('click', openWhatsApp, { passive: true });
+  }
 
-      const file = new File([blob], fileName, { type: 'image/png' });
-      if(navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share({ title:'Matchday – Petriolese Calcio', text:'Formazione titolari e panchina.', files:[file] });
-        fab.removeAttribute('aria-busy'); return;
-      }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = fileName;
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      fab.removeAttribute('aria-busy');
+  if(!stage || !shareFab) return;
+
+  const shareHandler = createStageShareHandler(stage, {
+    hideDuringCapture: [shareFab, igFab, waFab],
+    captureClass: 'is-capturing',
+    shareTitle: 'Matchday – Petriolese Calcio',
+    shareText: 'Formazione titolari e panchina.',
+    fileNamePrefix: 'matchday_petriolese',
+    backgroundColor: '#0b0c11'
+  });
+
+  shareFab.addEventListener('click', async () => {
+    try{
+      shareFab.setAttribute('aria-busy', 'true');
+      await shareHandler();
     }catch(err){
       console.error(err);
-      fab.removeAttribute('aria-busy');
       alert('Impossibile condividere automaticamente.');
+    }finally{
+      shareFab.removeAttribute('aria-busy');
     }
-  }
+  }, { passive: true });
+}
 
-  function openInstagram(){
-    const web = 'https://www.instagram.com/asd_petriolese_calcio/';
-    const scheme = 'instagram://user?username=asd_petriolese_calcio';
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if(isMobile){
-      const start = Date.now();
-      window.location.href = scheme;
-      setTimeout(()=>{ if(Date.now() - start < 1600){ window.open(web, '_blank', 'noopener'); } }, 700);
-    }else{
-      window.open(web, '_blank', 'noopener');
-    }
-  }
-
-  const WHATSAPP_CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb6QY82I7BeLPf1qXZ2E';
-  function openWhatsAppChannel(){
-    window.open(WHATSAPP_CHANNEL_URL, '_blank', 'noopener');
-  }
-
-  fab.addEventListener('click', shareOrDownload, { passive:true });
-  ig.addEventListener('click', openInstagram, { passive:true });
-  wa.addEventListener('click', openWhatsAppChannel, { passive:true });
-});
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', setupShareControls, { once: true });
+}else{
+  setupShareControls();
+}
 </script>
 </body>
 </html>
