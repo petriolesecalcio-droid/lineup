@@ -508,6 +508,31 @@ function canonicalFormation(name){
   return FORMATION_ALIASES[digits] || "3-4-1-2";
 }
 
+const FORMATION_WORLD_CACHE = new Map();
+function getFormationWorldCoords(key){
+  if(FORMATION_WORLD_CACHE.has(key)){
+    return FORMATION_WORLD_CACHE.get(key);
+  }
+
+  const coords = new Map();
+
+  if(key === "3-4-1-2"){
+    XI_NUMBERS.forEach((num, idx) => {
+      const uv = coords3412[idx] || [34,50];
+      coords.set(num, map(uv[0], uv[1]));
+    });
+  }else{
+    const table = FORMATIONS_UV[key] || {};
+    XI_NUMBERS.forEach(num => {
+      const uv = table[num] || [34,50];
+      coords.set(num, map(uv[0], uv[1]));
+    });
+  }
+
+  FORMATION_WORLD_CACHE.set(key, coords);
+  return coords;
+}
+
 /* ====== CSV/Sheet helpers ====== */
 const fetchDistRows   = () => fetchCsvPrefer(SHEET_FILE_ID, DIST_GID, PUBLISHED_DIST_URL);
 const fetchMetaRows   = () => fetchCsvPrefer(SHEET_FILE_ID, META_GID, PUBLISHED_META_URL);
@@ -618,22 +643,14 @@ function render(byNum, modulo="3412"){
   const layer=document.getElementById('players'); layer.innerHTML='';
   const key = canonicalFormation(modulo);
 
-  if (key === "3-4-1-2"){
-    XI_NUMBERS.forEach((n,i)=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const [u,v]=coords3412[i];
-      const world=map(u,v);
+  const worldCoords = getFormationWorldCoords(key);
+  XI_NUMBERS.forEach(n => {
+    const p=byNum.get(n)||{num:n,name:''};
+    const world = worldCoords.get(n);
+    if(world){
       layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  } else {
-    const table = FORMATIONS_UV[key] || {};
-    XI_NUMBERS.forEach(n=>{
-      const p=byNum.get(n)||{num:n,name:''};
-      const uv = table[n] || [34,50];
-      const world=map(uv[0], uv[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
-    });
-  }
+    }
+  });
 
   const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${DISPLAY_NAME(p.name)}`;}).join('  ');
   document.getElementById('subsList').textContent=subs;
