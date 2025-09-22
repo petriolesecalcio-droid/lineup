@@ -615,7 +615,8 @@ function playerNode(obj,x,y){
   return div;
 }
 function render(byNum, modulo="3412"){
-  const layer=document.getElementById('players'); layer.innerHTML='';
+  const layer=document.getElementById('players'); if(!layer) return;
+  const fragment=document.createDocumentFragment();
   const key = canonicalFormation(modulo);
 
   if (key === "3-4-1-2"){
@@ -623,7 +624,7 @@ function render(byNum, modulo="3412"){
       const p=byNum.get(n)||{num:n,name:''};
       const [u,v]=coords3412[i];
       const world=map(u,v);
-      layer.appendChild(playerNode(p,world.x,world.y));
+      fragment.appendChild(playerNode(p,world.x,world.y));
     });
   } else {
     const table = FORMATIONS_UV[key] || {};
@@ -631,9 +632,11 @@ function render(byNum, modulo="3412"){
       const p=byNum.get(n)||{num:n,name:''};
       const uv = table[n] || [34,50];
       const world=map(uv[0], uv[1]);
-      layer.appendChild(playerNode(p,world.x,world.y));
+      fragment.appendChild(playerNode(p,world.x,world.y));
     });
   }
+
+  layer.replaceChildren(fragment);
 
   const subs=BENCH_NUMBERS.map(n=>{const p=byNum.get(n)||{num:n,name:''}; return `${p.num}.${DISPLAY_NAME(p.name)}`;}).join('  ');
   document.getElementById('subsList').textContent=subs;
