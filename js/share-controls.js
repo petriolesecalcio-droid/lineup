@@ -108,7 +108,7 @@ export function createStageShareHandler(stage, baseOptions = {}){
     blobQuality: 0.95,
     shareTitle: '',
     shareText: '',
-    minScale: 3,
+    minScale: 1,
     useCORS: true,
     html2canvasOptions: null,
     fileNameFormatter: defaultFileNameFormatter,
@@ -137,7 +137,13 @@ export function createStageShareHandler(stage, baseOptions = {}){
       const height = rect.height || targetHeight;
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const needScale = Math.max(targetWidth / width, targetHeight / height);
-      const scale = Math.max(options.minScale, dpr, needScale);
+      const baseScale = Math.max(dpr, needScale);
+      const minScale = options.minScale == null ? 1 : options.minScale;
+      let scale = Math.max(minScale, baseScale);
+
+      if(typeof options.maxScale === 'number' && Number.isFinite(options.maxScale)){
+        scale = Math.min(scale, options.maxScale);
+      }
 
       const extraOptions = options.html2canvasOptions && typeof options.html2canvasOptions === 'object'
         ? { ...options.html2canvasOptions }
