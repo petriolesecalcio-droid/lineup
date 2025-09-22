@@ -442,6 +442,12 @@ const W=68,H=105,areaW=40.32,areaD=16.5,goalW=18.32,goalD=5.5,spot=11,R=9.15;
 const TL={x:120,y:120}, TR={x:880,y:120}, BL={x:0,y:1000}, BR={x:1000,y:1000};
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
 function map(u,v){const t=v/H, L=lerp(TL,BL,t), Rr=lerp(TR,BR,t), s=u/W; return {x:L.x+(Rr.x-L.x)*s, y:L.y+(Rr.y-L.y)*s};}
+const SUBS_LEFT_PERCENT=(()=>{
+  const baseline=map(0,H);
+  const areaEdge=map(W/2-areaW/2,H);
+  const midpointX=(baseline.x+areaEdge.x)/2;
+  return ((midpointX/1000)*100).toFixed(3)+'%';
+})();
 const G=document.getElementById('lines');
 function addPolyline(pts,w=3){const el=document.createElementNS('http://www.w3.org/2000/svg','polyline');
   el.setAttribute('points',pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
@@ -560,10 +566,8 @@ function placeBadges(){
   }
 }
 function placeSubsByPitch(){
-  const el=document.getElementById('subsBadge'); if(!el) return;
-  const cx=W/2; const xAreaLeft=cx-areaW/2;
-  const A=map(0,H); const B=map(xAreaLeft,H);
-  const Mx=(A.x+B.x)/2; el.style.left=((Mx/1000)*100).toFixed(3)+'%';
+  const el=document.getElementById('subsBadge');
+  if(el) el.style.left=SUBS_LEFT_PERCENT;
 }
 
 /* ====== FAB auto-avoid su telefoni piccoli ====== */
@@ -664,16 +668,18 @@ function render(byNum, modulo="3412"){
     render(new Map(), "3412");
   }
 
-  placeSubsByPitch(); placeBadges();
+  placeSubsByPitch();
+  placeBadges();
   layoutFABs();
 
   const stage=document.querySelector('.stage');
+  const relayout=()=>{ placeBadges(); layoutFABs(); };
   if(window.ResizeObserver && stage){
-    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
+    const ro=new ResizeObserver(relayout);
     ro.observe(stage);
   }else{
-    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
-    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
+    window.addEventListener('resize', relayout);
+    window.addEventListener('orientationchange', relayout);
   }
 })();
 </script>
