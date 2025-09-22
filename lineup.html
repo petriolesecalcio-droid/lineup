@@ -531,15 +531,34 @@ const DISPLAY_NAME = full => String(full || '').trim();
 
 /* ====== POSIZIONAMENTI BADGE ====== */
 function computeTopForBadges(){
-  const stage=document.querySelector('.stage'); const pitch=document.querySelector('.pitch-wrap');
-  if(!stage||!pitch) return 20;
-  const sRect=stage.getBoundingClientRect(); const pRect=pitch.getBoundingClientRect();
-  const topCampo=pRect.top + pRect.height * 0.12;
-  const spazioSopra=Math.max(0, topCampo - sRect.top);
-  return ((spazioSopra*0.5)/sRect.height)*100;
+  const stage=document.querySelector('.stage');
+  const pitch=document.querySelector('.pitch-wrap');
+  if(!stage||!pitch) return { topPercent:20, rects:null };
+  const rects={
+    stage:stage.getBoundingClientRect(),
+    pitch:pitch.getBoundingClientRect()
+  };
+  const topCampo=rects.pitch.top + rects.pitch.height * 0.12;
+  const spazioSopra=Math.max(0, topCampo - rects.stage.top);
+  const stageHeight=rects.stage.height || stage.offsetHeight || 1;
+  const topPercent=((spazioSopra*0.5)/stageHeight)*100;
+  return { topPercent, rects };
 }
-function placeMatchday(){ const el=document.getElementById('matchdayBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='25%'; }
-function placeVersus(){ const el=document.getElementById('versusBadge'); if(!el) return; el.style.top=computeTopForBadges().toFixed(3)+'%'; el.style.left='75%'; }
+function placeBadges(){
+  const { topPercent } = computeTopForBadges();
+  const matchday=document.getElementById('matchdayBadge');
+  const versus=document.getElementById('versusBadge');
+  const value=Number.isFinite(topPercent) ? topPercent : 20;
+  const topCss=value.toFixed(3)+'%';
+  if(matchday){
+    matchday.style.top=topCss;
+    matchday.style.left='25%';
+  }
+  if(versus){
+    versus.style.top=topCss;
+    versus.style.left='75%';
+  }
+}
 function placeSubsByPitch(){
   const el=document.getElementById('subsBadge'); if(!el) return;
   const cx=W/2; const xAreaLeft=cx-areaW/2;
@@ -645,16 +664,16 @@ function render(byNum, modulo="3412"){
     render(new Map(), "3412");
   }
 
-  placeSubsByPitch(); placeMatchday(); placeVersus();
+  placeSubsByPitch(); placeBadges();
   layoutFABs();
 
   const stage=document.querySelector('.stage');
   if(window.ResizeObserver && stage){
-    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    const ro=new ResizeObserver(()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
     ro.observe(stage);
   }else{
-    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
-    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeMatchday(); placeVersus(); layoutFABs(); });
+    window.addEventListener('resize', ()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
+    window.addEventListener('orientationchange', ()=>{ placeSubsByPitch(); placeBadges(); layoutFABs(); });
   }
 })();
 </script>
