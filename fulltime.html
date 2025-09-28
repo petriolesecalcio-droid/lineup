@@ -352,7 +352,7 @@ function readScore(meta){
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
 <script type="module">
-import { createStageShareHandler, createInstagramOpener, createWhatsAppOpener } from './js/share-controls.js';
+import { createStageShareHandler, createInstagramOpener, createWhatsAppOpener, createFullTimeShareOptions } from './js/share-controls.js';
 
 function setupFullTimeShare(){
   const stage = document.querySelector('.stage');
@@ -373,17 +373,7 @@ function setupFullTimeShare(){
 
   if(!stage || !shareFab) return;
 
-  const shareOptions = {
-    hideDuringCapture: [shareFab, igFab, waFab, bgVideo].filter(Boolean),
-    captureClass: 'is-capturing',
-    shareTitle: stage.dataset.shareTitle || 'Full Time – Petriolese Calcio',
-    fileNamePrefix: stage.dataset.sharePrefix || 'fulltime_petriolese_calcio',
-    backgroundColor: '#0b0c11',
-    targetWidth: 1080,
-    targetHeight: 1080,
-    fitMode: 'cover'
-  };
-
+  const shareOptions = createFullTimeShareOptions({ stage, shareFab, igFab, waFab, bgVideo });
   const shareHandler = createStageShareHandler(stage, shareOptions);
 
   shareFab.addEventListener('click', async () => {
