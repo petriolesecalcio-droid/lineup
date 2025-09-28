@@ -1,15 +1,6 @@
 const TARGET_WIDTH = 1080;
 const TARGET_HEIGHT = 1920;
 const DEFAULT_BACKGROUND = '#0b0c11';
-const FULLTIME_DEFAULTS = {
-  captureClass: 'is-capturing',
-  shareTitle: 'Full Time – Petriolese Calcio',
-  fileNamePrefix: 'fulltime_petriolese_calcio',
-  backgroundColor: DEFAULT_BACKGROUND,
-  targetWidth: 1080,
-  targetHeight: 1080,
-  fitMode: 'cover'
-};
 const MOBILE_REGEX = /Android|iPhone|iPad|iPod/i;
 
 function createMobileDetector(override){
@@ -39,40 +30,6 @@ function asElementArray(value){
   if(!value) return [];
   if(Array.isArray(value)) return value.filter(isElement);
   return isElement(value) ? [value] : [];
-}
-
-function mergeCaptureList(base, extra){
-  const list = [];
-  if(Array.isArray(base)){
-    base.forEach(item => {
-      if(isElement(item)) list.push(item);
-    });
-  }else if(isElement(base)){
-    list.push(base);
-  }
-  if(Array.isArray(extra)){
-    extra.forEach(item => {
-      if(isElement(item)) list.push(item);
-    });
-  }else if(isElement(extra)){
-    list.push(extra);
-  }
-  return list;
-}
-
-export function createFullTimeShareOptions(context = {}, overrides = {}){
-  const { stage = null, shareFab = null, igFab = null, waFab = null, bgVideo = null, hideDuringCapture } = context;
-  const dataset = stage && stage.dataset ? stage.dataset : {};
-  const hideList = mergeCaptureList([shareFab, igFab, waFab, bgVideo], hideDuringCapture);
-
-  const base = {
-    ...FULLTIME_DEFAULTS,
-    shareTitle: dataset.shareTitle || FULLTIME_DEFAULTS.shareTitle,
-    fileNamePrefix: dataset.sharePrefix || FULLTIME_DEFAULTS.fileNamePrefix,
-    hideDuringCapture: hideList
-  };
-
-  return { ...base, ...overrides };
 }
 
 function hideTemporarily(elements){
