@@ -373,16 +373,18 @@ function setupFullTimeShare(){
 
   if(!stage || !shareFab) return;
 
-  const shareHandler = createStageShareHandler(stage, {
-    hideDuringCapture: [shareFab, igFab, waFab, bgVideo],
+  const shareOptions = {
+    hideDuringCapture: [shareFab, igFab, waFab, bgVideo].filter(Boolean),
     captureClass: 'is-capturing',
-    shareTitle: 'Full Time – Petriolese',
-    fileNamePrefix: 'fulltime_petriolese',
+    shareTitle: stage.dataset.shareTitle || 'Full Time – Petriolese Calcio',
+    fileNamePrefix: stage.dataset.sharePrefix || 'fulltime_petriolese_calcio',
     backgroundColor: '#0b0c11',
     targetWidth: 1080,
     targetHeight: 1080,
     fitMode: 'cover'
-  });
+  };
+
+  const shareHandler = createStageShareHandler(stage, shareOptions);
 
   shareFab.addEventListener('click', async () => {
     try{
