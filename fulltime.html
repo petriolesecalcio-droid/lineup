@@ -26,6 +26,7 @@
   /* video bg */
   #bg-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
              filter:brightness(.32) contrast(1.05) saturate(1.05); background:#0b0c11; }
+  .stage.is-capturing #bg-video{ display:none !important; }
 
   /* overlay */
   .stadium{ position:absolute; inset:0; z-index:1; pointer-events:none;
@@ -54,13 +55,14 @@
     box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
     color:#e6ebf2; font-weight:600; font-size:clamp(12px,2.1cqw,16px);
     line-height:1.5; padding:.8cqh 1.1cqw;
-    display:flex; flex-wrap:wrap; gap:.6cqw .9cqw; min-height:3.2cqh;
+    display:grid; grid-auto-rows:min-content; gap:.6cqh; min-height:3.2cqh;
+    justify-items:start; text-align:left;
     max-width:min(44cqw, 520px);
   }
   #wingTop { justify-items:start; }
   #wingTop .wing { justify-self:start; }   /* a sinistra */
   #wingBottom { justify-items:end; }
-  #wingBottom .wing { justify-self:end; }  /* a destra  */
+  #wingBottom .wing { justify-self:end; justify-items:end; text-align:right; }  /* a destra  */
   .scorer{ display:inline-flex; align-items:center; gap:.35cqw; white-space:nowrap; }
   .scorer .ball{ transform:translateY(.02em); }
 
@@ -357,6 +359,7 @@ function setupFullTimeShare(){
   const shareFab = document.getElementById('shareFab');
   const igFab = document.getElementById('igFab');
   const waFab = document.getElementById('waFab');
+  const bgVideo = document.getElementById('bg-video');
 
   if(igFab){
     const openInstagram = createInstagramOpener({ username: 'asd_petriolese_calcio' });
@@ -371,10 +374,14 @@ function setupFullTimeShare(){
   if(!stage || !shareFab) return;
 
   const shareHandler = createStageShareHandler(stage, {
-    hideDuringCapture: [shareFab, igFab, waFab],
+    hideDuringCapture: [shareFab, igFab, waFab, bgVideo],
+    captureClass: 'is-capturing',
     shareTitle: 'Full Time – Petriolese',
     fileNamePrefix: 'fulltime_petriolese',
-    backgroundColor: '#0b0c11'
+    backgroundColor: '#0b0c11',
+    targetWidth: 1080,
+    targetHeight: 1080,
+    fitMode: 'cover'
   });
 
   shareFab.addEventListener('click', async () => {
