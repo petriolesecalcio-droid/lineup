@@ -358,6 +358,7 @@ function setupFullTimeShare(){
   const shareFab = document.getElementById('shareFab');
   const igFab = document.getElementById('igFab');
   const waFab = document.getElementById('waFab');
+  const bgVideo = document.getElementById('bg-video');
 
   if(igFab){
     const openInstagram = createInstagramOpener({ username: 'asd_petriolese_calcio' });
@@ -372,10 +373,13 @@ function setupFullTimeShare(){
   if(!stage || !shareFab) return;
 
   const shareHandler = createStageShareHandler(stage, {
-    hideDuringCapture: [shareFab, igFab, waFab],
+    hideDuringCapture: [shareFab, igFab, waFab, bgVideo],
     shareTitle: 'Full Time – Petriolese',
     fileNamePrefix: 'fulltime_petriolese',
-    backgroundColor: '#0b0c11'
+    backgroundColor: '#0b0c11',
+    targetWidth: 1080,
+    targetHeight: 1080,
+    fitMode: 'cover'
   });
 
   shareFab.addEventListener('click', async () => {
