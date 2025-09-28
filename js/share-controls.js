@@ -111,6 +111,7 @@ export function createStageShareHandler(stage, baseOptions = {}){
     minScale: 1,
     useCORS: true,
     html2canvasOptions: null,
+    fitMode: 'contain',
     fileNameFormatter: defaultFileNameFormatter,
     onAfterShare: null,
     onBeforeCapture: null
@@ -170,9 +171,16 @@ export function createStageShareHandler(stage, baseOptions = {}){
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      const ratio = Math.min(targetWidth / canvas.width, targetHeight / canvas.height);
-      const w = Math.round(canvas.width * ratio);
-      const h = Math.round(canvas.height * ratio);
+      const sourceWidth = canvas.width || 1;
+      const sourceHeight = canvas.height || 1;
+      const fitMode = options.fitMode === 'cover' ? 'cover' : 'contain';
+      const ratioFn = fitMode === 'cover' ? Math.max : Math.min;
+      let ratio = ratioFn(targetWidth / sourceWidth, targetHeight / sourceHeight);
+      if(!Number.isFinite(ratio) || ratio <= 0){
+        ratio = 1;
+      }
+      const w = Math.round(sourceWidth * ratio);
+      const h = Math.round(sourceHeight * ratio);
       const x = Math.floor((targetWidth - w) / 2);
       const y = Math.floor((targetHeight - h) / 2);
       ctx.drawImage(canvas, x, y, w, h);
