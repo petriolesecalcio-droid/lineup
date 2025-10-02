@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+F<!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="utf-8" />
@@ -525,7 +525,7 @@ function normalizeDist(rows){
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   let kNum=keys.find(k=>/#|num|numero|maglia/.test(norm(k)))||keys[0];
   let kName=keys.find(k=>/giocatore|player|nome|cognome/.test(norm(k)))||keys[1];
-  let kPhoto=keys.find(k=>/foto|photo|img|immagine/.test(norm(k)));
+  let kPhoto=keys.find(k=>/crop|photo|img|immagine/.test(norm(k)));
   const map=new Map();
   rows.forEach(r=>{
     const n=Number(String(r[kNum]||'').trim()); if(!(n>0)) return;
