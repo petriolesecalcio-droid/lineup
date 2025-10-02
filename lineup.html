@@ -502,16 +502,22 @@ const FORMATIONS_UV = {
   "4-2-3-1": {
     1:[34,107], 2:[62,78], 3:[6,78], 4:[46,82], 5:[22,82],
     6:[46,57], 7:[62,39], 8:[22,57], 9:[34,13], 10:[34,39], 11:[6,39]
+  },
+  "3-4-2-1": {
+    /* GK + 3 difensori come 3-4-1-2, due mezzepunte dietro una punta */
+    1:[34,107], 2:[54,78], 5:[34,82], 3:[14,78],
+    7:[62,52], 6:[44,57], 4:[24,57], 11:[6,52],
+    10:[44,28], 9:[34,13], 8:[24,28]
   }
 };
 /* Aliases dal Meta senza trattini */
-const FORMATION_ALIASES = { "3412":"3-4-1-2", "433":"4-3-3", "4231":"4-2-3-1" };
+const FORMATION_ALIASES = { "3412":"3-4-1-2", "3421":"3-4-2-1", "433":"4-3-3", "4231":"4-2-3-1" };
 function canonicalFormation(name){
   const raw = String(name||"").trim().toLowerCase().replace(/^['’]/,''); // gestisce '433 dallo sheet
   const norm = raw.replace(/[–—−]/g, "-");
   if (FORMATIONS_UV[norm]) return norm;
   const digits = norm.replace(/[^0-9]/g, "");
-  return FORMATION_ALIASES[digits] || "3-4-1-2";
+  return FORMATION_ALIASES[digits] || "3-4-2-1";
 }
 
 /* ====== CSV/Sheet helpers ====== */
@@ -618,7 +624,7 @@ function playerNode(obj,x,y){
   div.appendChild(badge);
   return div;
 }
-function render(byNum, modulo="3412"){
+function render(byNum, modulo="3421"){
   const layer=document.getElementById('players'); if(!layer) return;
   const fragment=document.createDocumentFragment();
   const key=canonicalFormation(modulo);
@@ -657,7 +663,7 @@ function render(byNum, modulo="3412"){
     const meta  = normalizeMeta(metaRows);
     const opp   = normalizeOpp(oppRows);
 
-    const moduloRaw = (meta.get('modulo')||'3412').toString().trim();
+    const moduloRaw = (meta.get('modulo')||'3421').toString().trim();
     render(byNum, moduloRaw);
 
     const giornata = (meta.get('giornata')||'').toString().trim();
@@ -670,7 +676,7 @@ function render(byNum, modulo="3412"){
     setLogo(document.getElementById('logo2'), resolveLogoSrc(squadra2, opp), squadra2);
   }catch(e){
     console.error(e);
-    render(new Map(), "3412");
+    render(new Map(), "3421");
   }
 
   placeSubsByPitch();
